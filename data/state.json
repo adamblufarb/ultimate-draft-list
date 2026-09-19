@@ -7836,7 +7836,9 @@
       "name": "De'Andre Hunter"
     }
   ],
-  "draftedKeys": [],
+  "draftedKeys": [
+    "victor wembanyama"
+  ],
   "lockedKeys": [
     "nikola jokic",
     "luka doncic",
@@ -7848,5 +7850,8 @@
     "anthony edwards",
     "jayson tatum",
     "tyrese maxey"
+  ],
+  "myTeamKeys": [
+    "victor wembanyama"
   ]
 }
