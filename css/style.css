@@ -323,6 +323,11 @@ body {
   touch-action: none;
 }
 
+.drag-handle.is-locked {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
 .draft-name {
   flex: 1;
   min-width: 0;

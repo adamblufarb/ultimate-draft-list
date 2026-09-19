@@ -9,11 +9,15 @@
     // gap: vertical space (px) between rows — since rows are absolutely
     //   positioned, a row's own CSS margin has no effect here; this is the
     //   only thing that controls spacing.
-    constructor(container, { renderRow, onReorder, gap = 0 }) {
+    // canDrag(key): optional — return false to make that row's handle inert.
+    //   Checked fresh on every pointerdown, not cached, so it stays correct
+    //   even though rows aren't recreated when e.g. a lock toggles.
+    constructor(container, { renderRow, onReorder, gap = 0, canDrag }) {
       this.container = container;
       this.renderRow = renderRow;
       this.onReorder = onReorder;
       this.gap = gap;
+      this.canDrag = canDrag || (() => true);
       this.items = [];
       this.rows = [];
       this.rowHeight = 0;
@@ -71,6 +75,7 @@
 
     _onPointerDown(e, row) {
       if (e.button !== undefined && e.button !== 0 && e.pointerType === 'mouse') return;
+      if (!this.canDrag(row.dataset.key)) return;
       e.preventDefault();
       const startIndex = this.rows.indexOf(row);
       const startTop = startIndex * this.slotHeight;
@@ -136,15 +141,18 @@
       row.classList.remove('dragging');
 
       // A real drag (pointer moved past the threshold) still ends with the
-      // browser firing a click on the row afterward. Flag it so the row's
-      // own click handler (e.g. opening player detail) can ignore that one
-      // click — cleared on the next click, with a double-rAF fallback in
-      // case no click ever arrives.
+      // browser firing a "ghost" click afterward — and since rows shift
+      // under the finger while dragging, that click can land on a
+      // completely different row's button (e.g. toggling some other
+      // player's lock) rather than the one that was actually dragged.
+      // Swallow the very next click anywhere in the list, in the capture
+      // phase, so it never reaches any row's/button's own listener.
       if (ds.moved) {
-        row.dataset.justDragged = '1';
-        requestAnimationFrame(() => requestAnimationFrame(() => {
-          delete row.dataset.justDragged;
-        }));
+        const suppressClick = (ev) => {
+          ev.stopPropagation();
+          ev.preventDefault();
+        };
+        this.container.addEventListener('click', suppressClick, { capture: true, once: true });
       }
 
       this.dragState = null;

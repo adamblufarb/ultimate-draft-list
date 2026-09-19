@@ -44,7 +44,9 @@
   function updateLockButton(key) {
     if (!container) return;
     const row = container.querySelector('.draft-row[data-key="' + CSS.escape(key) + '"]');
-    const btn = row && row.querySelector('.btn-lock');
+    if (!row) return;
+    const btn = row.querySelector('.btn-lock');
+    const handle = row.querySelector('.drag-handle');
     if (!btn) return;
     const locked = App.isLocked(key);
     btn.className = 'btn-lock' + (locked ? ' is-locked' : '');
@@ -52,6 +54,10 @@
     btn.title = locked
       ? "Locked — won't move when you reset"
       : "Lock — keep this player's position when you reset";
+    if (handle) {
+      handle.classList.toggle('is-locked', locked);
+      handle.title = locked ? "Locked — can't be dragged" : '';
+    }
   }
 
   function onSourcesChanged() {
@@ -182,6 +188,7 @@
     reorderable = new ReorderableList(listEl, {
       gap: 6,
       renderRow: (item, i) => renderRow(item, i, avgByKey),
+      canDrag: (key) => !App.isLocked(key),
       onReorder: (newVisibleOrder) => {
         App.state.draftOrder = mergeReorder(App.state.draftOrder, newVisibleOrder);
         App.persist();
@@ -235,14 +242,12 @@
 
     const row = document.createElement('div');
     row.className = 'draft-row' + (drafted ? ' is-drafted' : '');
-    row.addEventListener('click', () => {
-      if (row.dataset.justDragged) return;
-      PlayerDetail.open(item.key);
-    });
+    row.addEventListener('click', () => PlayerDetail.open(item.key));
 
     const handle = document.createElement('div');
-    handle.className = 'drag-handle';
+    handle.className = 'drag-handle' + (locked ? ' is-locked' : '');
     handle.setAttribute('data-drag-handle', '');
+    handle.title = locked ? "Locked — can't be dragged" : '';
     handle.textContent = '☰';
 
     // Shows the player's combined rank average — a fixed per-player stat,
