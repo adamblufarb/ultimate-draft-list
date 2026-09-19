@@ -7028,16 +7028,16 @@
       "name": "Tyrese Maxey"
     },
     {
+      "key": "scottie barnes",
+      "name": "Scottie Barnes"
+    },
+    {
       "key": "donovan mitchell",
       "name": "Donovan Mitchell"
     },
     {
       "key": "tyrese haliburton",
       "name": "Tyrese Haliburton"
-    },
-    {
-      "key": "scottie barnes",
-      "name": "Scottie Barnes"
     },
     {
       "key": "josh giddey",
@@ -7955,7 +7955,8 @@
     "anthony edwards",
     "jayson tatum",
     "nikola jokic",
-    "tyrese maxey"
+    "tyrese maxey",
+    "scottie barnes"
   ],
   "myTeamKeys": []
 }
