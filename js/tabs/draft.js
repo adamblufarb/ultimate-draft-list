@@ -260,7 +260,11 @@
       : "Lock — keep this player's position when you reset";
     lockBtn.addEventListener('click', (e) => {
       e.stopPropagation();
-      App.setLocked(item.key, !locked);
+      // Reads the live state rather than the `locked` captured at render
+      // time: a lock toggle now updates this row in place (see
+      // updateLockButton) instead of doing a full re-render, so this
+      // handler's closure never gets refreshed with a new `locked` value.
+      App.setLocked(item.key, !App.isLocked(item.key));
     });
 
     const name = document.createElement('div');
