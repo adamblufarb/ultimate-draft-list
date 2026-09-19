@@ -7028,6 +7028,10 @@
       "name": "Tyrese Maxey"
     },
     {
+      "key": "alperen sengun",
+      "name": "Alperen Sengun"
+    },
+    {
       "key": "scottie barnes",
       "name": "Scottie Barnes"
     },
@@ -7042,10 +7046,6 @@
     {
       "key": "tyrese haliburton",
       "name": "Tyrese Haliburton"
-    },
-    {
-      "key": "alperen sengun",
-      "name": "Alperen Sengun"
     },
     {
       "key": "kevin durant",
@@ -7956,7 +7956,8 @@
     "jayson tatum",
     "nikola jokic",
     "tyrese maxey",
-    "scottie barnes"
+    "scottie barnes",
+    "alperen sengun"
   ],
   "myTeamKeys": []
 }
