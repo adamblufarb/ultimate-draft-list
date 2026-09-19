@@ -6996,12 +6996,12 @@
       "name": "Luka Doncic"
     },
     {
-      "key": "victor wembanyama",
-      "name": "Victor Wembanyama"
-    },
-    {
       "key": "shai gilgeous alexander",
       "name": "Shai Gilgeous-Alexander"
+    },
+    {
+      "key": "victor wembanyama",
+      "name": "Victor Wembanyama"
     },
     {
       "key": "giannis antetokounmpo",
@@ -7016,48 +7016,36 @@
       "name": "Jalen Johnson"
     },
     {
-      "key": "tyrese maxey",
-      "name": "Tyrese Maxey"
-    },
-    {
-      "key": "donovan mitchell",
-      "name": "Donovan Mitchell"
+      "key": "anthony edwards",
+      "name": "Anthony Edwards"
     },
     {
       "key": "jayson tatum",
       "name": "Jayson Tatum"
     },
     {
-      "key": "anthony edwards",
-      "name": "Anthony Edwards"
+      "key": "donovan mitchell",
+      "name": "Donovan Mitchell"
     },
     {
-      "key": "scottie barnes",
-      "name": "Scottie Barnes"
-    },
-    {
-      "key": "alperen sengun",
-      "name": "Alperen Sengun"
+      "key": "tyrese maxey",
+      "name": "Tyrese Maxey"
     },
     {
       "key": "tyrese haliburton",
       "name": "Tyrese Haliburton"
     },
     {
-      "key": "kevin durant",
-      "name": "Kevin Durant"
+      "key": "trae young",
+      "name": "Trae Young"
     },
     {
-      "key": "jalen brunson",
-      "name": "Jalen Brunson"
+      "key": "josh giddey",
+      "name": "Josh Giddey"
     },
     {
-      "key": "jamal murray",
-      "name": "Jamal Murray"
-    },
-    {
-      "key": "amen thompson",
-      "name": "Amen Thompson"
+      "key": "scottie barnes",
+      "name": "Scottie Barnes"
     },
     {
       "key": "karl anthony towns",
@@ -7068,76 +7056,108 @@
       "name": "Domantas Sabonis"
     },
     {
-      "key": "kawhi leonard",
-      "name": "Kawhi Leonard"
-    },
-    {
-      "key": "james harden",
-      "name": "James Harden"
-    },
-    {
-      "key": "anthony davis",
-      "name": "Anthony Davis"
-    },
-    {
       "key": "devin booker",
       "name": "Devin Booker"
     },
     {
-      "key": "trae young",
-      "name": "Trae Young"
+      "key": "jalen brunson",
+      "name": "Jalen Brunson"
     },
     {
-      "key": "jalen duren",
-      "name": "Jalen Duren"
+      "key": "kevin durant",
+      "name": "Kevin Durant"
     },
     {
-      "key": "josh giddey",
-      "name": "Josh Giddey"
+      "key": "alperen sengun",
+      "name": "Alperen Sengun"
     },
     {
       "key": "cooper flagg",
       "name": "Cooper Flagg"
     },
     {
-      "key": "evan mobley",
-      "name": "Evan Mobley"
+      "key": "jamal murray",
+      "name": "Jamal Murray"
     },
     {
-      "key": "deni avdija",
-      "name": "Deni Avdija"
+      "key": "amen thompson",
+      "name": "Amen Thompson"
     },
     {
-      "key": "bam adebayo",
-      "name": "Bam Adebayo"
+      "key": "anthony davis",
+      "name": "Anthony Davis"
     },
     {
       "key": "lamelo ball",
       "name": "LaMelo Ball"
     },
     {
-      "key": "jaylen brown",
-      "name": "Jaylen Brown"
+      "key": "jalen duren",
+      "name": "Jalen Duren"
     },
     {
-      "key": "lebron james",
-      "name": "LeBron James"
+      "key": "kawhi leonard",
+      "name": "Kawhi Leonard"
     },
     {
-      "key": "paolo banchero",
-      "name": "Paolo Banchero"
+      "key": "evan mobley",
+      "name": "Evan Mobley"
     },
     {
-      "key": "pascal siakam",
-      "name": "Pascal Siakam"
+      "key": "james harden",
+      "name": "James Harden"
     },
     {
       "key": "austin reaves",
       "name": "Austin Reaves"
     },
     {
+      "key": "stephen curry",
+      "name": "Stephen Curry"
+    },
+    {
+      "key": "bam adebayo",
+      "name": "Bam Adebayo"
+    },
+    {
       "key": "jalen williams",
       "name": "Jalen Williams"
+    },
+    {
+      "key": "deni avdija",
+      "name": "Deni Avdija"
+    },
+    {
+      "key": "lebron james",
+      "name": "LeBron James"
+    },
+    {
+      "key": "pascal siakam",
+      "name": "Pascal Siakam"
+    },
+    {
+      "key": "kyrie irving",
+      "name": "Kyrie Irving"
+    },
+    {
+      "key": "jaylen brown",
+      "name": "Jaylen Brown"
+    },
+    {
+      "key": "lauri markkanen",
+      "name": "Lauri Markkanen"
+    },
+    {
+      "key": "darius garland",
+      "name": "Darius Garland"
+    },
+    {
+      "key": "paolo banchero",
+      "name": "Paolo Banchero"
+    },
+    {
+      "key": "joel embiid",
+      "name": "Joel Embiid"
     },
     {
       "key": "derrick white",
@@ -7148,216 +7168,212 @@
       "name": "Desmond Bane"
     },
     {
-      "key": "stephen curry",
-      "name": "Stephen Curry"
-    },
-    {
-      "key": "kyrie irving",
-      "name": "Kyrie Irving"
-    },
-    {
-      "key": "julius randle",
-      "name": "Julius Randle"
-    },
-    {
-      "key": "walker kessler",
-      "name": "Walker Kessler"
-    },
-    {
-      "key": "chet holmgren",
-      "name": "Chet Holmgren"
-    },
-    {
-      "key": "de aaron fox",
-      "name": "De'Aaron Fox"
-    },
-    {
-      "key": "zion williamson",
-      "name": "Zion Williamson"
-    },
-    {
-      "key": "dyson daniels",
-      "name": "Dyson Daniels"
-    },
-    {
-      "key": "lauri markkanen",
-      "name": "Lauri Markkanen"
-    },
-    {
-      "key": "brandon ingram",
-      "name": "Brandon Ingram"
-    },
-    {
-      "key": "trey murphy",
-      "name": "Trey Murphy III"
-    },
-    {
-      "key": "joel embiid",
-      "name": "Joel Embiid"
-    },
-    {
-      "key": "stephon castle",
-      "name": "Stephon Castle"
-    },
-    {
-      "key": "dejounte murray",
-      "name": "Dejounte Murray"
-    },
-    {
-      "key": "nickeil alexander walker",
-      "name": "Nickeil Alexander-Walker"
-    },
-    {
       "key": "franz wagner",
       "name": "Franz Wagner"
-    },
-    {
-      "key": "donovan clingan",
-      "name": "Donovan Clingan"
     },
     {
       "key": "kon knueppel",
       "name": "Kon Knueppel"
     },
     {
+      "key": "chet holmgren",
+      "name": "Chet Holmgren"
+    },
+    {
+      "key": "dejounte murray",
+      "name": "Dejounte Murray"
+    },
+    {
+      "key": "walker kessler",
+      "name": "Walker Kessler"
+    },
+    {
       "key": "michael porter",
       "name": "Michael Porter Jr."
     },
     {
-      "key": "keyonte george",
-      "name": "Keyonte George"
-    },
-    {
-      "key": "damian lillard",
-      "name": "Damian Lillard"
-    },
-    {
-      "key": "onyeka okongwu",
-      "name": "Onyeka Okongwu"
-    },
-    {
-      "key": "tyler herro",
-      "name": "Tyler Herro"
-    },
-    {
-      "key": "jarrett allen",
-      "name": "Jarrett Allen"
-    },
-    {
-      "key": "cameron boozer",
-      "name": "Cameron Boozer"
+      "key": "trey murphy",
+      "name": "Trey Murphy III"
     },
     {
       "key": "brandon miller",
       "name": "Brandon Miller"
     },
     {
-      "key": "rudy gobert",
-      "name": "Rudy Gobert"
+      "key": "keyonte george",
+      "name": "Keyonte George"
     },
     {
-      "key": "mikal bridges",
-      "name": "Mikal Bridges"
+      "key": "zion williamson",
+      "name": "Zion Williamson"
     },
     {
-      "key": "darius garland",
-      "name": "Darius Garland"
+      "key": "brandon ingram",
+      "name": "Brandon Ingram"
     },
     {
-      "key": "caleb wilson",
-      "name": "Caleb Wilson"
+      "key": "de aaron fox",
+      "name": "De'Aaron Fox"
     },
     {
-      "key": "alex sarr",
-      "name": "Alex Sarr"
+      "key": "damian lillard",
+      "name": "Damian Lillard"
     },
     {
       "key": "jaren jackson",
       "name": "Jaren Jackson Jr."
     },
     {
-      "key": "ty jerome",
-      "name": "Ty Jerome"
+      "key": "jarrett allen",
+      "name": "Jarrett Allen"
     },
     {
-      "key": "ja morant",
-      "name": "Ja Morant"
+      "key": "julius randle",
+      "name": "Julius Randle"
+    },
+    {
+      "key": "tyler herro",
+      "name": "Tyler Herro"
+    },
+    {
+      "key": "dyson daniels",
+      "name": "Dyson Daniels"
+    },
+    {
+      "key": "stephon castle",
+      "name": "Stephon Castle"
+    },
+    {
+      "key": "donovan clingan",
+      "name": "Donovan Clingan"
+    },
+    {
+      "key": "nickeil alexander walker",
+      "name": "Nickeil Alexander-Walker"
+    },
+    {
+      "key": "onyeka okongwu",
+      "name": "Onyeka Okongwu"
+    },
+    {
+      "key": "cameron boozer",
+      "name": "Cameron Boozer"
     },
     {
       "key": "naz reid",
       "name": "Naz Reid"
     },
     {
-      "key": "norman powell",
-      "name": "Norman Powell"
-    },
-    {
-      "key": "immanuel quickley",
-      "name": "Immanuel Quickley"
-    },
-    {
-      "key": "matas buzelis",
-      "name": "Matas Buzelis"
-    },
-    {
-      "key": "aj dybantsa",
-      "name": "AJ Dybantsa"
-    },
-    {
-      "key": "vj edgecombe",
-      "name": "VJ Edgecombe"
-    },
-    {
-      "key": "ryan rollins",
-      "name": "Ryan Rollins"
-    },
-    {
-      "key": "demar derozan",
-      "name": "DeMar DeRozan"
-    },
-    {
-      "key": "og anunoby",
-      "name": "OG Anunoby"
-    },
-    {
-      "key": "miles bridges",
-      "name": "Miles Bridges"
-    },
-    {
-      "key": "russell westbrook",
-      "name": "Russell Westbrook"
-    },
-    {
-      "key": "payton pritchard",
-      "name": "Payton Pritchard"
+      "key": "alex sarr",
+      "name": "Alex Sarr"
     },
     {
       "key": "ivica zubac",
       "name": "Ivica Zubac"
     },
     {
-      "key": "cj mccollum",
-      "name": "CJ McCollum"
+      "key": "caleb wilson",
+      "name": "Caleb Wilson"
+    },
+    {
+      "key": "norman powell",
+      "name": "Norman Powell"
+    },
+    {
+      "key": "mikal bridges",
+      "name": "Mikal Bridges"
+    },
+    {
+      "key": "rudy gobert",
+      "name": "Rudy Gobert"
+    },
+    {
+      "key": "matas buzelis",
+      "name": "Matas Buzelis"
+    },
+    {
+      "key": "ja morant",
+      "name": "Ja Morant"
+    },
+    {
+      "key": "aj dybantsa",
+      "name": "AJ Dybantsa"
+    },
+    {
+      "key": "ty jerome",
+      "name": "Ty Jerome"
     },
     {
       "key": "paul george",
       "name": "Paul George"
     },
     {
-      "key": "zach edey",
-      "name": "Zach Edey"
+      "key": "og anunoby",
+      "name": "OG Anunoby"
+    },
+    {
+      "key": "immanuel quickley",
+      "name": "Immanuel Quickley"
+    },
+    {
+      "key": "coby white",
+      "name": "Coby White"
+    },
+    {
+      "key": "miles bridges",
+      "name": "Miles Bridges"
+    },
+    {
+      "key": "vj edgecombe",
+      "name": "VJ Edgecombe"
     },
     {
       "key": "kristaps porzingis",
       "name": "Kristaps Porzingis"
     },
     {
-      "key": "derik queen",
-      "name": "Derik Queen"
+      "key": "dylan harper",
+      "name": "Dylan Harper"
+    },
+    {
+      "key": "ryan rollins",
+      "name": "Ryan Rollins"
+    },
+    {
+      "key": "zach edey",
+      "name": "Zach Edey"
+    },
+    {
+      "key": "jimmy butler",
+      "name": "Jimmy Butler III"
+    },
+    {
+      "key": "payton pritchard",
+      "name": "Payton Pritchard"
     },
     {
       "key": "josh hart",
       "name": "Josh Hart"
+    },
+    {
+      "key": "kel el ware",
+      "name": "Kel'el Ware"
+    },
+    {
+      "key": "cj mccollum",
+      "name": "CJ McCollum"
+    },
+    {
+      "key": "derik queen",
+      "name": "Derik Queen"
+    },
+    {
+      "key": "mark williams",
+      "name": "Mark Williams"
+    },
+    {
+      "key": "demar derozan",
+      "name": "DeMar DeRozan"
     },
     {
       "key": "ausar thompson",
@@ -7368,432 +7384,272 @@
       "name": "Nic Claxton"
     },
     {
-      "key": "brandin podziemski",
-      "name": "Brandin Podziemski"
-    },
-    {
-      "key": "kel el ware",
-      "name": "Kel'el Ware"
-    },
-    {
       "key": "andrew wiggins",
       "name": "Andrew Wiggins"
     },
     {
-      "key": "coby white",
-      "name": "Coby White"
-    },
-    {
-      "key": "kennedy chandler",
-      "name": "Kennedy Chandler"
-    },
-    {
-      "key": "nikola vucevic",
-      "name": "Nikola Vucevic"
-    },
-    {
-      "key": "jaden mcdaniels",
-      "name": "Jaden McDaniels"
-    },
-    {
-      "key": "kevin porter",
-      "name": "Kevin Porter Jr."
-    },
-    {
-      "key": "rj barrett",
-      "name": "RJ Barrett"
-    },
-    {
-      "key": "julian reese",
-      "name": "Julian Reese"
+      "key": "brandin podziemski",
+      "name": "Brandin Podziemski"
     },
     {
       "key": "fred vanvleet",
       "name": "Fred VanVleet"
     },
     {
-      "key": "donte divincenzo",
-      "name": "Donte DiVincenzo"
+      "key": "jaden mcdaniels",
+      "name": "Jaden McDaniels"
     },
     {
-      "key": "dylan harper",
-      "name": "Dylan Harper"
-    },
-    {
-      "key": "mark williams",
-      "name": "Mark Williams"
-    },
-    {
-      "key": "darryn peterson",
-      "name": "Darryn Peterson"
-    },
-    {
-      "key": "ayo dosunmu",
-      "name": "Ayo Dosunmu"
-    },
-    {
-      "key": "darius acuff",
-      "name": "Darius Acuff Jr."
-    },
-    {
-      "key": "kris dunn",
-      "name": "Kris Dunn"
-    },
-    {
-      "key": "jabari smith",
-      "name": "Jabari Smith Jr."
-    },
-    {
-      "key": "reed sheppard",
-      "name": "Reed Sheppard"
-    },
-    {
-      "key": "andrew nembhard",
-      "name": "Andrew Nembhard"
-    },
-    {
-      "key": "jimmy butler",
-      "name": "Jimmy Butler III"
-    },
-    {
-      "key": "jaime jaquez",
-      "name": "Jaime Jaquez Jr."
-    },
-    {
-      "key": "neemias queta",
-      "name": "Neemias Queta"
+      "key": "rj barrett",
+      "name": "RJ Barrett"
     },
     {
       "key": "john collins",
       "name": "John Collins"
     },
     {
-      "key": "jakob poeltl",
-      "name": "Jakob Poeltl"
-    },
-    {
       "key": "cedric coward",
       "name": "Cedric Coward"
     },
     {
-      "key": "jalen suggs",
-      "name": "Jalen Suggs"
+      "key": "ayo dosunmu",
+      "name": "Ayo Dosunmu"
     },
     {
-      "key": "alondes williams",
-      "name": "Alondes Williams"
+      "key": "kevin porter",
+      "name": "Kevin Porter Jr."
     },
     {
-      "key": "collin gillespie",
-      "name": "Collin Gillespie"
+      "key": "jakob poeltl",
+      "name": "Jakob Poeltl"
     },
     {
-      "key": "keegan murray",
-      "name": "Keegan Murray"
-    },
-    {
-      "key": "myles turner",
-      "name": "Myles Turner"
+      "key": "nikola vucevic",
+      "name": "Nikola Vucevic"
     },
     {
       "key": "zach lavine",
       "name": "Zach LaVine"
     },
     {
-      "key": "khaman maluach",
-      "name": "Khaman Maluach"
+      "key": "darryn peterson",
+      "name": "Darryn Peterson"
     },
     {
-      "key": "peyton watson",
-      "name": "Peyton Watson"
-    },
-    {
-      "key": "isaiah hartenstein",
-      "name": "Isaiah Hartenstein"
+      "key": "darius acuff",
+      "name": "Darius Acuff Jr."
     },
     {
       "key": "jalen green",
       "name": "Jalen Green"
     },
     {
-      "key": "rui hachimura",
-      "name": "Rui Hachimura"
+      "key": "isaiah hartenstein",
+      "name": "Isaiah Hartenstein"
     },
     {
-      "key": "jrue holiday",
-      "name": "Jrue Holiday"
+      "key": "peyton watson",
+      "name": "Peyton Watson"
     },
     {
-      "key": "cam spencer",
-      "name": "Cam Spencer"
+      "key": "reed sheppard",
+      "name": "Reed Sheppard"
     },
     {
-      "key": "tobias harris",
-      "name": "Tobias Harris"
+      "key": "myles turner",
+      "name": "Myles Turner"
     },
     {
-      "key": "saddiq bey",
-      "name": "Saddiq Bey"
+      "key": "jabari smith",
+      "name": "Jabari Smith Jr."
     },
     {
-      "key": "aaron gordon",
-      "name": "Aaron Gordon"
+      "key": "keegan murray",
+      "name": "Keegan Murray"
     },
     {
-      "key": "collin sexton",
-      "name": "Collin Sexton"
+      "key": "khaman maluach",
+      "name": "Khaman Maluach"
     },
     {
-      "key": "anthony black",
-      "name": "Anthony Black"
-    },
-    {
-      "key": "sandro mamukelashvili",
-      "name": "Sandro Mamukelashvili"
-    },
-    {
-      "key": "quentin grimes",
-      "name": "Quentin Grimes"
+      "key": "andrew nembhard",
+      "name": "Andrew Nembhard"
     },
     {
       "key": "kyshawn george",
       "name": "Kyshawn George"
     },
     {
-      "key": "oso ighodaro",
-      "name": "Oso Ighodaro"
+      "key": "day ron sharpe",
+      "name": "Day'Ron Sharpe"
     },
     {
-      "key": "jay huff",
-      "name": "Jay Huff"
+      "key": "collin sexton",
+      "name": "Collin Sexton"
     },
     {
-      "key": "tre jones",
-      "name": "Tre Jones"
+      "key": "rui hachimura",
+      "name": "Rui Hachimura"
     },
     {
-      "key": "jeremiah fears",
-      "name": "Jeremiah Fears"
+      "key": "jalen suggs",
+      "name": "Jalen Suggs"
     },
     {
-      "key": "maxime raynaud",
-      "name": "Maxime Raynaud"
+      "key": "sandro mamukelashvili",
+      "name": "Sandro Mamukelashvili"
     },
     {
-      "key": "jusuf nurkic",
-      "name": "Jusuf Nurkic"
+      "key": "tobias harris",
+      "name": "Tobias Harris"
     },
     {
       "key": "daniel gafford",
       "name": "Daniel Gafford"
     },
     {
-      "key": "jerami grant",
-      "name": "Jerami Grant"
-    },
-    {
-      "key": "kyle filipowski",
-      "name": "Kyle Filipowski"
-    },
-    {
-      "key": "day ron sharpe",
-      "name": "Day'Ron Sharpe"
-    },
-    {
-      "key": "malik monk",
-      "name": "Malik Monk"
-    },
-    {
       "key": "mitchell robinson",
       "name": "Mitchell Robinson"
+    },
+    {
+      "key": "jaime jaquez",
+      "name": "Jaime Jaquez Jr."
+    },
+    {
+      "key": "quentin grimes",
+      "name": "Quentin Grimes"
+    },
+    {
+      "key": "aaron gordon",
+      "name": "Aaron Gordon"
+    },
+    {
+      "key": "neemias queta",
+      "name": "Neemias Queta"
+    },
+    {
+      "key": "jusuf nurkic",
+      "name": "Jusuf Nurkic"
+    },
+    {
+      "key": "collin gillespie",
+      "name": "Collin Gillespie"
+    },
+    {
+      "key": "jrue holiday",
+      "name": "Jrue Holiday"
     },
     {
       "key": "scotty pippen",
       "name": "Scotty Pippen Jr."
     },
     {
-      "key": "toumani camara",
-      "name": "Toumani Camara"
+      "key": "malik monk",
+      "name": "Malik Monk"
+    },
+    {
+      "key": "oso ighodaro",
+      "name": "Oso Ighodaro"
+    },
+    {
+      "key": "anthony black",
+      "name": "Anthony Black"
     },
     {
       "key": "devin vassell",
       "name": "Devin Vassell"
     },
     {
-      "key": "davion mitchell",
-      "name": "Davion Mitchell"
+      "key": "jerami grant",
+      "name": "Jerami Grant"
     },
     {
-      "key": "moussa diabate",
-      "name": "Moussa Diabate"
-    },
-    {
-      "key": "dillon brooks",
-      "name": "Dillon Brooks"
-    },
-    {
-      "key": "egor demin",
-      "name": "Egor Demin"
-    },
-    {
-      "key": "shaedon sharpe",
-      "name": "Shaedon Sharpe"
-    },
-    {
-      "key": "ajay mitchell",
-      "name": "Ajay Mitchell"
-    },
-    {
-      "key": "brandon williams",
-      "name": "Brandon Williams"
-    },
-    {
-      "key": "wendell carter",
-      "name": "Wendell Carter Jr."
-    },
-    {
-      "key": "p j washington",
-      "name": "P.J. Washington Jr."
-    },
-    {
-      "key": "keldon johnson",
-      "name": "Keldon Johnson"
-    },
-    {
-      "key": "draymond green",
-      "name": "Draymond Green"
-    },
-    {
-      "key": "deandre ayton",
-      "name": "Deandre Ayton"
-    },
-    {
-      "key": "bruce brown",
-      "name": "Bruce Brown"
-    },
-    {
-      "key": "isaiah collier",
-      "name": "Isaiah Collier"
-    },
-    {
-      "key": "ace bailey",
-      "name": "Ace Bailey"
-    },
-    {
-      "key": "jake laravia",
-      "name": "Jake LaRavia"
-    },
-    {
-      "key": "bennedict mathurin",
-      "name": "Bennedict Mathurin"
-    },
-    {
-      "key": "brook lopez",
-      "name": "Brook Lopez"
-    },
-    {
-      "key": "dereck lively",
-      "name": "Dereck Lively II"
-    },
-    {
-      "key": "julian champagnie",
-      "name": "Julian Champagnie"
-    },
-    {
-      "key": "cason wallace",
-      "name": "Cason Wallace"
-    },
-    {
-      "key": "precious achiuwa",
-      "name": "Precious Achiuwa"
-    },
-    {
-      "key": "grayson allen",
-      "name": "Grayson Allen"
+      "key": "jeremiah fears",
+      "name": "Jeremiah Fears"
     },
     {
       "key": "pelle larsson",
       "name": "Pelle Larsson"
     },
     {
-      "key": "tristan da silva",
-      "name": "Tristan da Silva"
+      "key": "dillon brooks",
+      "name": "Dillon Brooks"
     },
     {
-      "key": "mikel brown",
-      "name": "Mikel Brown Jr."
+      "key": "davion mitchell",
+      "name": "Davion Mitchell"
     },
     {
-      "key": "naji marshall",
-      "name": "Naji Marshall"
+      "key": "egor demin",
+      "name": "Egor Demin"
     },
     {
-      "key": "cameron johnson",
-      "name": "Cameron Johnson"
+      "key": "brook lopez",
+      "name": "Brook Lopez"
     },
     {
-      "key": "bobby portis",
-      "name": "Bobby Portis Jr."
+      "key": "draymond green",
+      "name": "Draymond Green"
+    },
+    {
+      "key": "saddiq bey",
+      "name": "Saddiq Bey"
+    },
+    {
+      "key": "tre jones",
+      "name": "Tre Jones"
+    },
+    {
+      "key": "dereck lively",
+      "name": "Dereck Lively II"
     },
     {
       "key": "jonathan kuminga",
       "name": "Jonathan Kuminga"
     },
     {
-      "key": "jamal shead",
-      "name": "Jamal Shead"
+      "key": "ajay mitchell",
+      "name": "Ajay Mitchell"
     },
     {
-      "key": "santi aldama",
-      "name": "Santi Aldama"
+      "key": "toumani camara",
+      "name": "Toumani Camara"
     },
     {
-      "key": "tim hardaway",
-      "name": "Tim Hardaway Jr."
+      "key": "p j washington",
+      "name": "P.J. Washington Jr."
     },
     {
-      "key": "bub carrington",
-      "name": "Bub Carrington"
+      "key": "cameron johnson",
+      "name": "Cameron Johnson"
     },
     {
-      "key": "brice sensabaugh",
-      "name": "Brice Sensabaugh"
+      "key": "ace bailey",
+      "name": "Ace Bailey"
     },
     {
-      "key": "dominick barlow",
-      "name": "Dominick Barlow"
+      "key": "maxime raynaud",
+      "name": "Maxime Raynaud"
     },
     {
-      "key": "yaxel lendeborg",
-      "name": "Yaxel Lendeborg"
+      "key": "bennedict mathurin",
+      "name": "Bennedict Mathurin"
     },
     {
-      "key": "jock landale",
-      "name": "Jock Landale"
+      "key": "cason wallace",
+      "name": "Cason Wallace"
     },
     {
-      "key": "royce o neale",
-      "name": "Royce O'Neale"
+      "key": "moussa diabate",
+      "name": "Moussa Diabate"
     },
     {
-      "key": "keaton wagler",
-      "name": "Keaton Wagler"
+      "key": "collin murray boyles",
+      "name": "Collin Murray-Boyles"
     },
     {
-      "key": "herbert jones",
-      "name": "Herbert Jones"
-    },
-    {
-      "key": "lawson lovering",
-      "name": "Lawson Lovering"
-    },
-    {
-      "key": "jarace walker",
-      "name": "Jarace Walker"
-    },
-    {
-      "key": "luke kornet",
-      "name": "Luke Kornet"
+      "key": "kyle filipowski",
+      "name": "Kyle Filipowski"
     },
     {
       "key": "paul reed",
@@ -7804,208 +7660,200 @@
       "name": "Isaiah Stewart"
     },
     {
-      "key": "marvin bagley",
-      "name": "Marvin Bagley III"
+      "key": "mikel brown",
+      "name": "Mikel Brown Jr."
     },
     {
-      "key": "jaylon tyson",
-      "name": "Jaylon Tyson"
+      "key": "bobby portis",
+      "name": "Bobby Portis Jr."
     },
     {
-      "key": "daniss jenkins",
-      "name": "Daniss Jenkins"
+      "key": "yaxel lendeborg",
+      "name": "Yaxel Lendeborg"
     },
     {
-      "key": "jalen slawson",
-      "name": "Jalen Slawson"
+      "key": "grayson allen",
+      "name": "Grayson Allen"
     },
     {
-      "key": "noah clowney",
-      "name": "Noah Clowney"
-    },
-    {
-      "key": "scoot henderson",
-      "name": "Scoot Henderson"
-    },
-    {
-      "key": "collin murray boyles",
-      "name": "Collin Murray-Boyles"
-    },
-    {
-      "key": "harrison barnes",
-      "name": "Harrison Barnes"
-    },
-    {
-      "key": "ryan kalkbrenner",
-      "name": "Ryan Kalkbrenner"
-    },
-    {
-      "key": "yves missi",
-      "name": "Yves Missi"
-    },
-    {
-      "key": "duncan robinson",
-      "name": "Duncan Robinson"
-    },
-    {
-      "key": "morez johnson",
-      "name": "Morez Johnson Jr."
+      "key": "keldon johnson",
+      "name": "Keldon Johnson"
     },
     {
       "key": "gui santos",
       "name": "Gui Santos"
     },
     {
-      "key": "jaylen wells",
-      "name": "Jaylen Wells"
+      "key": "wendell carter",
+      "name": "Wendell Carter Jr."
+    },
+    {
+      "key": "scoot henderson",
+      "name": "Scoot Henderson"
+    },
+    {
+      "key": "herbert jones",
+      "name": "Herbert Jones"
+    },
+    {
+      "key": "daniss jenkins",
+      "name": "Daniss Jenkins"
+    },
+    {
+      "key": "keaton wagler",
+      "name": "Keaton Wagler"
+    },
+    {
+      "key": "jake laravia",
+      "name": "Jake LaRavia"
     },
     {
       "key": "robert williams",
       "name": "Robert Williams III"
     },
     {
-      "key": "jordan goodwin",
-      "name": "Jordan Goodwin"
+      "key": "julian champagnie",
+      "name": "Julian Champagnie"
     },
     {
-      "key": "max christie",
-      "name": "Max Christie"
+      "key": "yves missi",
+      "name": "Yves Missi"
     },
     {
-      "key": "dylan cardwell",
-      "name": "Dylan Cardwell"
+      "key": "jamal shead",
+      "name": "Jamal Shead"
     },
     {
-      "key": "kyle kuzma",
-      "name": "Kyle Kuzma"
+      "key": "precious achiuwa",
+      "name": "Precious Achiuwa"
     },
     {
-      "key": "ronald holland",
-      "name": "Ronald Holland II"
+      "key": "shaedon sharpe",
+      "name": "Shaedon Sharpe"
+    },
+    {
+      "key": "deandre ayton",
+      "name": "Deandre Ayton"
+    },
+    {
+      "key": "tim hardaway",
+      "name": "Tim Hardaway Jr."
     },
     {
       "key": "t j mcconnell",
       "name": "T.J. McConnell"
     },
     {
-      "key": "christian braun",
-      "name": "Christian Braun"
+      "key": "isaiah collier",
+      "name": "Isaiah Collier"
     },
     {
-      "key": "sam hauser",
-      "name": "Sam Hauser"
-    },
-    {
-      "key": "kelly oubre",
-      "name": "Kelly Oubre Jr."
-    },
-    {
-      "key": "bilal coulibaly",
-      "name": "Bilal Coulibaly"
-    },
-    {
-      "key": "justin champagnie",
-      "name": "Justin Champagnie"
-    },
-    {
-      "key": "luke kennard",
-      "name": "Luke Kennard"
-    },
-    {
-      "key": "dennis schroder",
-      "name": "Dennis Schroder"
-    },
-    {
-      "key": "kevin huerter",
-      "name": "Kevin Huerter"
-    },
-    {
-      "key": "tari eason",
-      "name": "Tari Eason"
+      "key": "morez johnson",
+      "name": "Morez Johnson Jr."
     },
     {
       "key": "bradley beal",
       "name": "Bradley Beal"
     },
     {
+      "key": "santi aldama",
+      "name": "Santi Aldama"
+    },
+    {
+      "key": "tari eason",
+      "name": "Tari Eason"
+    },
+    {
+      "key": "ryan kalkbrenner",
+      "name": "Ryan Kalkbrenner"
+    },
+    {
+      "key": "kelly oubre",
+      "name": "Kelly Oubre Jr."
+    },
+    {
+      "key": "bub carrington",
+      "name": "Bub Carrington"
+    },
+    {
+      "key": "jaylon tyson",
+      "name": "Jaylon Tyson"
+    },
+    {
       "key": "alex caruso",
       "name": "Alex Caruso"
     },
     {
-      "key": "gary payton",
-      "name": "Gary Payton II"
-    },
-    {
-      "key": "moses moody",
-      "name": "Moses Moody"
-    },
-    {
-      "key": "andre drummond",
-      "name": "Andre Drummond"
+      "key": "duncan robinson",
+      "name": "Duncan Robinson"
     },
     {
       "key": "al horford",
       "name": "Al Horford"
     },
     {
+      "key": "royce o neale",
+      "name": "Royce O'Neale"
+    },
+    {
+      "key": "max christie",
+      "name": "Max Christie"
+    },
+    {
+      "key": "dennis schroder",
+      "name": "Dennis Schroder"
+    },
+    {
       "key": "gg jackson",
       "name": "GG Jackson"
-    },
-    {
-      "key": "jalen smith",
-      "name": "Jalen Smith"
-    },
-    {
-      "key": "aj green",
-      "name": "AJ Green"
-    },
-    {
-      "key": "brayden burries",
-      "name": "Brayden Burries"
-    },
-    {
-      "key": "nique clifford",
-      "name": "Nique Clifford"
-    },
-    {
-      "key": "de anthony melton",
-      "name": "De'Anthony Melton"
-    },
-    {
-      "key": "isaiah joe",
-      "name": "Isaiah Joe"
-    },
-    {
-      "key": "kingston flemings",
-      "name": "Kingston Flemings"
-    },
-    {
-      "key": "derrick jones",
-      "name": "Derrick Jones Jr."
     },
     {
       "key": "aaron nesmith",
       "name": "Aaron Nesmith"
     },
     {
+      "key": "kyle kuzma",
+      "name": "Kyle Kuzma"
+    },
+    {
       "key": "de andre hunter",
       "name": "De'Andre Hunter"
+    },
+    {
+      "key": "de anthony melton",
+      "name": "De'Anthony Melton"
+    },
+    {
+      "key": "christian braun",
+      "name": "Christian Braun"
+    },
+    {
+      "key": "brayden burries",
+      "name": "Brayden Burries"
     },
     {
       "key": "danny wolf",
       "name": "Danny Wolf"
     },
     {
+      "key": "kingston flemings",
+      "name": "Kingston Flemings"
+    },
+    {
+      "key": "bilal coulibaly",
+      "name": "Bilal Coulibaly"
+    },
+    {
+      "key": "kevin huerter",
+      "name": "Kevin Huerter"
+    },
+    {
+      "key": "naji marshall",
+      "name": "Naji Marshall"
+    },
+    {
       "key": "anfernee simons",
       "name": "Anfernee Simons"
-    },
-    {
-      "key": "sam merrill",
-      "name": "Sam Merrill"
-    },
-    {
-      "key": "walter clayton",
-      "name": "Walter Clayton Jr."
     }
   ],
   "draftedKeys": [],
