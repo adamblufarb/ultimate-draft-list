@@ -6996,6 +6996,10 @@
       "name": "Luka Doncic"
     },
     {
+      "key": "victor wembanyama",
+      "name": "Victor Wembanyama"
+    },
+    {
       "key": "shai gilgeous alexander",
       "name": "Shai Gilgeous-Alexander"
     },
@@ -7006,10 +7010,6 @@
     {
       "key": "cade cunningham",
       "name": "Cade Cunningham"
-    },
-    {
-      "key": "victor wembanyama",
-      "name": "Victor Wembanyama"
     },
     {
       "key": "jalen johnson",
@@ -8012,6 +8012,8 @@
   "lockedKeys": [
     "nikola jokic",
     "luka doncic",
-    "shai gilgeous alexander"
+    "shai gilgeous alexander",
+    "victor wembanyama",
+    "giannis antetokounmpo"
   ]
 }
