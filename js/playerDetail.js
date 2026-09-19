@@ -107,10 +107,10 @@
     const lyTotalSource = App.state.sources.find((s) => s.scoreType === 'ly_total');
     const tyAvgSource = App.state.sources.find((s) => s.scoreType === 'ty_avg_proj');
     const tyTotalSource = App.state.sources.find((s) => s.scoreType === 'ty_total_proj');
-    statsWrap.appendChild(scoreStatCard('Last Year Avg/Game', lyAvgSource, entry));
-    statsWrap.appendChild(scoreStatCard('Last Year Total', lyTotalSource, entry));
-    statsWrap.appendChild(scoreStatCard('This Year Avg/Game Proj.', tyAvgSource, entry));
-    statsWrap.appendChild(scoreStatCard('This Year Total Proj.', tyTotalSource, entry));
+    statsWrap.appendChild(scoreStatCard('Projection Avg', tyAvgSource, entry));
+    statsWrap.appendChild(scoreStatCard('Projection Total', tyTotalSource, entry));
+    statsWrap.appendChild(scoreStatCard('2026 Avg', lyAvgSource, entry));
+    statsWrap.appendChild(scoreStatCard('2026 Total', lyTotalSource, entry));
     sheet.appendChild(statsWrap);
 
     const listsWrap = document.createElement('div');

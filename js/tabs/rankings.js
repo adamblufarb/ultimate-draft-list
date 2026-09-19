@@ -109,11 +109,11 @@
 
       const rankBadge = document.createElement('div');
       rankBadge.className = 'rank-badge';
-      rankBadge.textContent = index + 1;
+      rankBadge.textContent = row.avg.toFixed(1);
 
       const nameEl = document.createElement('div');
       nameEl.className = 'rank-name';
-      nameEl.textContent = `${row.displayName} (${row.avg.toFixed(1)})`;
+      nameEl.textContent = row.displayName;
 
       const draftBtn = document.createElement('button');
       draftBtn.className = 'btn-draft' + (drafted ? ' is-drafted' : '');

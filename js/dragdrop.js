@@ -4,7 +4,7 @@
   class ReorderableList {
     // container: element to hold rows (position:relative is set for you)
     // renderRow(item, index): returns a row element; may include a child
-    //   marked [data-drag-handle] (grab handle) and [data-rank-badge] (rank number)
+    //   marked [data-drag-handle] (grab handle)
     // onReorder(items): called with the new item order after a drop
     // gap: vertical space (px) between rows — since rows are absolutely
     //   positioned, a row's own CSS margin has no effect here; this is the
@@ -116,8 +116,6 @@
       this.rows.splice(to, 0, row);
 
       this.rows.forEach((r, i) => {
-        const badge = r.querySelector('[data-rank-badge]');
-        if (badge) badge.textContent = String(i + 1);
         r.classList.toggle('row-alt', i % 2 === 1);
         if (r === this.dragState.row) return;
         r.style.top = (i * this.slotHeight) + 'px';

@@ -15,7 +15,18 @@
     App.on('sources-changed', onSourcesChanged);
     App.on('drafted-changed', () => { if (isVisible()) render(); });
     App.on('include-drafted-changed', () => { if (isVisible()) render(); });
-    App.on('locked-changed', () => { if (isVisible()) render(); });
+    // A single lock toggle updates just that row's button in place rather
+    // than rebuilding the whole list — a full container.innerHTML rebuild
+    // right after the lock button had focus was resetting scroll to the
+    // top on mobile, and could silently drop pointer capture out from
+    // under an in-progress drag on that same row (the row element gets
+    // destroyed and recreated mid-gesture). "Unlock All" has no single
+    // key, so it still does a full render.
+    App.on('locked-changed', (payload) => {
+      if (!isVisible()) return;
+      if (payload && payload.key) updateLockButton(payload.key);
+      else render();
+    });
     App.on('remote-state-loaded', () => {
       const currentIds = new Set(App.state.sources.map((s) => s.id));
       selectedIds = selectedIds.filter((id) => currentIds.has(id));
@@ -28,6 +39,19 @@
 
   function isVisible() {
     return container && container.classList.contains('active');
+  }
+
+  function updateLockButton(key) {
+    if (!container) return;
+    const row = container.querySelector('.draft-row[data-key="' + CSS.escape(key) + '"]');
+    const btn = row && row.querySelector('.btn-lock');
+    if (!btn) return;
+    const locked = App.isLocked(key);
+    btn.className = 'btn-lock' + (locked ? ' is-locked' : '');
+    btn.textContent = locked ? '🔒' : '🔓';
+    btn.title = locked
+      ? "Locked — won't move when you reset"
+      : "Lock — keep this player's position when you reset";
   }
 
   function onSourcesChanged() {
@@ -204,7 +228,7 @@
     return wrap;
   }
 
-  function renderRow(item, index, avgByKey) {
+  function renderRow(item, _index, avgByKey) {
     const drafted = App.isDrafted(item.key);
     const locked = App.isLocked(item.key);
     const avg = avgByKey.get(item.key);
@@ -221,10 +245,12 @@
     handle.setAttribute('data-drag-handle', '');
     handle.textContent = '☰';
 
+    // Shows the player's combined rank average — a fixed per-player stat,
+    // not this row's current position in the list — so it doesn't change
+    // as you drag them around.
     const badge = document.createElement('div');
     badge.className = 'rank-badge';
-    badge.setAttribute('data-rank-badge', '');
-    badge.textContent = index + 1;
+    badge.textContent = avg !== undefined ? avg.toFixed(1) : '—';
 
     const lockBtn = document.createElement('button');
     lockBtn.className = 'btn-lock' + (locked ? ' is-locked' : '');
@@ -239,7 +265,7 @@
 
     const name = document.createElement('div');
     name.className = 'draft-name';
-    name.textContent = avg !== undefined ? `${item.name} (${avg.toFixed(1)})` : item.name;
+    name.textContent = item.name;
 
     const draftBtn = document.createElement('button');
     draftBtn.className = 'btn-draft' + (drafted ? ' is-drafted' : '');
