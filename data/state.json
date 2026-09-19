@@ -1,7 +1,16 @@
 {
-  "sources": [],
+  "sources": [
+    {
+      "id": "src_mu8tuz5c_e8q00",
+      "name": "",
+      "url": "",
+      "rawText": "",
+      "scoreType": "none",
+      "players": []
+    }
+  ],
   "selectedSourceIds": [],
-  "draftOrder": [],
+  "draftOrder": null,
   "draftedKeys": [],
   "lockedKeys": []
 }
