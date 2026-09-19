@@ -2216,6 +2216,1215 @@
     },
     {
       "id": "src_mu8twndq_gbfjw",
+      "name": "Projection Avarage",
+      "url": "",
+      "rawText": "1\nNikola Jokic\nC\n69.6\n\n2\nLuka Doncic\nPG\n63.3\n\n3\nGiannis Antetokounmpo\nPF, C\n63.1\n\n4\nVictor Wembanyama\nC\n61.6\n\n5\nShai Gilgeous-Alexander\nPG\n60.4\n\n6\nAnthony Davis\nC, PF\n52.4\n\n7\nCade Cunningham\nPG\n52.4\n\n8\nJalen Johnson\nPF\n51.8\n\n9\nJayson Tatum\nPF, SF\n49.5\n\n10\nJoel Embiid\nC\n49.3\n\n11\nAnthony Edwards\nSG, SF\n49.2\n\n12\nTyrese Haliburton\nPG, SG\n48.7\n\n13\nDomantas Sabonis\nC, PF\n48.7\n\n14\nDonovan Mitchell\nSG, PG\n47.7\n\n15\nJosh Giddey\nPG, SG\n47.4\n\n16\nKawhi Leonard\nSF, PF\n47.1\n\n17\nTrae Young\nPG\n46.5\n\n18\nTyrese Maxey\nPG, SG\n46.3\n\n19\nKarl-Anthony Towns\nC\n45.9\n\n20\nDevin Booker\nPG, SG\n45.7\n\n21\nJalen Brunson\nPG\n45.7\n\n22\nAlperen Sengun\nC\n45.5\n\n23\nJalen Duren\nC\n45.4\n\n24\nScottie Barnes\nSF, SG\n45.2\n\n25\nEvan Mobley\nPF, C\n45.1\n\n26\nKyrie Irving\nPG\n44.7\n\n27\nJamal Murray\nPG\n44.6\n\n28\nKevin Durant\nPF, SF\n44.5\n\n29\nCooper Flagg\nSF, PF\n44.4\n\n30\nLaMelo Ball\nPG\n44.1\n\n31\nLeBron James\nSF, PF\n44.0\n\n32\nJames Harden\nPG, SG\n43.9\n\n33\nZion Williamson\nPF, C\n43.7\n\n34\nDeni Avdija\nSF, PF\n43.6\n\n35\nAustin Reaves\nSG, PG\n43.4\n\n36\nStephen Curry\nPG\n43.1\n\n37\nPascal Siakam\nPF\n42.9\n\n38\nPaolo Banchero\nPF, SF\n42.3\n\n39\nJalen Williams\nPF, SF\n42.2\n\n40\nAmen Thompson\nSF, SG\n42.2\n\n41\nJimmy Butler III\nSF, SG\n42.1\n\n42\nBam Adebayo\nC, PF\n41.7\n\n43\nDarius Garland\nPG\n40.7\n\n44\nFranz Wagner\nSF, PF\n40.5\n\n45\nJaylen Brown\nSF, SG\n40.5\n\n46\nDamian Lillard\nPG\n40.2\n\n47\nBrandon Ingram\nSF, PF\n40.0\n\n48\nWalker Kessler\nC\n39.9\n\n49\nJaren Jackson Jr.\nC, PF\n39.9\n\n50\nLauri Markkanen\nPF, SF\n39.8\n\n51\nDejounte Murray\nSG, PG\n39.6\n\n52\nJulius Randle\nPF\n39.3\n\n53\nMichael Porter Jr.\nSF, PF\n39.3\n\n54\nDe'Aaron Fox\nPG, SG\n39.2\n\n55\nTyler Herro\nSG, PG\n39.2\n\n56\nStephon Castle\nPG, SG\n39.2\n\n57\nChet Holmgren\nC, PF\n39.1\n\n58\nDesmond Bane\nSG, SF\n39.0\n\n59\nJarrett Allen\nC\n39.0\n\n60\nTy Jerome\nSG, PG\n38.8\n\n61\nKeyonte George\nPG, SG\n38.7\n\n62\nPaul George\nSF, PF\n38.7\n\n63\nJa Morant\nPG\n38.5\n\n64\nKristaps Porzingis\nC, PF\n38.4\n\n65\nAlex Sarr\nC, PF\n37.6\n\n66\nBrandon Miller\nSF, SG\n37.5\n\n67\nNorman Powell\nSG, SF\n37.3\n\n68\nCaleb Wilson\nSF\n37.0\n\n69\nTrey Murphy III\nSF, SG\n37.0\n\n70\nDerrick White\nSG, PG\n36.9\n\n71\nCameron Boozer\nPF\n36.6\n\n72\nRudy Gobert\nC\n36.4\n\n73\nDyson Daniels\nSG, PG\n36.3\n\n74\nIvica Zubac\nC\n35.8\n\n75\nAJ Dybantsa\nSF\n35.5\n\n76\nKon Knueppel\nSF, SG\n35.4\n\n77\nOnyeka Okongwu\nC\n35.3\n\n78\nImmanuel Quickley\nPG, SG\n35.3\n\n79\nDonovan Clingan\nC\n34.6\n\n80\nMiles Bridges\nSF, PF\n34.6\n\n81\nZach Edey\nC\n34.4\n\n82\nNickeil Alexander-Walker\nSG, PG\n34.3\n\n83\nRJ Barrett\nSF, SG\n34.2\n\n84\nKevin Porter Jr.\nSG, PG\n34.2\n\n85\nNaz Reid\nC, PF\n33.8\n\n86\nCoby White\nPG, SG\n33.6\n\n87\nOG Anunoby\nSF, PF\n33.6\n\n88\nFred VanVleet\nPG, SG\n33.4\n\n89\nJosh Hart\nSF, SG\n33.3\n\n90\nDylan Harper\nPG, SG\n33.0\n\n91\nMatas Buzelis\nSF, PF\n32.9\n\n92\nVJ Edgecombe\nSG\n32.9\n\n93\nJalen Green\nSG, SF\n32.9\n\n94\nJakob Poeltl\nC\n32.8\n\n95\nCJ McCollum\nSG, PG\n32.7\n\n96\nMark Williams\nC\n32.6\n\n97\nMikal Bridges\nSF, SG\n32.6\n\n98\nJohn Collins\nPF, C\n32.5\n\n99\nZach LaVine\nSG, SF\n32.5\n\n100\nDarius Acuff Jr.\nPG\n32.3\n\n101\nAndrew Wiggins\nSF, PF\n32.3\n\n102\nAusar Thompson\nSF, PF\n32.1\n\n103\nDeMar DeRozan\nSF, PF\n32.0\n\n104\nNic Claxton\nC\n31.8\n\n105\nRyan Rollins\nSG, PG\n31.7\n\n106\nDerik Queen\nC, PF\n31.6\n\n107\nIsaiah Hartenstein\nC\n31.6\n\n108\nMitchell Robinson\nC\n31.4\n\n109\nDarryn Peterson\nSG, PG\n31.3\n\n110\nBrandin Podziemski\nSG, PG\n31.3\n\n111\nPayton Pritchard\nPG, SG\n31.0\n\n112\nDaniel Gafford\nC\n30.8\n\n113\nKel'el Ware\nC\n30.8\n\n114\nTobias Harris\nPF, SF\n30.7\n\n115\nAyo Dosunmu\nSG, PG\n30.5\n\n116\nCedric Coward\nSF, SG\n30.4\n\n117\nKyshawn George\nSG, SF\n30.4\n\n118\nNikola Vucevic\nC\n30.3\n\n119\nPeyton Watson\nSF, PF\n30.2\n\n120\nAaron Gordon\nPF\n30.2\n\n121\nJaden McDaniels\nSF, PF\n30.1\n\n122\nCollin Sexton\nSG, PG\n30.0\n\n123\nScotty Pippen Jr.\nPG, SG\n29.9\n\n124\nJaime Jaquez Jr.\nSF, SG\n29.2\n\n125\nJalen Suggs\nPG, SG\n29.2\n\n126\nAnthony Black\nPG, SG\n29.2\n\n127\nReed Sheppard\nSG, PG\n29.0\n\n128\nKeegan Murray\nPF, SF\n29.0\n\n129\nAndrew Nembhard\nPG, SG\n28.8\n\n130\nJusuf Nurkic\nC\n28.7\n\n131\nQuentin Grimes\nSG, SF\n28.7\n\n132\nJrue Holiday\nPG, SG\n28.7\n\n133\nMyles Turner\nC\n28.7\n\n134\nDraymond Green\nPF, C\n28.6\n\n135\nJerami Grant\nPF\n28.4\n\n136\nDereck Lively II\nC\n28.3\n\n137\nNeemias Queta\nC\n28.2\n\n138\nDay'Ron Sharpe\nC\n28.0\n\n139\nMalik Monk\nSG, PG\n27.9\n\n140\nJabari Smith Jr.\nPF, C\n27.9\n\n141\nJonathan Kuminga\nPF, SF\n27.9\n\n142\nP.J. Washington\nPF, SF\n27.7\n\n143\nCollin Gillespie\nPG\n27.6\n\n144\nRobert Williams III\nC\n27.4\n\n145\nJeremiah Fears\nSG, PG\n27.3\n\n146\nDillon Brooks\nSF, SG\n27.3\n\n147\nEgor Demin\nPG, SG\n27.1\n\n148\nBennedict Mathurin\nSF, SG\n27.0\n\n149\nTre Jones\nPG\n26.9\n\n150\nDevin Vassell\nSG, SF\n26.8\n\n151\nSaddiq Bey\nSF, PF\n26.7\n\n152\nGrayson Allen\nSG, PG\n26.6\n\n153\nOso Ighodaro\nPF\n26.2\n\n154\nCameron Johnson\nSF, PF\n26.1\n\n155\nScoot Henderson\nPG, SG\n26.1\n\n156\nBrook Lopez\nC\n26.1\n\n157\nMikel Brown Jr.\nPG\n26.1\n\n158\nIsaiah Stewart\nC, PF\n26.1\n\n159\nDeandre Ayton\nC\n26.0\n\n160\nAjay Mitchell\nPG, SG\n25.9\n\n161\nBradley Beal\nSF, SG\n25.9\n\n162\nIsaiah Collier\nPG\n25.8\n\n163\nYves Missi\nC\n25.8\n\n164\nKyle Filipowski\nC, PF\n25.7\n\n165\nKeaton Wagler\nPG, SG\n25.6\n\n166\nBobby Portis\nPF, C\n25.6\n\n167\nShaedon Sharpe\nSG, SF\n25.6\n\n168\nAce Bailey\nSF, PF\n25.5\n\n169\nJaylon Tyson\nSG, SF\n25.4\n\n170\nDavion Mitchell\nPG\n25.4\n\n171\nCollin Murray-Boyles\nPF\n25.2\n\n172\nMoussa Diabate\nPF, C\n25.2\n\n173\nSanti Aldama\nPF, SF\n25.1\n\n174\nPrecious Achiuwa\nPF, C\n24.9\n\n175\nMorez Johnson Jr.\nPF, C\n24.9\n\n176\nRyan Kalkbrenner\nC\n24.8\n\n177\nYaxel Lendeborg\nSF, PF\n24.7\n\n178\nT.J. McConnell\nPG\n24.6\n\n179\nAaron Nesmith\nSF, SG\n24.6\n\n180\nDe'Andre Hunter\nSF, PF\n24.6\n\n181\nKeldon Johnson\nSF, PF\n24.6\n\n182\nAl Horford\nC, PF\n24.5\n\n183\nDe'Anthony Melton\nPG, SG\n24.5\n\n184\nJake LaRavia\nPF, SF\n24.3\n\n185\nGG Jackson\nPF\n24.1\n\n186\nKyle Kuzma\nPF, SF\n24.0\n\n187\nAlex Caruso\nSG, PG\n24.0\n\n188\nWendell Carter Jr.\nC\n23.9\n\n189\nKelly Oubre Jr.\nSF, SG\n23.9\n\n190\nCason Wallace\nSG, PG\n23.9\n\n191\nBilal Coulibaly\nSF, SG\n23.8\n\n192\nChristian Braun\nSG, SF\n23.8\n\n193\nToumani Camara\nPF, SF\n23.6\n\n194\nBrayden Burries\nSG\n23.6\n\n195\nDennis Schroder\nPG\n23.6\n\n196\nKingston Flemings\nSG, PG\n23.4\n\n197\nNaji Marshall\nSF, PF\n23.3\n\n198\nTari Eason\nSF, PF\n23.1\n\n199\nAnfernee Simons\nSG, PG\n23.0\n\n200\nJulian Champagnie\nSF, PF\n23.0\n",
+      "scoreType": "none",
+      "players": [
+        {
+          "rank": 1,
+          "name": "Nikola Jokic",
+          "positions": "C",
+          "score": 69.6
+        },
+        {
+          "rank": 2,
+          "name": "Luka Doncic",
+          "positions": "PG",
+          "score": 63.3
+        },
+        {
+          "rank": 3,
+          "name": "Giannis Antetokounmpo",
+          "positions": "PF, C",
+          "score": 63.1
+        },
+        {
+          "rank": 4,
+          "name": "Victor Wembanyama",
+          "positions": "C",
+          "score": 61.6
+        },
+        {
+          "rank": 5,
+          "name": "Shai Gilgeous-Alexander",
+          "positions": "PG",
+          "score": 60.4
+        },
+        {
+          "rank": 6,
+          "name": "Anthony Davis",
+          "positions": "C, PF",
+          "score": 52.4
+        },
+        {
+          "rank": 7,
+          "name": "Cade Cunningham",
+          "positions": "PG",
+          "score": 52.4
+        },
+        {
+          "rank": 8,
+          "name": "Jalen Johnson",
+          "positions": "PF",
+          "score": 51.8
+        },
+        {
+          "rank": 9,
+          "name": "Jayson Tatum",
+          "positions": "PF, SF",
+          "score": 49.5
+        },
+        {
+          "rank": 10,
+          "name": "Joel Embiid",
+          "positions": "C",
+          "score": 49.3
+        },
+        {
+          "rank": 11,
+          "name": "Anthony Edwards",
+          "positions": "SG, SF",
+          "score": 49.2
+        },
+        {
+          "rank": 12,
+          "name": "Tyrese Haliburton",
+          "positions": "PG, SG",
+          "score": 48.7
+        },
+        {
+          "rank": 13,
+          "name": "Domantas Sabonis",
+          "positions": "C, PF",
+          "score": 48.7
+        },
+        {
+          "rank": 14,
+          "name": "Donovan Mitchell",
+          "positions": "SG, PG",
+          "score": 47.7
+        },
+        {
+          "rank": 15,
+          "name": "Josh Giddey",
+          "positions": "PG, SG",
+          "score": 47.4
+        },
+        {
+          "rank": 16,
+          "name": "Kawhi Leonard",
+          "positions": "SF, PF",
+          "score": 47.1
+        },
+        {
+          "rank": 17,
+          "name": "Trae Young",
+          "positions": "PG",
+          "score": 46.5
+        },
+        {
+          "rank": 18,
+          "name": "Tyrese Maxey",
+          "positions": "PG, SG",
+          "score": 46.3
+        },
+        {
+          "rank": 19,
+          "name": "Karl-Anthony Towns",
+          "positions": "C",
+          "score": 45.9
+        },
+        {
+          "rank": 20,
+          "name": "Devin Booker",
+          "positions": "PG, SG",
+          "score": 45.7
+        },
+        {
+          "rank": 21,
+          "name": "Jalen Brunson",
+          "positions": "PG",
+          "score": 45.7
+        },
+        {
+          "rank": 22,
+          "name": "Alperen Sengun",
+          "positions": "C",
+          "score": 45.5
+        },
+        {
+          "rank": 23,
+          "name": "Jalen Duren",
+          "positions": "C",
+          "score": 45.4
+        },
+        {
+          "rank": 24,
+          "name": "Scottie Barnes",
+          "positions": "SF, SG",
+          "score": 45.2
+        },
+        {
+          "rank": 25,
+          "name": "Evan Mobley",
+          "positions": "PF, C",
+          "score": 45.1
+        },
+        {
+          "rank": 26,
+          "name": "Kyrie Irving",
+          "positions": "PG",
+          "score": 44.7
+        },
+        {
+          "rank": 27,
+          "name": "Jamal Murray",
+          "positions": "PG",
+          "score": 44.6
+        },
+        {
+          "rank": 28,
+          "name": "Kevin Durant",
+          "positions": "PF, SF",
+          "score": 44.5
+        },
+        {
+          "rank": 29,
+          "name": "Cooper Flagg",
+          "positions": "SF, PF",
+          "score": 44.4
+        },
+        {
+          "rank": 30,
+          "name": "LaMelo Ball",
+          "positions": "PG",
+          "score": 44.1
+        },
+        {
+          "rank": 31,
+          "name": "LeBron James",
+          "positions": "SF, PF",
+          "score": 44
+        },
+        {
+          "rank": 32,
+          "name": "James Harden",
+          "positions": "PG, SG",
+          "score": 43.9
+        },
+        {
+          "rank": 33,
+          "name": "Zion Williamson",
+          "positions": "PF, C",
+          "score": 43.7
+        },
+        {
+          "rank": 34,
+          "name": "Deni Avdija",
+          "positions": "SF, PF",
+          "score": 43.6
+        },
+        {
+          "rank": 35,
+          "name": "Austin Reaves",
+          "positions": "SG, PG",
+          "score": 43.4
+        },
+        {
+          "rank": 36,
+          "name": "Stephen Curry",
+          "positions": "PG",
+          "score": 43.1
+        },
+        {
+          "rank": 37,
+          "name": "Pascal Siakam",
+          "positions": "PF",
+          "score": 42.9
+        },
+        {
+          "rank": 38,
+          "name": "Paolo Banchero",
+          "positions": "PF, SF",
+          "score": 42.3
+        },
+        {
+          "rank": 39,
+          "name": "Jalen Williams",
+          "positions": "PF, SF",
+          "score": 42.2
+        },
+        {
+          "rank": 40,
+          "name": "Amen Thompson",
+          "positions": "SF, SG",
+          "score": 42.2
+        },
+        {
+          "rank": 41,
+          "name": "Jimmy Butler III",
+          "positions": "SF, SG",
+          "score": 42.1
+        },
+        {
+          "rank": 42,
+          "name": "Bam Adebayo",
+          "positions": "C, PF",
+          "score": 41.7
+        },
+        {
+          "rank": 43,
+          "name": "Darius Garland",
+          "positions": "PG",
+          "score": 40.7
+        },
+        {
+          "rank": 44,
+          "name": "Franz Wagner",
+          "positions": "SF, PF",
+          "score": 40.5
+        },
+        {
+          "rank": 45,
+          "name": "Jaylen Brown",
+          "positions": "SF, SG",
+          "score": 40.5
+        },
+        {
+          "rank": 46,
+          "name": "Damian Lillard",
+          "positions": "PG",
+          "score": 40.2
+        },
+        {
+          "rank": 47,
+          "name": "Brandon Ingram",
+          "positions": "SF, PF",
+          "score": 40
+        },
+        {
+          "rank": 48,
+          "name": "Walker Kessler",
+          "positions": "C",
+          "score": 39.9
+        },
+        {
+          "rank": 49,
+          "name": "Jaren Jackson Jr.",
+          "positions": "C, PF",
+          "score": 39.9
+        },
+        {
+          "rank": 50,
+          "name": "Lauri Markkanen",
+          "positions": "PF, SF",
+          "score": 39.8
+        },
+        {
+          "rank": 51,
+          "name": "Dejounte Murray",
+          "positions": "SG, PG",
+          "score": 39.6
+        },
+        {
+          "rank": 52,
+          "name": "Julius Randle",
+          "positions": "PF",
+          "score": 39.3
+        },
+        {
+          "rank": 53,
+          "name": "Michael Porter Jr.",
+          "positions": "SF, PF",
+          "score": 39.3
+        },
+        {
+          "rank": 54,
+          "name": "De'Aaron Fox",
+          "positions": "PG, SG",
+          "score": 39.2
+        },
+        {
+          "rank": 55,
+          "name": "Tyler Herro",
+          "positions": "SG, PG",
+          "score": 39.2
+        },
+        {
+          "rank": 56,
+          "name": "Stephon Castle",
+          "positions": "PG, SG",
+          "score": 39.2
+        },
+        {
+          "rank": 57,
+          "name": "Chet Holmgren",
+          "positions": "C, PF",
+          "score": 39.1
+        },
+        {
+          "rank": 58,
+          "name": "Desmond Bane",
+          "positions": "SG, SF",
+          "score": 39
+        },
+        {
+          "rank": 59,
+          "name": "Jarrett Allen",
+          "positions": "C",
+          "score": 39
+        },
+        {
+          "rank": 60,
+          "name": "Ty Jerome",
+          "positions": "SG, PG",
+          "score": 38.8
+        },
+        {
+          "rank": 61,
+          "name": "Keyonte George",
+          "positions": "PG, SG",
+          "score": 38.7
+        },
+        {
+          "rank": 62,
+          "name": "Paul George",
+          "positions": "SF, PF",
+          "score": 38.7
+        },
+        {
+          "rank": 63,
+          "name": "Ja Morant",
+          "positions": "PG",
+          "score": 38.5
+        },
+        {
+          "rank": 64,
+          "name": "Kristaps Porzingis",
+          "positions": "C, PF",
+          "score": 38.4
+        },
+        {
+          "rank": 65,
+          "name": "Alex Sarr",
+          "positions": "C, PF",
+          "score": 37.6
+        },
+        {
+          "rank": 66,
+          "name": "Brandon Miller",
+          "positions": "SF, SG",
+          "score": 37.5
+        },
+        {
+          "rank": 67,
+          "name": "Norman Powell",
+          "positions": "SG, SF",
+          "score": 37.3
+        },
+        {
+          "rank": 68,
+          "name": "Caleb Wilson",
+          "positions": "SF",
+          "score": 37
+        },
+        {
+          "rank": 69,
+          "name": "Trey Murphy III",
+          "positions": "SF, SG",
+          "score": 37
+        },
+        {
+          "rank": 70,
+          "name": "Derrick White",
+          "positions": "SG, PG",
+          "score": 36.9
+        },
+        {
+          "rank": 71,
+          "name": "Cameron Boozer",
+          "positions": "PF",
+          "score": 36.6
+        },
+        {
+          "rank": 72,
+          "name": "Rudy Gobert",
+          "positions": "C",
+          "score": 36.4
+        },
+        {
+          "rank": 73,
+          "name": "Dyson Daniels",
+          "positions": "SG, PG",
+          "score": 36.3
+        },
+        {
+          "rank": 74,
+          "name": "Ivica Zubac",
+          "positions": "C",
+          "score": 35.8
+        },
+        {
+          "rank": 75,
+          "name": "AJ Dybantsa",
+          "positions": "SF",
+          "score": 35.5
+        },
+        {
+          "rank": 76,
+          "name": "Kon Knueppel",
+          "positions": "SF, SG",
+          "score": 35.4
+        },
+        {
+          "rank": 77,
+          "name": "Onyeka Okongwu",
+          "positions": "C",
+          "score": 35.3
+        },
+        {
+          "rank": 78,
+          "name": "Immanuel Quickley",
+          "positions": "PG, SG",
+          "score": 35.3
+        },
+        {
+          "rank": 79,
+          "name": "Donovan Clingan",
+          "positions": "C",
+          "score": 34.6
+        },
+        {
+          "rank": 80,
+          "name": "Miles Bridges",
+          "positions": "SF, PF",
+          "score": 34.6
+        },
+        {
+          "rank": 81,
+          "name": "Zach Edey",
+          "positions": "C",
+          "score": 34.4
+        },
+        {
+          "rank": 82,
+          "name": "Nickeil Alexander-Walker",
+          "positions": "SG, PG",
+          "score": 34.3
+        },
+        {
+          "rank": 83,
+          "name": "RJ Barrett",
+          "positions": "SF, SG",
+          "score": 34.2
+        },
+        {
+          "rank": 84,
+          "name": "Kevin Porter Jr.",
+          "positions": "SG, PG",
+          "score": 34.2
+        },
+        {
+          "rank": 85,
+          "name": "Naz Reid",
+          "positions": "C, PF",
+          "score": 33.8
+        },
+        {
+          "rank": 86,
+          "name": "Coby White",
+          "positions": "PG, SG",
+          "score": 33.6
+        },
+        {
+          "rank": 87,
+          "name": "OG Anunoby",
+          "positions": "SF, PF",
+          "score": 33.6
+        },
+        {
+          "rank": 88,
+          "name": "Fred VanVleet",
+          "positions": "PG, SG",
+          "score": 33.4
+        },
+        {
+          "rank": 89,
+          "name": "Josh Hart",
+          "positions": "SF, SG",
+          "score": 33.3
+        },
+        {
+          "rank": 90,
+          "name": "Dylan Harper",
+          "positions": "PG, SG",
+          "score": 33
+        },
+        {
+          "rank": 91,
+          "name": "Matas Buzelis",
+          "positions": "SF, PF",
+          "score": 32.9
+        },
+        {
+          "rank": 92,
+          "name": "VJ Edgecombe",
+          "positions": "SG",
+          "score": 32.9
+        },
+        {
+          "rank": 93,
+          "name": "Jalen Green",
+          "positions": "SG, SF",
+          "score": 32.9
+        },
+        {
+          "rank": 94,
+          "name": "Jakob Poeltl",
+          "positions": "C",
+          "score": 32.8
+        },
+        {
+          "rank": 95,
+          "name": "CJ McCollum",
+          "positions": "SG, PG",
+          "score": 32.7
+        },
+        {
+          "rank": 96,
+          "name": "Mark Williams",
+          "positions": "C",
+          "score": 32.6
+        },
+        {
+          "rank": 97,
+          "name": "Mikal Bridges",
+          "positions": "SF, SG",
+          "score": 32.6
+        },
+        {
+          "rank": 98,
+          "name": "John Collins",
+          "positions": "PF, C",
+          "score": 32.5
+        },
+        {
+          "rank": 99,
+          "name": "Zach LaVine",
+          "positions": "SG, SF",
+          "score": 32.5
+        },
+        {
+          "rank": 100,
+          "name": "Darius Acuff Jr.",
+          "positions": "PG",
+          "score": 32.3
+        },
+        {
+          "rank": 101,
+          "name": "Andrew Wiggins",
+          "positions": "SF, PF",
+          "score": 32.3
+        },
+        {
+          "rank": 102,
+          "name": "Ausar Thompson",
+          "positions": "SF, PF",
+          "score": 32.1
+        },
+        {
+          "rank": 103,
+          "name": "DeMar DeRozan",
+          "positions": "SF, PF",
+          "score": 32
+        },
+        {
+          "rank": 104,
+          "name": "Nic Claxton",
+          "positions": "C",
+          "score": 31.8
+        },
+        {
+          "rank": 105,
+          "name": "Ryan Rollins",
+          "positions": "SG, PG",
+          "score": 31.7
+        },
+        {
+          "rank": 106,
+          "name": "Derik Queen",
+          "positions": "C, PF",
+          "score": 31.6
+        },
+        {
+          "rank": 107,
+          "name": "Isaiah Hartenstein",
+          "positions": "C",
+          "score": 31.6
+        },
+        {
+          "rank": 108,
+          "name": "Mitchell Robinson",
+          "positions": "C",
+          "score": 31.4
+        },
+        {
+          "rank": 109,
+          "name": "Darryn Peterson",
+          "positions": "SG, PG",
+          "score": 31.3
+        },
+        {
+          "rank": 110,
+          "name": "Brandin Podziemski",
+          "positions": "SG, PG",
+          "score": 31.3
+        },
+        {
+          "rank": 111,
+          "name": "Payton Pritchard",
+          "positions": "PG, SG",
+          "score": 31
+        },
+        {
+          "rank": 112,
+          "name": "Daniel Gafford",
+          "positions": "C",
+          "score": 30.8
+        },
+        {
+          "rank": 113,
+          "name": "Kel'el Ware",
+          "positions": "C",
+          "score": 30.8
+        },
+        {
+          "rank": 114,
+          "name": "Tobias Harris",
+          "positions": "PF, SF",
+          "score": 30.7
+        },
+        {
+          "rank": 115,
+          "name": "Ayo Dosunmu",
+          "positions": "SG, PG",
+          "score": 30.5
+        },
+        {
+          "rank": 116,
+          "name": "Cedric Coward",
+          "positions": "SF, SG",
+          "score": 30.4
+        },
+        {
+          "rank": 117,
+          "name": "Kyshawn George",
+          "positions": "SG, SF",
+          "score": 30.4
+        },
+        {
+          "rank": 118,
+          "name": "Nikola Vucevic",
+          "positions": "C",
+          "score": 30.3
+        },
+        {
+          "rank": 119,
+          "name": "Peyton Watson",
+          "positions": "SF, PF",
+          "score": 30.2
+        },
+        {
+          "rank": 120,
+          "name": "Aaron Gordon",
+          "positions": "PF",
+          "score": 30.2
+        },
+        {
+          "rank": 121,
+          "name": "Jaden McDaniels",
+          "positions": "SF, PF",
+          "score": 30.1
+        },
+        {
+          "rank": 122,
+          "name": "Collin Sexton",
+          "positions": "SG, PG",
+          "score": 30
+        },
+        {
+          "rank": 123,
+          "name": "Scotty Pippen Jr.",
+          "positions": "PG, SG",
+          "score": 29.9
+        },
+        {
+          "rank": 124,
+          "name": "Jaime Jaquez Jr.",
+          "positions": "SF, SG",
+          "score": 29.2
+        },
+        {
+          "rank": 125,
+          "name": "Jalen Suggs",
+          "positions": "PG, SG",
+          "score": 29.2
+        },
+        {
+          "rank": 126,
+          "name": "Anthony Black",
+          "positions": "PG, SG",
+          "score": 29.2
+        },
+        {
+          "rank": 127,
+          "name": "Reed Sheppard",
+          "positions": "SG, PG",
+          "score": 29
+        },
+        {
+          "rank": 128,
+          "name": "Keegan Murray",
+          "positions": "PF, SF",
+          "score": 29
+        },
+        {
+          "rank": 129,
+          "name": "Andrew Nembhard",
+          "positions": "PG, SG",
+          "score": 28.8
+        },
+        {
+          "rank": 130,
+          "name": "Jusuf Nurkic",
+          "positions": "C",
+          "score": 28.7
+        },
+        {
+          "rank": 131,
+          "name": "Quentin Grimes",
+          "positions": "SG, SF",
+          "score": 28.7
+        },
+        {
+          "rank": 132,
+          "name": "Jrue Holiday",
+          "positions": "PG, SG",
+          "score": 28.7
+        },
+        {
+          "rank": 133,
+          "name": "Myles Turner",
+          "positions": "C",
+          "score": 28.7
+        },
+        {
+          "rank": 134,
+          "name": "Draymond Green",
+          "positions": "PF, C",
+          "score": 28.6
+        },
+        {
+          "rank": 135,
+          "name": "Jerami Grant",
+          "positions": "PF",
+          "score": 28.4
+        },
+        {
+          "rank": 136,
+          "name": "Dereck Lively II",
+          "positions": "C",
+          "score": 28.3
+        },
+        {
+          "rank": 137,
+          "name": "Neemias Queta",
+          "positions": "C",
+          "score": 28.2
+        },
+        {
+          "rank": 138,
+          "name": "Day'Ron Sharpe",
+          "positions": "C",
+          "score": 28
+        },
+        {
+          "rank": 139,
+          "name": "Malik Monk",
+          "positions": "SG, PG",
+          "score": 27.9
+        },
+        {
+          "rank": 140,
+          "name": "Jabari Smith Jr.",
+          "positions": "PF, C",
+          "score": 27.9
+        },
+        {
+          "rank": 141,
+          "name": "Jonathan Kuminga",
+          "positions": "PF, SF",
+          "score": 27.9
+        },
+        {
+          "rank": 142,
+          "name": "P.J. Washington",
+          "positions": "PF, SF",
+          "score": 27.7
+        },
+        {
+          "rank": 143,
+          "name": "Collin Gillespie",
+          "positions": "PG",
+          "score": 27.6
+        },
+        {
+          "rank": 144,
+          "name": "Robert Williams III",
+          "positions": "C",
+          "score": 27.4
+        },
+        {
+          "rank": 145,
+          "name": "Jeremiah Fears",
+          "positions": "SG, PG",
+          "score": 27.3
+        },
+        {
+          "rank": 146,
+          "name": "Dillon Brooks",
+          "positions": "SF, SG",
+          "score": 27.3
+        },
+        {
+          "rank": 147,
+          "name": "Egor Demin",
+          "positions": "PG, SG",
+          "score": 27.1
+        },
+        {
+          "rank": 148,
+          "name": "Bennedict Mathurin",
+          "positions": "SF, SG",
+          "score": 27
+        },
+        {
+          "rank": 149,
+          "name": "Tre Jones",
+          "positions": "PG",
+          "score": 26.9
+        },
+        {
+          "rank": 150,
+          "name": "Devin Vassell",
+          "positions": "SG, SF",
+          "score": 26.8
+        },
+        {
+          "rank": 151,
+          "name": "Saddiq Bey",
+          "positions": "SF, PF",
+          "score": 26.7
+        },
+        {
+          "rank": 152,
+          "name": "Grayson Allen",
+          "positions": "SG, PG",
+          "score": 26.6
+        },
+        {
+          "rank": 153,
+          "name": "Oso Ighodaro",
+          "positions": "PF",
+          "score": 26.2
+        },
+        {
+          "rank": 154,
+          "name": "Cameron Johnson",
+          "positions": "SF, PF",
+          "score": 26.1
+        },
+        {
+          "rank": 155,
+          "name": "Scoot Henderson",
+          "positions": "PG, SG",
+          "score": 26.1
+        },
+        {
+          "rank": 156,
+          "name": "Brook Lopez",
+          "positions": "C",
+          "score": 26.1
+        },
+        {
+          "rank": 157,
+          "name": "Mikel Brown Jr.",
+          "positions": "PG",
+          "score": 26.1
+        },
+        {
+          "rank": 158,
+          "name": "Isaiah Stewart",
+          "positions": "C, PF",
+          "score": 26.1
+        },
+        {
+          "rank": 159,
+          "name": "Deandre Ayton",
+          "positions": "C",
+          "score": 26
+        },
+        {
+          "rank": 160,
+          "name": "Ajay Mitchell",
+          "positions": "PG, SG",
+          "score": 25.9
+        },
+        {
+          "rank": 161,
+          "name": "Bradley Beal",
+          "positions": "SF, SG",
+          "score": 25.9
+        },
+        {
+          "rank": 162,
+          "name": "Isaiah Collier",
+          "positions": "PG",
+          "score": 25.8
+        },
+        {
+          "rank": 163,
+          "name": "Yves Missi",
+          "positions": "C",
+          "score": 25.8
+        },
+        {
+          "rank": 164,
+          "name": "Kyle Filipowski",
+          "positions": "C, PF",
+          "score": 25.7
+        },
+        {
+          "rank": 165,
+          "name": "Keaton Wagler",
+          "positions": "PG, SG",
+          "score": 25.6
+        },
+        {
+          "rank": 166,
+          "name": "Bobby Portis",
+          "positions": "PF, C",
+          "score": 25.6
+        },
+        {
+          "rank": 167,
+          "name": "Shaedon Sharpe",
+          "positions": "SG, SF",
+          "score": 25.6
+        },
+        {
+          "rank": 168,
+          "name": "Ace Bailey",
+          "positions": "SF, PF",
+          "score": 25.5
+        },
+        {
+          "rank": 169,
+          "name": "Jaylon Tyson",
+          "positions": "SG, SF",
+          "score": 25.4
+        },
+        {
+          "rank": 170,
+          "name": "Davion Mitchell",
+          "positions": "PG",
+          "score": 25.4
+        },
+        {
+          "rank": 171,
+          "name": "Collin Murray-Boyles",
+          "positions": "PF",
+          "score": 25.2
+        },
+        {
+          "rank": 172,
+          "name": "Moussa Diabate",
+          "positions": "PF, C",
+          "score": 25.2
+        },
+        {
+          "rank": 173,
+          "name": "Santi Aldama",
+          "positions": "PF, SF",
+          "score": 25.1
+        },
+        {
+          "rank": 174,
+          "name": "Precious Achiuwa",
+          "positions": "PF, C",
+          "score": 24.9
+        },
+        {
+          "rank": 175,
+          "name": "Morez Johnson Jr.",
+          "positions": "PF, C",
+          "score": 24.9
+        },
+        {
+          "rank": 176,
+          "name": "Ryan Kalkbrenner",
+          "positions": "C",
+          "score": 24.8
+        },
+        {
+          "rank": 177,
+          "name": "Yaxel Lendeborg",
+          "positions": "SF, PF",
+          "score": 24.7
+        },
+        {
+          "rank": 178,
+          "name": "T.J. McConnell",
+          "positions": "PG",
+          "score": 24.6
+        },
+        {
+          "rank": 179,
+          "name": "Aaron Nesmith",
+          "positions": "SF, SG",
+          "score": 24.6
+        },
+        {
+          "rank": 180,
+          "name": "De'Andre Hunter",
+          "positions": "SF, PF",
+          "score": 24.6
+        },
+        {
+          "rank": 181,
+          "name": "Keldon Johnson",
+          "positions": "SF, PF",
+          "score": 24.6
+        },
+        {
+          "rank": 182,
+          "name": "Al Horford",
+          "positions": "C, PF",
+          "score": 24.5
+        },
+        {
+          "rank": 183,
+          "name": "De'Anthony Melton",
+          "positions": "PG, SG",
+          "score": 24.5
+        },
+        {
+          "rank": 184,
+          "name": "Jake LaRavia",
+          "positions": "PF, SF",
+          "score": 24.3
+        },
+        {
+          "rank": 185,
+          "name": "GG Jackson",
+          "positions": "PF",
+          "score": 24.1
+        },
+        {
+          "rank": 186,
+          "name": "Kyle Kuzma",
+          "positions": "PF, SF",
+          "score": 24
+        },
+        {
+          "rank": 187,
+          "name": "Alex Caruso",
+          "positions": "SG, PG",
+          "score": 24
+        },
+        {
+          "rank": 188,
+          "name": "Wendell Carter Jr.",
+          "positions": "C",
+          "score": 23.9
+        },
+        {
+          "rank": 189,
+          "name": "Kelly Oubre Jr.",
+          "positions": "SF, SG",
+          "score": 23.9
+        },
+        {
+          "rank": 190,
+          "name": "Cason Wallace",
+          "positions": "SG, PG",
+          "score": 23.9
+        },
+        {
+          "rank": 191,
+          "name": "Bilal Coulibaly",
+          "positions": "SF, SG",
+          "score": 23.8
+        },
+        {
+          "rank": 192,
+          "name": "Christian Braun",
+          "positions": "SG, SF",
+          "score": 23.8
+        },
+        {
+          "rank": 193,
+          "name": "Toumani Camara",
+          "positions": "PF, SF",
+          "score": 23.6
+        },
+        {
+          "rank": 194,
+          "name": "Brayden Burries",
+          "positions": "SG",
+          "score": 23.6
+        },
+        {
+          "rank": 195,
+          "name": "Dennis Schroder",
+          "positions": "PG",
+          "score": 23.6
+        },
+        {
+          "rank": 196,
+          "name": "Kingston Flemings",
+          "positions": "SG, PG",
+          "score": 23.4
+        },
+        {
+          "rank": 197,
+          "name": "Naji Marshall",
+          "positions": "SF, PF",
+          "score": 23.3
+        },
+        {
+          "rank": 198,
+          "name": "Tari Eason",
+          "positions": "SF, PF",
+          "score": 23.1
+        },
+        {
+          "rank": 199,
+          "name": "Anfernee Simons",
+          "positions": "SG, PG",
+          "score": 23
+        },
+        {
+          "rank": 200,
+          "name": "Julian Champagnie",
+          "positions": "SF, PF",
+          "score": 23
+        }
+      ]
+    },
+    {
+      "id": "src_mu8txcjh_jgmn6",
       "name": "",
       "url": "",
       "rawText": "",
