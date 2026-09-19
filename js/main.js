@@ -38,5 +38,18 @@
     });
 
     showTab('rankings');
+
+    // If this device has a GitHub sync token, pull the latest saved state
+    // in the background and patch it in once it arrives — renders local
+    // data immediately rather than blocking the first paint on a network
+    // round trip.
+    if (GithubSync.isConnected()) {
+      GithubSync.fetchRemote().then((remote) => {
+        if (!remote) return;
+        Object.assign(App.state, remote);
+        Storage.save(App.state);
+        App.emit('remote-state-loaded');
+      });
+    }
   });
 })();

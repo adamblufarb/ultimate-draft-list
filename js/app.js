@@ -1,6 +1,7 @@
 /* Central app state + a tiny pub/sub bus so tabs can react to each other
    without being tightly coupled. State is the single source of truth and
-   is persisted to localStorage on every mutation. */
+   is persisted to localStorage on every mutation, and — when a GitHub sync
+   token is configured on this device — pushed (debounced) to the repo too. */
 (function (global) {
   const state = Storage.load();
   const listeners = {};
@@ -15,6 +16,7 @@
 
   function persist() {
     Storage.save(state);
+    GithubSync.scheduleSync(state);
   }
 
   function genId() {

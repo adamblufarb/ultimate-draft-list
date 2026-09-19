@@ -8,11 +8,19 @@
 
   function init(rootEl) {
     container = rootEl;
+    GithubSync.on('status-changed', updateSyncCard);
+    App.on('remote-state-loaded', render);
     render();
+  }
+
+  function updateSyncCard() {
+    const existing = container.querySelector('.sync-card');
+    if (existing) existing.replaceWith(renderSyncCard());
   }
 
   function render() {
     container.innerHTML = '';
+    container.appendChild(renderSyncCard());
 
     const list = document.createElement('div');
     list.className = 'source-list';
@@ -69,6 +77,90 @@
     handle.setAttribute('data-drag-handle', '');
     handle.textContent = '☰';
     return handle;
+  }
+
+  const SYNC_STATUS_LABELS = {
+    disconnected: 'Not connected — data stays on this device only.',
+    loading: 'Loading your data from GitHub…',
+    idle: 'Synced ✓',
+    pending: 'Change pending…',
+    syncing: 'Saving to GitHub…',
+    error: 'Sync error'
+  };
+
+  function renderSyncCard() {
+    const card = document.createElement('div');
+    card.className = 'source-card sync-card';
+
+    const title = document.createElement('div');
+    title.className = 'source-view-name';
+    title.textContent = 'GitHub Sync';
+    card.appendChild(title);
+
+    const { status, message } = GithubSync.getStatus();
+    const statusEl = document.createElement('div');
+    statusEl.className = 'sync-status sync-status-' + status;
+    statusEl.textContent = status === 'error' && message
+      ? `${SYNC_STATUS_LABELS.error}: ${message}`
+      : SYNC_STATUS_LABELS[status] || status;
+    card.appendChild(statusEl);
+
+    if (GithubSync.isConnected()) {
+      const desc = document.createElement('p');
+      desc.className = 'source-view-meta';
+      desc.textContent = 'Changes on this device save to the repo automatically and load on any device connected with a token.';
+      card.appendChild(desc);
+
+      const disconnectBtn = document.createElement('button');
+      disconnectBtn.className = 'btn btn-danger';
+      disconnectBtn.textContent = 'Disconnect';
+      disconnectBtn.addEventListener('click', () => {
+        if (!confirm('Disconnect GitHub sync on this device? Your data stays as-is in the repo and in local storage here.')) return;
+        GithubSync.setToken('');
+        render();
+      });
+      card.appendChild(disconnectBtn);
+    } else {
+      const label = document.createElement('label');
+      label.textContent = 'GitHub Personal Access Token';
+      const input = document.createElement('input');
+      input.type = 'password';
+      input.placeholder = 'github_pat_...';
+      input.className = 'input-token';
+
+      const hint = document.createElement('p');
+      hint.className = 'paste-hint';
+      hint.innerHTML = 'Create a <a href="https://github.com/settings/personal-access-tokens/new" ' +
+        'target="_blank" rel="noopener noreferrer">fine-grained token</a> scoped to only the ' +
+        '<strong>adamblufarb/ultimate-draft-list</strong> repo, with <strong>Contents: Read and write</strong> ' +
+        'permission. It\'s stored only in this browser — never written into the code.';
+
+      const connectBtn = document.createElement('button');
+      connectBtn.className = 'btn btn-primary';
+      connectBtn.textContent = 'Connect';
+      connectBtn.addEventListener('click', async () => {
+        const token = input.value.trim();
+        if (!token) return;
+        GithubSync.setToken(token);
+        render();
+        const remote = await GithubSync.fetchRemote();
+        if (remote) {
+          Object.assign(App.state, remote);
+          Storage.save(App.state);
+          App.emit('remote-state-loaded');
+        } else {
+          App.persist();
+        }
+        render();
+      });
+
+      card.appendChild(label);
+      card.appendChild(input);
+      card.appendChild(hint);
+      card.appendChild(connectBtn);
+    }
+
+    return card;
   }
 
   function renderViewCard(source) {

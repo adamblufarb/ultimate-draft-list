@@ -16,6 +16,14 @@
     App.on('drafted-changed', () => { if (isVisible()) render(); });
     App.on('include-drafted-changed', () => { if (isVisible()) render(); });
     App.on('locked-changed', () => { if (isVisible()) render(); });
+    App.on('remote-state-loaded', () => {
+      const currentIds = new Set(App.state.sources.map((s) => s.id));
+      selectedIds = selectedIds.filter((id) => currentIds.has(id));
+      App.state.sources.forEach((s) => {
+        if (!selectedIds.includes(s.id)) selectedIds.push(s.id);
+      });
+      if (isVisible()) show();
+    });
   }
 
   function isVisible() {

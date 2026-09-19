@@ -474,6 +474,34 @@ body {
   color: var(--text-dim);
 }
 
+.sync-card {
+  border-color: var(--accent-dim);
+}
+
+.sync-status {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-dim);
+}
+
+.sync-status-idle {
+  color: var(--success);
+}
+
+.sync-status-syncing,
+.sync-status-loading,
+.sync-status-pending {
+  color: var(--accent);
+}
+
+.sync-status-error {
+  color: var(--danger);
+}
+
+.input-token {
+  font-family: monospace;
+}
+
 /* Player detail overlay */
 
 .detail-overlay {

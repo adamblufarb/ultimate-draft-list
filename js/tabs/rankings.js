@@ -11,6 +11,7 @@
     App.on('sources-changed', onSourcesChanged);
     App.on('drafted-changed', render);
     App.on('include-drafted-changed', render);
+    App.on('remote-state-loaded', onSourcesChanged);
     render();
   }
 
