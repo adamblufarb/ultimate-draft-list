@@ -6992,16 +6992,16 @@
       "name": "Nikola Jokic"
     },
     {
-      "key": "shai gilgeous alexander",
-      "name": "Shai Gilgeous-Alexander"
-    },
-    {
       "key": "luka doncic",
       "name": "Luka Doncic"
     },
     {
       "key": "victor wembanyama",
       "name": "Victor Wembanyama"
+    },
+    {
+      "key": "shai gilgeous alexander",
+      "name": "Shai Gilgeous-Alexander"
     },
     {
       "key": "giannis antetokounmpo",
@@ -7838,7 +7838,6 @@
   ],
   "draftedKeys": [],
   "lockedKeys": [
-    "nikola jokic",
     "luka doncic",
     "shai gilgeous alexander",
     "victor wembanyama",
@@ -7850,7 +7849,8 @@
     "tyrese maxey",
     "donovan mitchell",
     "scottie barnes",
-    "tyrese haliburton"
+    "tyrese haliburton",
+    "nikola jokic"
   ],
   "myTeamKeys": []
 }
