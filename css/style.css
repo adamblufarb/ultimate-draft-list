@@ -2,7 +2,7 @@
   --bg: #0f1115;
   --surface: #1a1d24;
   --surface-2: #22262f;
-  --row-alt: #2c323e;
+  --row-alt: #242932;
   --lock: #e0b12e;
   --border: #2e333d;
   --text: #eef0f4;
@@ -31,7 +31,10 @@ html, body {
 body {
   display: flex;
   flex-direction: column;
-  height: 100vh;
+  height: 100vh; /* fallback for browsers without dvh support */
+  height: 100dvh; /* actual visible viewport on mobile — 100vh includes area
+                     the browser's address bar can cover, which pushed the
+                     bottom tab bar off-screen on phones */
   overflow: hidden;
 }
 
@@ -283,10 +286,6 @@ body {
   margin-bottom: 12px;
 }
 
-.draft-toolbar .include-drafted-toggle {
-  margin-bottom: 0;
-}
-
 .draft-list {
   position: relative;
 }
@@ -479,22 +478,32 @@ body {
 }
 
 .sync-status {
-  font-size: 13px;
-  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  width: fit-content;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 4px 12px;
+  border-radius: 20px;
+  background: var(--surface-2);
   color: var(--text-dim);
 }
 
 .sync-status-idle {
-  color: var(--success);
+  background: rgba(79, 140, 255, 0.16);
+  color: var(--accent);
 }
 
 .sync-status-syncing,
 .sync-status-loading,
 .sync-status-pending {
+  background: rgba(79, 140, 255, 0.1);
   color: var(--accent);
 }
 
 .sync-status-error {
+  background: rgba(229, 84, 77, 0.16);
   color: var(--danger);
 }
 
@@ -559,6 +568,25 @@ body {
 .detail-draft-btn {
   width: 100%;
   margin-top: 4px;
+}
+
+.detail-myteam-btn {
+  width: 100%;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  min-height: 40px;
+}
+
+.detail-myteam-btn.is-on-team {
+  background: transparent;
+  color: var(--danger);
+  border: 1px solid var(--danger);
 }
 
 .detail-stats {
@@ -642,6 +670,82 @@ body {
     border-radius: 16px;
     border-bottom: 1px solid var(--border);
   }
+}
+
+/* My Team tab */
+
+.position-counters {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+
+.position-counter {
+  flex: 1;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 8px 4px;
+  text-align: center;
+}
+
+.position-counter-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.position-counter-value {
+  font-size: 18px;
+  font-weight: 700;
+  margin-top: 2px;
+}
+
+.my-team-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.my-team-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 10px 12px;
+  cursor: pointer;
+}
+
+.my-team-row.row-alt {
+  background: var(--row-alt);
+}
+
+.my-team-name {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 15px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.my-team-positions {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-dim);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 1px 6px;
+  white-space: nowrap;
 }
 
 /* Desktop scale-up */

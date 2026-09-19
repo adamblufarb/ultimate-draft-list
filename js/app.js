@@ -31,6 +31,13 @@
     const set = new Set(state.draftedKeys);
     if (drafted) set.add(key); else set.delete(key);
     state.draftedKeys = Array.from(set);
+    // Undrafting (e.g. via the plain "Undraft" button, not "Remove from My
+    // Team") puts the player back on the board — they can't simultaneously
+    // be "available" and "on my roster", so drop them from My Team too.
+    if (!drafted && state.myTeamKeys.includes(key)) {
+      state.myTeamKeys = state.myTeamKeys.filter((k) => k !== key);
+      emit('my-team-changed', { key, onTeam: false });
+    }
     persist();
     emit('drafted-changed', { key, drafted });
   }
@@ -67,9 +74,37 @@
     emit('locked-changed');
   }
 
+  function isOnMyTeam(key) {
+    return state.myTeamKeys.includes(key);
+  }
+
+  // Marks a player drafted (if not already) and appends them to My Team, in
+  // pick order. Idempotent.
+  function draftedByMe(key) {
+    if (!state.draftedKeys.includes(key)) {
+      state.draftedKeys = state.draftedKeys.concat(key);
+    }
+    if (!state.myTeamKeys.includes(key)) {
+      state.myTeamKeys = state.myTeamKeys.concat(key);
+    }
+    persist();
+    emit('drafted-changed', { key, drafted: true });
+    emit('my-team-changed', { key, onTeam: true });
+  }
+
+  // Fully reverses draftedByMe: back on the board, off the roster.
+  function removeFromMyTeam(key) {
+    state.myTeamKeys = state.myTeamKeys.filter((k) => k !== key);
+    state.draftedKeys = state.draftedKeys.filter((k) => k !== key);
+    persist();
+    emit('my-team-changed', { key, onTeam: false });
+    emit('drafted-changed', { key, drafted: false });
+  }
+
   global.App = {
     state, on, emit, persist, genId,
     isDrafted, setDrafted, getIncludeDrafted, setIncludeDrafted,
-    isLocked, setLocked, unlockAll
+    isLocked, setLocked, unlockAll,
+    isOnMyTeam, draftedByMe, removeFromMyTeam
   };
 })(window);

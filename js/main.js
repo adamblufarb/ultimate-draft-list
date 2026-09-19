@@ -6,12 +6,14 @@
     const panels = {
       rankings: document.getElementById('panel-rankings'),
       draft: document.getElementById('panel-draft'),
+      myteam: document.getElementById('panel-myteam'),
       sources: document.getElementById('panel-sources')
     };
     const navButtons = document.querySelectorAll('.tab-btn');
 
     RankingsTab.init(panels.rankings);
     DraftTab.init(panels.draft);
+    MyTeamTab.init(panels.myteam);
     SourcesTab.init(panels.sources);
 
     // Rankings and Sources already stay in sync reactively (Rankings

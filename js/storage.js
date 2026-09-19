@@ -8,7 +8,8 @@
       selectedSourceIds: [], // ids included in Tab 1's combined average
       draftOrder: null,      // [{ key, name }] custom order, or null if never initialized
       draftedKeys: [],       // normalized keys of players marked drafted (hidden unless "include drafted" is on)
-      lockedKeys: []          // normalized keys of players that stay put when the Draft List is reset
+      lockedKeys: [],        // normalized keys of players that stay put when the Draft List is reset
+      myTeamKeys: []          // normalized keys of players drafted by the user, in pick order
     };
   }
 

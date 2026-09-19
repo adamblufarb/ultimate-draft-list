@@ -106,13 +106,14 @@
     }
 
     container.appendChild(renderSourceToggles());
+    container.appendChild(renderIncludeDraftedToggle());
 
     const toolbar = document.createElement('div');
     toolbar.className = 'draft-toolbar';
 
     const resetBtn = document.createElement('button');
     resetBtn.className = 'btn btn-secondary';
-    resetBtn.textContent = 'Reset to combined average';
+    resetBtn.textContent = 'Reset';
     resetBtn.addEventListener('click', () => {
       if (!confirm('Replace unlocked players with the current combined average (based on the checked lists)? Locked players stay put.')) return;
       App.state.draftOrder = buildResetOrder(selectedIds);
@@ -129,18 +130,6 @@
       App.unlockAll();
     });
     toolbar.appendChild(unlockAllBtn);
-
-    const includeLabel = document.createElement('label');
-    includeLabel.className = 'toggle-label include-drafted-toggle';
-    const includeCheckbox = document.createElement('input');
-    includeCheckbox.type = 'checkbox';
-    includeCheckbox.checked = App.getIncludeDrafted();
-    includeCheckbox.addEventListener('change', () => {
-      App.setIncludeDrafted(includeCheckbox.checked);
-    });
-    includeLabel.appendChild(includeCheckbox);
-    includeLabel.appendChild(document.createTextNode(' Include drafted players'));
-    toolbar.appendChild(includeLabel);
 
     container.appendChild(toolbar);
 
@@ -175,6 +164,20 @@
       }
     });
     reorderable.setItems(visibleItems);
+  }
+
+  function renderIncludeDraftedToggle() {
+    const label = document.createElement('label');
+    label.className = 'toggle-label include-drafted-toggle';
+    const checkbox = document.createElement('input');
+    checkbox.type = 'checkbox';
+    checkbox.checked = App.getIncludeDrafted();
+    checkbox.addEventListener('change', () => {
+      App.setIncludeDrafted(checkbox.checked);
+    });
+    label.appendChild(checkbox);
+    label.appendChild(document.createTextNode(' Include drafted players'));
+    return label;
   }
 
   function renderSourceToggles() {

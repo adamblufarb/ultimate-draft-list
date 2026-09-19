@@ -161,6 +161,17 @@
     });
     sheet.appendChild(draftBtn);
 
+    const onMyTeam = App.isOnMyTeam(key);
+    const myTeamBtn = document.createElement('button');
+    myTeamBtn.className = 'detail-myteam-btn' + (onMyTeam ? ' is-on-team' : '');
+    myTeamBtn.textContent = onMyTeam ? 'Remove from My Team' : 'Drafted by me';
+    myTeamBtn.addEventListener('click', () => {
+      if (onMyTeam) App.removeFromMyTeam(key);
+      else App.draftedByMe(key);
+      close();
+    });
+    sheet.appendChild(myTeamBtn);
+
     overlay.appendChild(sheet);
     overlay.classList.add('open');
   }
