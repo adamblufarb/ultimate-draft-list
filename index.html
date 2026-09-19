@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Ultimate Draft Order</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <header class="app-header">
+    <h1>Ultimate Draft Order</h1>
+  </header>
+
+  <main class="app-main">
+    <section id="panel-rankings" class="tab-panel active" aria-label="Rankings"></section>
+    <section id="panel-draft" class="tab-panel" aria-label="Draft List"></section>
+    <section id="panel-sources" class="tab-panel" aria-label="Data Sources"></section>
+  </main>
+
+  <nav class="tab-bar">
+    <button class="tab-btn active" data-tab="rankings">
+      <span class="tab-icon">📊</span>
+      <span class="tab-label">Rankings</span>
+    </button>
+    <button class="tab-btn" data-tab="draft">
+      <span class="tab-icon">📝</span>
+      <span class="tab-label">Draft List</span>
+    </button>
+    <button class="tab-btn" data-tab="sources">
+      <span class="tab-icon">🔗</span>
+      <span class="tab-label">Sources</span>
+    </button>
+  </nav>
+
+  <script src="js/constants.js"></script>
+  <script src="js/storage.js"></script>
+  <script src="js/nameMatch.js"></script>
+  <script src="js/parser.js"></script>
+  <script src="js/ranking.js"></script>
+  <script src="js/dragdrop.js"></script>
+  <script src="js/cardReorder.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/playerDetail.js"></script>
+  <script src="js/tabs/rankings.js"></script>
+  <script src="js/tabs/draft.js"></script>
+  <script src="js/tabs/sources.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>
