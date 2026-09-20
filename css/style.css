@@ -169,10 +169,15 @@ body {
 
 .position-toggles {
   align-items: center;
+  flex-wrap: nowrap;
+  gap: 5px;
 }
 
 .position-toggles .toggle-label {
-  min-width: 56px;
+  min-width: 40px;
+  padding: 5px 6px;
+  gap: 3px;
+  font-size: 12px;
   justify-content: center;
 }
 
@@ -198,7 +203,7 @@ body {
 }
 
 .position-chip-count {
-  font-size: 11px;
+  font-size: 9px;
   font-weight: 700;
   opacity: 0.75;
 }
@@ -226,14 +231,26 @@ body {
 }
 
 .pool-size-select {
+  flex-shrink: 0;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 20px;
-  padding: 7px 10px;
+  padding: 5px 4px;
   font: inherit;
-  font-size: 14px;
+  font-size: 12px;
   color: var(--text);
   cursor: pointer;
+}
+
+.include-drafted-toggle {
+  flex-wrap: nowrap;
+  gap: 4px;
+}
+
+.include-drafted-toggle .toggle-label {
+  padding: 6px 7px;
+  font-size: 12.5px;
+  white-space: nowrap;
 }
 
 .search-box {
@@ -314,8 +331,15 @@ body {
 .rank-name {
   flex: 1;
   min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
   font-size: 15px;
   font-weight: 600;
+}
+
+.player-name-text {
+  min-width: 0;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -420,9 +444,6 @@ body {
   gap: 6px;
   font-size: 15px;
   font-weight: 600;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 /* Sources tab */
@@ -646,7 +667,8 @@ body {
 }
 
 .detail-positions {
-  font-size: 13px;
+  font-size: 16px;
+  font-weight: 600;
   color: var(--text-dim);
   margin-top: 2px;
 }
@@ -703,7 +725,19 @@ body {
 
 .stat-card-selected {
   border-color: var(--accent);
-  background: rgba(79, 140, 255, 0.14);
+  background: var(--accent);
+}
+
+.stat-card-selected .stat-title {
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.stat-card-selected .stat-value {
+  color: #fff;
+}
+
+.stat-card-selected .stat-score {
+  color: rgba(255, 255, 255, 0.75);
 }
 
 .stat-card-clickable {
@@ -817,7 +851,9 @@ body {
   text-overflow: ellipsis;
 }
 
-.my-team-positions {
+.my-team-positions,
+.player-positions {
+  flex-shrink: 0;
   font-size: 11px;
   font-weight: 600;
   color: var(--text-dim);

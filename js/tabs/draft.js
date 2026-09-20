@@ -202,7 +202,7 @@
 
     reorderable = new ReorderableList(listEl, {
       gap: 6,
-      renderRow: (item, i) => renderRow(item, i, avgByKey),
+      renderRow: (item, i) => renderRow(item, i, avgByKey, index),
       canDrag: (key) => !App.isLocked(key),
       onReorder: (newVisibleOrder) => {
         App.state.draftOrder = mergeReorder(App.state.draftOrder, newVisibleOrder);
@@ -295,7 +295,7 @@
       const isActive = selectedPositions.includes(pos);
       const count = counts[pos];
       const pct = poolSize > 0 ? (count / poolSize) * 100 : 0;
-      const scarcityClass = pct < 15 ? 'scarcity-danger' : (pct < 20 ? 'scarcity-warn' : '');
+      const scarcityClass = pct <= 20 ? 'scarcity-danger' : (pct <= 30 ? 'scarcity-warn' : '');
 
       const btn = document.createElement('button');
       btn.type = 'button';
@@ -349,6 +349,11 @@
       App.unlockAll();
     });
     wrap.appendChild(unlockBtn);
+    const undraftBtn = renderToggleChip('Undraft All', false, () => {
+      if (!confirm('Undraft all players?')) return;
+      App.undraftAll();
+    });
+    wrap.appendChild(undraftBtn);
     return wrap;
   }
 
@@ -374,10 +379,11 @@
     return wrap;
   }
 
-  function renderRow(item, _index, avgByKey) {
+  function renderRow(item, _rowIndex, avgByKey, rankingIndex) {
     const drafted = App.isDrafted(item.key);
     const locked = App.isLocked(item.key);
     const avg = avgByKey.get(item.key);
+    const entry = rankingIndex.get(item.key);
 
     const row = document.createElement('div');
     row.className = 'draft-row' + (drafted ? ' is-drafted' : '');
@@ -420,21 +426,21 @@
 
     const name = document.createElement('div');
     name.className = 'draft-name';
-    name.textContent = item.name;
-
-    const draftBtn = document.createElement('button');
-    draftBtn.className = 'btn-draft' + (drafted ? ' is-drafted' : '');
-    draftBtn.textContent = drafted ? 'Undraft' : 'Draft';
-    draftBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      App.setDrafted(item.key, !drafted);
-    });
+    const nameText = document.createElement('span');
+    nameText.className = 'player-name-text';
+    nameText.textContent = item.name;
+    name.appendChild(nameText);
+    if (entry && entry.positions) {
+      const posBadge = document.createElement('span');
+      posBadge.className = 'player-positions';
+      posBadge.textContent = entry.positions;
+      name.appendChild(posBadge);
+    }
 
     row.appendChild(handle);
     row.appendChild(badge);
     row.appendChild(lockBtn);
     row.appendChild(name);
-    row.appendChild(draftBtn);
     return row;
   }
 

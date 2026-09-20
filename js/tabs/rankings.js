@@ -114,19 +114,19 @@
 
       const nameEl = document.createElement('div');
       nameEl.className = 'rank-name';
-      nameEl.textContent = row.displayName;
-
-      const draftBtn = document.createElement('button');
-      draftBtn.className = 'btn-draft' + (drafted ? ' is-drafted' : '');
-      draftBtn.textContent = drafted ? 'Undraft' : 'Draft';
-      draftBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        App.setDrafted(row.key, !drafted);
-      });
+      const nameText = document.createElement('span');
+      nameText.className = 'player-name-text';
+      nameText.textContent = row.displayName;
+      nameEl.appendChild(nameText);
+      if (row.positions) {
+        const posBadge = document.createElement('span');
+        posBadge.className = 'player-positions';
+        posBadge.textContent = row.positions;
+        nameEl.appendChild(posBadge);
+      }
 
       item.appendChild(rankBadge);
       item.appendChild(nameEl);
-      item.appendChild(draftBtn);
       wrap.appendChild(item);
     });
 
