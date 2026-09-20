@@ -8083,16 +8083,16 @@
       "name": "Cade Cunningham"
     },
     {
-      "key": "tyrese maxey",
-      "name": "Tyrese Maxey"
-    },
-    {
       "key": "anthony edwards",
       "name": "Anthony Edwards"
     },
     {
       "key": "jalen johnson",
       "name": "Jalen Johnson"
+    },
+    {
+      "key": "tyrese maxey",
+      "name": "Tyrese Maxey"
     },
     {
       "key": "donovan mitchell",
@@ -9030,7 +9030,8 @@
     "victor wembanyama",
     "shai gilgeous alexander",
     "giannis antetokounmpo",
-    "cade cunningham"
+    "cade cunningham",
+    "anthony edwards"
   ],
   "myTeamKeys": []
 }
