@@ -8091,6 +8091,10 @@
       "name": "Jalen Johnson"
     },
     {
+      "key": "jayson tatum",
+      "name": "Jayson Tatum"
+    },
+    {
       "key": "donovan mitchell",
       "name": "Donovan Mitchell"
     },
@@ -8117,10 +8121,6 @@
     {
       "key": "kevin durant",
       "name": "Kevin Durant"
-    },
-    {
-      "key": "jayson tatum",
-      "name": "Jayson Tatum"
     },
     {
       "key": "anthony davis",
@@ -9036,7 +9036,8 @@
     "giannis antetokounmpo",
     "cade cunningham",
     "anthony edwards",
-    "jalen johnson"
+    "jalen johnson",
+    "jayson tatum"
   ],
   "myTeamKeys": []
 }
