@@ -4,9 +4,13 @@
    unlocked players to the newly-filtered average (no Reset button).
    Drafted players are hidden (unless "include drafted" is on) but keep
    their place in the full order so un-drafting puts them back where they
-   were. Locked players keep their exact position on resync. */
+   were. Locked players keep their exact position on resync. Each position
+   chip also shows how many of the next N undrafted picks hold that
+   position (N chosen from the pool-size dropdown), flagging scarcity in
+   orange/red as that count runs low relative to N. */
 (function (global) {
   const POSITIONS = ['PG', 'SG', 'SF', 'PF', 'C'];
+  const POOL_SIZE_OPTIONS = [10, 20, 30, 40, 50, 75, 100];
   let container;
   let listSection;
   let reorderable;
@@ -15,6 +19,10 @@
   let searchQuery = '';
   let searchInputEl;
   let searchClearBtn;
+  // How many of the best remaining (undrafted) picks each position count
+  // is scoped to — e.g. 20 means "of the next 20 available players, how
+  // many hold this position".
+  let poolSize = 20;
 
   function init(rootEl) {
     container = rootEl;
@@ -244,6 +252,29 @@
     return selectedPositions.some((p) => playerPositions.includes(p));
   }
 
+  // Counts, among the best `size` still-undrafted players ranked by the
+  // currently selected List filter (same combined average the rank badges
+  // use), how many hold each position — a player listed under multiple
+  // positions (e.g. "PF, SF") counts toward each, same as the My Team tab's
+  // counters. Deliberately re-ranks from the live filter rather than
+  // reading the user's dragged draft order, so it always reflects whichever
+  // sources are currently checked, independent of manual reordering.
+  function computeAvailablePositionCounts(index, size) {
+    const combined = Ranking.combineFromIndex(index, selectedIds);
+    const available = combined.filter((row) => !App.isDrafted(row.key));
+    const pool = available.slice(0, size);
+    const counts = {};
+    POSITIONS.forEach((p) => { counts[p] = 0; });
+    pool.forEach((row) => {
+      if (!row.positions) return;
+      const playerPositions = row.positions.split(',').map((p) => p.trim().toUpperCase());
+      POSITIONS.forEach((p) => {
+        if (playerPositions.includes(p)) counts[p] += 1;
+      });
+    });
+    return counts;
+  }
+
   function renderToggleChip(text, isActive, onClick) {
     const btn = document.createElement('button');
     btn.type = 'button';
@@ -256,17 +287,53 @@
   function renderPositionToggles() {
     const wrap = document.createElement('div');
     wrap.className = 'source-toggles position-toggles';
+
+    const index = Ranking.buildIndex(App.state.sources);
+    const counts = computeAvailablePositionCounts(index, poolSize);
+
     POSITIONS.forEach((pos) => {
       const isActive = selectedPositions.includes(pos);
-      wrap.appendChild(renderToggleChip(pos, isActive, () => {
+      const count = counts[pos];
+      const pct = poolSize > 0 ? (count / poolSize) * 100 : 0;
+      const scarcityClass = pct < 15 ? 'scarcity-danger' : (pct < 20 ? 'scarcity-warn' : '');
+
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'toggle-label' + (isActive ? ' is-active' : '') + (scarcityClass ? ' ' + scarcityClass : '');
+      const posEl = document.createElement('span');
+      posEl.textContent = pos;
+      const countEl = document.createElement('span');
+      countEl.className = 'position-chip-count';
+      countEl.textContent = String(count);
+      btn.appendChild(posEl);
+      btn.appendChild(countEl);
+      btn.addEventListener('click', () => {
         if (isActive) {
           selectedPositions = selectedPositions.filter((p) => p !== pos);
         } else {
           selectedPositions.push(pos);
         }
         render();
-      }));
+      });
+      wrap.appendChild(btn);
     });
+
+    const poolSelect = document.createElement('select');
+    poolSelect.className = 'pool-size-select';
+    poolSelect.setAttribute('aria-label', 'Position count pool size');
+    POOL_SIZE_OPTIONS.forEach((n) => {
+      const opt = document.createElement('option');
+      opt.value = String(n);
+      opt.textContent = String(n);
+      if (n === poolSize) opt.selected = true;
+      poolSelect.appendChild(opt);
+    });
+    poolSelect.addEventListener('change', () => {
+      poolSize = Number(poolSelect.value);
+      render();
+    });
+    wrap.appendChild(poolSelect);
+
     return wrap;
   }
 

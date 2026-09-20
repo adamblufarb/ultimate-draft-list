@@ -10,6 +10,7 @@
   --accent: #4f8cff;
   --accent-dim: #3a6bcc;
   --danger: #e5544d;
+  --warn: #e0912e;
   --success: #35c17f;
   --radius: 12px;
   --tab-bar-height: 64px;
@@ -166,8 +167,12 @@ body {
   margin-bottom: 20px;
 }
 
+.position-toggles {
+  align-items: center;
+}
+
 .position-toggles .toggle-label {
-  min-width: 46px;
+  min-width: 56px;
   justify-content: center;
 }
 
@@ -188,8 +193,47 @@ body {
 
 .toggle-label.is-active {
   border-color: var(--accent);
-  background: rgba(79, 140, 255, 0.14);
-  color: var(--accent);
+  background: var(--accent);
+  color: #fff;
+}
+
+.position-chip-count {
+  font-size: 11px;
+  font-weight: 700;
+  opacity: 0.75;
+}
+
+.position-toggles .toggle-label.scarcity-warn {
+  border-color: var(--warn);
+  color: var(--warn);
+}
+
+.position-toggles .toggle-label.scarcity-danger {
+  border-color: var(--danger);
+  color: var(--danger);
+}
+
+.position-toggles .toggle-label.scarcity-warn.is-active {
+  background: var(--warn);
+  border-color: var(--warn);
+  color: #1a1200;
+}
+
+.position-toggles .toggle-label.scarcity-danger.is-active {
+  background: var(--danger);
+  border-color: var(--danger);
+  color: #fff;
+}
+
+.pool-size-select {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 7px 10px;
+  font: inherit;
+  font-size: 14px;
+  color: var(--text);
+  cursor: pointer;
 }
 
 .search-box {
