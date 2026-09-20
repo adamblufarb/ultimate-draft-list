@@ -295,7 +295,7 @@
       const isActive = selectedPositions.includes(pos);
       const count = counts[pos];
       const pct = poolSize > 0 ? (count / poolSize) * 100 : 0;
-      const scarcityClass = pct <= 20 ? 'scarcity-danger' : (pct <= 30 ? 'scarcity-warn' : '');
+      const scarcityClass = pct <= 17 ? 'scarcity-danger' : (pct <= 25 ? 'scarcity-warn' : '');
 
       const btn = document.createElement('button');
       btn.type = 'button';
