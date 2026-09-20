@@ -145,21 +145,7 @@
     container.appendChild(renderSearchBox());
     container.appendChild(renderSourceToggles());
     container.appendChild(renderPositionToggles());
-    container.appendChild(renderIncludeDraftedToggle());
-
-    const toolbar = document.createElement('div');
-    toolbar.className = 'draft-toolbar';
-
-    const unlockAllBtn = document.createElement('button');
-    unlockAllBtn.className = 'btn btn-secondary';
-    unlockAllBtn.textContent = 'Unlock All';
-    unlockAllBtn.addEventListener('click', () => {
-      if (!confirm('Unlock all locked players?')) return;
-      App.unlockAll();
-    });
-    toolbar.appendChild(unlockAllBtn);
-
-    container.appendChild(toolbar);
+    container.appendChild(renderIncludeDraftedRow());
 
     listSection = document.createElement('div');
     container.appendChild(listSection);
@@ -284,13 +270,18 @@
     return wrap;
   }
 
-  function renderIncludeDraftedToggle() {
+  function renderIncludeDraftedRow() {
     const wrap = document.createElement('div');
     wrap.className = 'source-toggles include-drafted-toggle';
     const isActive = App.getIncludeDrafted();
-    wrap.appendChild(renderToggleChip('Include drafted players', isActive, () => {
+    wrap.appendChild(renderToggleChip('Include Drafted Players', isActive, () => {
       App.setIncludeDrafted(!isActive);
     }));
+    const unlockBtn = renderToggleChip('Unlock All', false, () => {
+      if (!confirm('Unlock all locked players?')) return;
+      App.unlockAll();
+    });
+    wrap.appendChild(unlockBtn);
     return wrap;
   }
 
@@ -323,7 +314,14 @@
 
     const row = document.createElement('div');
     row.className = 'draft-row' + (drafted ? ' is-drafted' : '');
-    row.addEventListener('click', () => PlayerDetail.open(item.key, selectedIds));
+    row.addEventListener('click', () => PlayerDetail.open(item.key, selectedIds, (newIds) => {
+      selectedIds = newIds;
+      // Same auto-resync as tapping a source chip: the filter just changed,
+      // so unlocked players resync to the newly-filtered average.
+      App.state.draftOrder = buildResetOrder(selectedIds);
+      App.persist();
+      render();
+    }));
 
     const handle = document.createElement('div');
     handle.className = 'drag-handle' + (locked ? ' is-locked' : '');

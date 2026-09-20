@@ -4,27 +4,41 @@
    avg/total ones — showing that source's rank and score side by side on
    one row, with the currently-selected sources highlighted. Tapping a
    source square toggles it in/out of the filter used for Combined Rank,
-   live, for the rest of this view session. Opened by tapping a player row
+   live. However the filter is left when the overlay closes (by the ✕, the
+   backdrop, Escape, or an action button) is reported back to whichever tab
+   opened it, via the optional onActiveIdsChange callback, so the tab's own
+   filter and order pick up the change too. Opened by tapping a player row
    in the Rankings, Draft List, or My Team tab. */
 (function (global) {
   let overlayEl = null;
+  // Re-pointed on every open() to that call's own close/sync logic — the
+  // backdrop-click and Escape listeners below are set up once, so they need
+  // to always reach whichever open() call is currently showing.
+  let closeHandler = hide;
 
   function ensureOverlay() {
     if (overlayEl) return overlayEl;
     overlayEl = document.createElement('div');
     overlayEl.className = 'detail-overlay';
     overlayEl.addEventListener('click', (e) => {
-      if (e.target === overlayEl) close();
+      if (e.target === overlayEl) closeHandler();
     });
     document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') close();
+      if (e.key === 'Escape') closeHandler();
     });
     document.body.appendChild(overlayEl);
     return overlayEl;
   }
 
-  function close() {
+  function hide() {
     if (overlayEl) overlayEl.classList.remove('open');
+  }
+
+  function sameIds(a, b) {
+    if (a.length !== b.length) return false;
+    const sortedA = a.slice().sort();
+    const sortedB = b.slice().sort();
+    return sortedA.every((id, i) => id === sortedB[i]);
   }
 
   function setCardValue(card, value) {
@@ -92,16 +106,25 @@
 
   // selectedSourceIds: the calling tab's current source filter, used both to
   // seed which squares start highlighted and to compute the initial
-  // Combined Rank. From here, tapping any square toggles it for this view
-  // only — the calling tab's own filter is never touched.
-  function open(key, selectedSourceIds) {
+  // Combined Rank. Tapping a square toggles it live for this view; once the
+  // overlay closes, if the filter actually changed, onActiveIdsChange (when
+  // given) is called with the final list so the calling tab can adopt it.
+  function open(key, selectedSourceIds, onActiveIdsChange) {
     const overlay = ensureOverlay();
     const index = Ranking.buildIndex(App.state.sources);
     const entry = index.get(key);
     if (!entry) return;
 
     const allIds = App.state.sources.map((s) => s.id);
-    let activeIds = (selectedSourceIds || allIds).slice();
+    const initialIds = (selectedSourceIds || allIds).slice();
+    let activeIds = initialIds.slice();
+
+    closeHandler = () => {
+      if (onActiveIdsChange && !sameIds(activeIds, initialIds)) {
+        onActiveIdsChange(activeIds.slice());
+      }
+      hide();
+    };
 
     overlay.innerHTML = '';
     const sheet = document.createElement('div');
@@ -122,7 +145,7 @@
     closeBtn.className = 'btn-link detail-close';
     closeBtn.textContent = '✕';
     closeBtn.setAttribute('aria-label', 'Close');
-    closeBtn.addEventListener('click', close);
+    closeBtn.addEventListener('click', () => closeHandler());
     header.appendChild(titleWrap);
     header.appendChild(closeBtn);
     sheet.appendChild(header);
@@ -170,7 +193,7 @@
     draftBtn.textContent = drafted ? 'Undraft' : 'Mark Drafted';
     draftBtn.addEventListener('click', () => {
       App.setDrafted(key, !drafted);
-      close();
+      closeHandler();
     });
     sheet.appendChild(draftBtn);
 
@@ -181,7 +204,7 @@
     myTeamBtn.addEventListener('click', () => {
       if (onMyTeam) App.removeFromMyTeam(key);
       else App.draftedByMe(key);
-      close();
+      closeHandler();
     });
     sheet.appendChild(myTeamBtn);
 
@@ -189,5 +212,5 @@
     overlay.classList.add('open');
   }
 
-  global.PlayerDetail = { open, close };
+  global.PlayerDetail = { open, close: () => closeHandler() };
 })(window);

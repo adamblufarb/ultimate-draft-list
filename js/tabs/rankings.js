@@ -55,7 +55,7 @@
     const wrap = document.createElement('div');
     wrap.className = 'source-toggles include-drafted-toggle';
     const isActive = App.getIncludeDrafted();
-    wrap.appendChild(renderToggleChip('Include drafted players', isActive, () => {
+    wrap.appendChild(renderToggleChip('Include Drafted Players', isActive, () => {
       App.setIncludeDrafted(!isActive);
     }));
     return wrap;
@@ -103,7 +103,10 @@
       const drafted = App.isDrafted(row.key);
       const item = document.createElement('div');
       item.className = 'rank-row' + (drafted ? ' is-drafted' : '') + (index % 2 === 1 ? ' row-alt' : '');
-      item.addEventListener('click', () => PlayerDetail.open(row.key, selectedIds));
+      item.addEventListener('click', () => PlayerDetail.open(row.key, selectedIds, (newIds) => {
+        selectedIds = newIds;
+        render();
+      }));
 
       const rankBadge = document.createElement('div');
       rankBadge.className = 'rank-badge';
