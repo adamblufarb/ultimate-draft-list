@@ -339,7 +339,7 @@
 
   function renderIncludeDraftedRow() {
     const wrap = document.createElement('div');
-    wrap.className = 'source-toggles include-drafted-toggle';
+    wrap.className = 'source-toggles include-drafted-toggle draft-actions-row';
     const isActive = App.getIncludeDrafted();
     wrap.appendChild(renderToggleChip('Include Drafted Players', isActive, () => {
       App.setIncludeDrafted(!isActive);
