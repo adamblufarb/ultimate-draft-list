@@ -8091,16 +8091,16 @@
       "name": "Jalen Johnson"
     },
     {
+      "key": "jayson tatum",
+      "name": "Jayson Tatum"
+    },
+    {
       "key": "tyrese maxey",
       "name": "Tyrese Maxey"
     },
     {
       "key": "donovan mitchell",
       "name": "Donovan Mitchell"
-    },
-    {
-      "key": "jayson tatum",
-      "name": "Jayson Tatum"
     },
     {
       "key": "tyrese haliburton",
@@ -9020,7 +9020,9 @@
     "giannis antetokounmpo",
     "cade cunningham",
     "anthony edwards",
-    "jalen johnson"
+    "jalen johnson",
+    "jayson tatum",
+    "tyrese maxey"
   ],
   "myTeamKeys": []
 }
