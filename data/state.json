@@ -8095,10 +8095,6 @@
       "name": "Jayson Tatum"
     },
     {
-      "key": "donovan mitchell",
-      "name": "Donovan Mitchell"
-    },
-    {
       "key": "tyrese maxey",
       "name": "Tyrese Maxey"
     },
@@ -8109,6 +8105,10 @@
     {
       "key": "scottie barnes",
       "name": "Scottie Barnes"
+    },
+    {
+      "key": "donovan mitchell",
+      "name": "Donovan Mitchell"
     },
     {
       "key": "josh giddey",
@@ -9037,7 +9037,10 @@
     "cade cunningham",
     "anthony edwards",
     "jalen johnson",
-    "jayson tatum"
+    "jayson tatum",
+    "tyrese maxey",
+    "alperen sengun",
+    "scottie barnes"
   ],
   "myTeamKeys": []
 }
