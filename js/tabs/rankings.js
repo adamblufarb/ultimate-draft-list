@@ -42,40 +42,38 @@
     container.appendChild(renderList(combined));
   }
 
+  function renderToggleChip(text, isActive, onClick) {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'toggle-label' + (isActive ? ' is-active' : '');
+    btn.textContent = text;
+    btn.addEventListener('click', onClick);
+    return btn;
+  }
+
   function renderIncludeDraftedToggle() {
-    const label = document.createElement('label');
-    label.className = 'toggle-label include-drafted-toggle';
-    const checkbox = document.createElement('input');
-    checkbox.type = 'checkbox';
-    checkbox.checked = App.getIncludeDrafted();
-    checkbox.addEventListener('change', () => {
-      App.setIncludeDrafted(checkbox.checked);
-    });
-    label.appendChild(checkbox);
-    label.appendChild(document.createTextNode(' Include drafted players'));
-    return label;
+    const wrap = document.createElement('div');
+    wrap.className = 'source-toggles include-drafted-toggle';
+    const isActive = App.getIncludeDrafted();
+    wrap.appendChild(renderToggleChip('Include drafted players', isActive, () => {
+      App.setIncludeDrafted(!isActive);
+    }));
+    return wrap;
   }
 
   function renderSourceToggles() {
     const wrap = document.createElement('div');
     wrap.className = 'source-toggles';
     App.state.sources.forEach((source) => {
-      const label = document.createElement('label');
-      label.className = 'toggle-label';
-      const checkbox = document.createElement('input');
-      checkbox.type = 'checkbox';
-      checkbox.checked = selectedIds.includes(source.id);
-      checkbox.addEventListener('change', () => {
-        if (checkbox.checked) {
-          if (!selectedIds.includes(source.id)) selectedIds.push(source.id);
-        } else {
+      const isActive = selectedIds.includes(source.id);
+      wrap.appendChild(renderToggleChip(source.name || 'Untitled source', isActive, () => {
+        if (isActive) {
           selectedIds = selectedIds.filter((id) => id !== source.id);
+        } else {
+          selectedIds.push(source.id);
         }
         render();
-      });
-      label.appendChild(checkbox);
-      label.appendChild(document.createTextNode(' ' + (source.name || 'Untitled source')));
-      wrap.appendChild(label);
+      }));
     });
     return wrap;
   }

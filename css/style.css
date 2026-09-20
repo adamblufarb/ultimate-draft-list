@@ -173,13 +173,60 @@ body {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 20px;
-  padding: 8px 14px;
+  padding: 7px 12px;
+  font: inherit;
   font-size: 14px;
+  color: var(--text);
+  cursor: pointer;
+  -webkit-appearance: none;
 }
 
-.toggle-label input {
-  width: 18px;
-  height: 18px;
+.toggle-label.is-active {
+  border-color: var(--accent);
+  background: rgba(79, 140, 255, 0.14);
+  color: var(--accent);
+}
+
+.search-box {
+  position: relative;
+  margin-bottom: 12px;
+}
+
+.search-input {
+  width: 100%;
+  padding: 10px 36px 10px 12px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  font-size: 15px;
+  font-family: inherit;
+}
+
+.search-input::placeholder {
+  color: var(--text-dim);
+}
+
+.search-clear {
+  display: none;
+  position: absolute;
+  right: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 28px;
+  height: 28px;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  font-size: 14px;
+  cursor: pointer;
+  border-radius: 50%;
+}
+
+.search-clear.is-visible {
+  display: flex;
 }
 
 .rankings-list {
@@ -622,6 +669,10 @@ body {
   background: rgba(79, 140, 255, 0.14);
 }
 
+.stat-card-clickable {
+  cursor: pointer;
+}
+
 .stat-title {
   font-size: 11px;
   color: var(--text-dim);
@@ -635,10 +686,16 @@ body {
   font-weight: 700;
 }
 
-.stat-rank {
-  font-size: 12px;
+.stat-rank-row {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.stat-score {
+  font-size: 16px;
+  font-weight: 600;
   color: var(--text-dim);
-  margin-top: 2px;
 }
 
 .stat-empty {

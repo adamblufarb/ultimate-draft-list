@@ -1,9 +1,11 @@
 /* Player detail overlay: combined rank (based on whichever sources are
    currently selected in the calling tab's filter) as its own row up top,
    then one square per source — every source, not just the special
-   avg/total ones — showing that source's rank big and its score (if any)
-   small, with the currently-selected sources highlighted. Opened by
-   tapping a player row in the Rankings, Draft List, or My Team tab. */
+   avg/total ones — showing that source's rank and score side by side on
+   one row, with the currently-selected sources highlighted. Tapping a
+   source square toggles it in/out of the filter used for Combined Rank,
+   live, for the rest of this view session. Opened by tapping a player row
+   in the Rankings, Draft List, or My Team tab. */
 (function (global) {
   let overlayEl = null;
 
@@ -25,15 +27,9 @@
     if (overlayEl) overlayEl.classList.remove('open');
   }
 
-  function statCard(label, value) {
-    const card = document.createElement('div');
-    card.className = 'stat-card';
-
-    const titleEl = document.createElement('div');
-    titleEl.className = 'stat-title';
-    titleEl.textContent = label;
-    card.appendChild(titleEl);
-
+  function setCardValue(card, value) {
+    const existing = card.querySelector('.stat-value, .stat-empty, .stat-rank-row');
+    if (existing) existing.remove();
     if (value !== null) {
       const valueEl = document.createElement('div');
       valueEl.className = 'stat-value';
@@ -45,16 +41,26 @@
       empty.textContent = 'No data';
       card.appendChild(empty);
     }
+  }
+
+  function statCard(label, value) {
+    const card = document.createElement('div');
+    card.className = 'stat-card';
+    const titleEl = document.createElement('div');
+    titleEl.className = 'stat-title';
+    titleEl.textContent = label;
+    card.appendChild(titleEl);
+    setCardValue(card, value);
     return card;
   }
 
-  // One square per source: rank shown big (the primary thing you scan for),
-  // its score (if this source has one) shown small underneath. Sources with
-  // no score at all (pure ranking lists) just show the rank alone.
+  // One square per source: rank and score (if this source has one) shown
+  // side by side on one row — rank big, score smaller and gray. Sources
+  // with no score at all (pure ranking lists) just show the rank alone.
   function sourceCard(source, entry, isSelected) {
     const bySource = entry.bySource[source.id];
     const card = document.createElement('div');
-    card.className = 'stat-card' + (isSelected ? ' stat-card-selected' : '');
+    card.className = 'stat-card stat-card-clickable' + (isSelected ? ' stat-card-selected' : '');
 
     const titleEl = document.createElement('div');
     titleEl.className = 'stat-title';
@@ -62,16 +68,19 @@
     card.appendChild(titleEl);
 
     if (bySource) {
-      const valueEl = document.createElement('div');
+      const rankRow = document.createElement('div');
+      rankRow.className = 'stat-rank-row';
+      const valueEl = document.createElement('span');
       valueEl.className = 'stat-value';
       valueEl.textContent = String(bySource.rank);
-      card.appendChild(valueEl);
+      rankRow.appendChild(valueEl);
       if (bySource.score !== null) {
-        const subEl = document.createElement('div');
-        subEl.className = 'stat-rank';
-        subEl.textContent = Constants.formatScore(bySource.score);
-        card.appendChild(subEl);
+        const scoreEl = document.createElement('span');
+        scoreEl.className = 'stat-score';
+        scoreEl.textContent = Constants.formatScore(bySource.score);
+        rankRow.appendChild(scoreEl);
       }
+      card.appendChild(rankRow);
     } else {
       const empty = document.createElement('div');
       empty.className = 'stat-empty';
@@ -82,9 +91,9 @@
   }
 
   // selectedSourceIds: the calling tab's current source filter, used both to
-  // compute Combined Rank the same way that tab does, and to highlight
-  // matching squares blue. Defaults to every source when not given (e.g.
-  // opened from My Team, which has no such filter).
+  // seed which squares start highlighted and to compute the initial
+  // Combined Rank. From here, tapping any square toggles it for this view
+  // only — the calling tab's own filter is never touched.
   function open(key, selectedSourceIds) {
     const overlay = ensureOverlay();
     const index = Ranking.buildIndex(App.state.sources);
@@ -92,8 +101,7 @@
     if (!entry) return;
 
     const allIds = App.state.sources.map((s) => s.id);
-    const activeIds = selectedSourceIds || allIds;
-    const combinedEntry = Ranking.combineFromIndex(index, activeIds).find((r) => r.key === key) || null;
+    let activeIds = (selectedSourceIds || allIds).slice();
 
     overlay.innerHTML = '';
     const sheet = document.createElement('div');
@@ -121,8 +129,15 @@
 
     const combinedRow = document.createElement('div');
     combinedRow.className = 'detail-combined-row';
-    combinedRow.appendChild(statCard('Combined Rank', combinedEntry ? combinedEntry.avg.toFixed(1) : null));
+    const combinedCard = statCard('Combined Rank', null);
+    combinedRow.appendChild(combinedCard);
     sheet.appendChild(combinedRow);
+
+    function updateCombined() {
+      const combinedEntry = Ranking.combineFromIndex(index, activeIds).find((r) => r.key === key) || null;
+      setCardValue(combinedCard, combinedEntry ? combinedEntry.avg.toFixed(1) : null);
+    }
+    updateCombined();
 
     const gridWrap = document.createElement('div');
     gridWrap.className = 'detail-stats';
@@ -133,7 +148,18 @@
       gridWrap.appendChild(none);
     } else {
       App.state.sources.forEach((source) => {
-        gridWrap.appendChild(sourceCard(source, entry, activeIds.includes(source.id)));
+        const card = sourceCard(source, entry, activeIds.includes(source.id));
+        card.addEventListener('click', () => {
+          if (activeIds.includes(source.id)) {
+            activeIds = activeIds.filter((id) => id !== source.id);
+            card.classList.remove('stat-card-selected');
+          } else {
+            activeIds.push(source.id);
+            card.classList.add('stat-card-selected');
+          }
+          updateCombined();
+        });
+        gridWrap.appendChild(card);
       });
     }
     sheet.appendChild(gridWrap);

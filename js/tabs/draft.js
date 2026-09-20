@@ -1,15 +1,20 @@
 /* Tab 2 — Draft List: the user's own editable, drag-reorderable list.
    Initialized from the combined average once, then persists independently
-   of source edits until the user explicitly hits Reset. Drafted players are
-   hidden (unless "include drafted" is on) but keep their place in the full
-   order so un-drafting puts them back where they were. Locked players keep
-   their exact position when the list is reset. */
+   of source edits. Changing the source filter automatically resyncs
+   unlocked players to the newly-filtered average (no Reset button).
+   Drafted players are hidden (unless "include drafted" is on) but keep
+   their place in the full order so un-drafting puts them back where they
+   were. Locked players keep their exact position on resync. */
 (function (global) {
   const POSITIONS = ['PG', 'SG', 'SF', 'PF', 'C'];
   let container;
+  let listSection;
   let reorderable;
   let selectedIds = [];
   let selectedPositions = [];
+  let searchQuery = '';
+  let searchInputEl;
+  let searchClearBtn;
 
   function init(rootEl) {
     container = rootEl;
@@ -137,22 +142,13 @@
       return;
     }
 
+    container.appendChild(renderSearchBox());
     container.appendChild(renderSourceToggles());
     container.appendChild(renderPositionToggles());
     container.appendChild(renderIncludeDraftedToggle());
 
     const toolbar = document.createElement('div');
     toolbar.className = 'draft-toolbar';
-
-    const resetBtn = document.createElement('button');
-    resetBtn.className = 'btn btn-secondary';
-    resetBtn.textContent = 'Reset';
-    resetBtn.addEventListener('click', () => {
-      App.state.draftOrder = buildResetOrder(selectedIds);
-      App.persist();
-      render();
-    });
-    toolbar.appendChild(resetBtn);
 
     const unlockAllBtn = document.createElement('button');
     unlockAllBtn.className = 'btn btn-secondary';
@@ -165,12 +161,25 @@
 
     container.appendChild(toolbar);
 
+    listSection = document.createElement('div');
+    container.appendChild(listSection);
+    renderListSection();
+  }
+
+  // Only rebuilds the list portion (not the search box / toggles / toolbar
+  // above it) so typing in the search box never loses focus or cursor
+  // position — a full container rebuild per keystroke would.
+  function renderListSection() {
+    listSection.innerHTML = '';
+
     const index = Ranking.buildIndex(App.state.sources);
     const fullOrder = App.state.draftOrder || [];
     const includeDrafted = App.getIncludeDrafted();
+    const query = searchQuery.trim().toLowerCase();
     const visibleItems = fullOrder.filter((item) => {
       if (!includeDrafted && App.isDrafted(item.key)) return false;
       if (selectedPositions.length > 0 && !matchesPositionFilter(item.key, index)) return false;
+      if (query && !item.name.toLowerCase().includes(query)) return false;
       return true;
     });
 
@@ -178,19 +187,21 @@
       const empty = document.createElement('p');
       empty.className = 'empty-hint';
       if (fullOrder.length === 0) {
-        empty.textContent = 'No players yet — add a source or hit Reset once you have.';
+        empty.textContent = 'No players yet — add a source to build your draft list.';
+      } else if (query) {
+        empty.textContent = 'No players match your search.';
       } else if (selectedPositions.length > 0) {
         empty.textContent = 'No players match the selected position filter.';
       } else {
         empty.textContent = 'All players have been drafted. Check "Include drafted players" to see them.';
       }
-      container.appendChild(empty);
+      listSection.appendChild(empty);
       return;
     }
 
     const listEl = document.createElement('div');
     listEl.className = 'draft-list';
-    container.appendChild(listEl);
+    listSection.appendChild(listEl);
 
     const combined = Ranking.combineFromIndex(index, selectedIds);
     const avgByKey = new Map(combined.map((row) => [row.key, row.avg]));
@@ -207,6 +218,39 @@
     reorderable.setItems(visibleItems);
   }
 
+  function renderSearchBox() {
+    const wrap = document.createElement('div');
+    wrap.className = 'search-box';
+
+    searchInputEl = document.createElement('input');
+    searchInputEl.type = 'text';
+    searchInputEl.className = 'search-input';
+    searchInputEl.placeholder = 'Search players…';
+    searchInputEl.value = searchQuery;
+    searchInputEl.addEventListener('input', () => {
+      searchQuery = searchInputEl.value;
+      searchClearBtn.classList.toggle('is-visible', searchQuery.length > 0);
+      renderListSection();
+    });
+    wrap.appendChild(searchInputEl);
+
+    searchClearBtn = document.createElement('button');
+    searchClearBtn.type = 'button';
+    searchClearBtn.className = 'search-clear' + (searchQuery ? ' is-visible' : '');
+    searchClearBtn.textContent = '✕';
+    searchClearBtn.setAttribute('aria-label', 'Clear search');
+    searchClearBtn.addEventListener('click', () => {
+      searchQuery = '';
+      searchInputEl.value = '';
+      searchClearBtn.classList.remove('is-visible');
+      searchInputEl.focus();
+      renderListSection();
+    });
+    wrap.appendChild(searchClearBtn);
+
+    return wrap;
+  }
+
   function matchesPositionFilter(key, index) {
     const entry = index.get(key);
     if (!entry || !entry.positions) return false;
@@ -214,64 +258,60 @@
     return selectedPositions.some((p) => playerPositions.includes(p));
   }
 
+  function renderToggleChip(text, isActive, onClick) {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'toggle-label' + (isActive ? ' is-active' : '');
+    btn.textContent = text;
+    btn.addEventListener('click', onClick);
+    return btn;
+  }
+
   function renderPositionToggles() {
     const wrap = document.createElement('div');
-    wrap.className = 'source-toggles';
+    wrap.className = 'source-toggles position-toggles';
     POSITIONS.forEach((pos) => {
-      const label = document.createElement('label');
-      label.className = 'toggle-label';
-      const checkbox = document.createElement('input');
-      checkbox.type = 'checkbox';
-      checkbox.checked = selectedPositions.includes(pos);
-      checkbox.addEventListener('change', () => {
-        if (checkbox.checked) {
-          if (!selectedPositions.includes(pos)) selectedPositions.push(pos);
-        } else {
+      const isActive = selectedPositions.includes(pos);
+      wrap.appendChild(renderToggleChip(pos, isActive, () => {
+        if (isActive) {
           selectedPositions = selectedPositions.filter((p) => p !== pos);
+        } else {
+          selectedPositions.push(pos);
         }
         render();
-      });
-      label.appendChild(checkbox);
-      label.appendChild(document.createTextNode(' ' + pos));
-      wrap.appendChild(label);
+      }));
     });
     return wrap;
   }
 
   function renderIncludeDraftedToggle() {
-    const label = document.createElement('label');
-    label.className = 'toggle-label include-drafted-toggle';
-    const checkbox = document.createElement('input');
-    checkbox.type = 'checkbox';
-    checkbox.checked = App.getIncludeDrafted();
-    checkbox.addEventListener('change', () => {
-      App.setIncludeDrafted(checkbox.checked);
-    });
-    label.appendChild(checkbox);
-    label.appendChild(document.createTextNode(' Include drafted players'));
-    return label;
+    const wrap = document.createElement('div');
+    wrap.className = 'source-toggles include-drafted-toggle';
+    const isActive = App.getIncludeDrafted();
+    wrap.appendChild(renderToggleChip('Include drafted players', isActive, () => {
+      App.setIncludeDrafted(!isActive);
+    }));
+    return wrap;
   }
 
   function renderSourceToggles() {
     const wrap = document.createElement('div');
     wrap.className = 'source-toggles';
     App.state.sources.forEach((source) => {
-      const label = document.createElement('label');
-      label.className = 'toggle-label';
-      const checkbox = document.createElement('input');
-      checkbox.type = 'checkbox';
-      checkbox.checked = selectedIds.includes(source.id);
-      checkbox.addEventListener('change', () => {
-        if (checkbox.checked) {
-          if (!selectedIds.includes(source.id)) selectedIds.push(source.id);
-        } else {
+      const isActive = selectedIds.includes(source.id);
+      wrap.appendChild(renderToggleChip(source.name || 'Untitled source', isActive, () => {
+        if (isActive) {
           selectedIds = selectedIds.filter((id) => id !== source.id);
+        } else {
+          selectedIds.push(source.id);
         }
+        // Filters drive the reset computation directly now (no Reset
+        // button) — changing which sources feed the average immediately
+        // resyncs everyone who isn't locked in place.
+        App.state.draftOrder = buildResetOrder(selectedIds);
+        App.persist();
         render();
-      });
-      label.appendChild(checkbox);
-      label.appendChild(document.createTextNode(' ' + (source.name || 'Untitled source')));
-      wrap.appendChild(label);
+      }));
     });
     return wrap;
   }
