@@ -9027,21 +9027,7 @@
       "name": "Walter Clayton Jr."
     }
   ],
-  "draftedKeys": [
-    "nikola jokic",
-    "luka doncic",
-    "victor wembanyama",
-    "shai gilgeous alexander",
-    "giannis antetokounmpo",
-    "cade cunningham",
-    "anthony edwards",
-    "jalen johnson",
-    "jayson tatum",
-    "tyrese maxey",
-    "alperen sengun",
-    "scottie barnes",
-    "donovan mitchell"
-  ],
+  "draftedKeys": [],
   "lockedKeys": [
     "nikola jokic",
     "luka doncic",
@@ -9056,7 +9042,5 @@
     "alperen sengun",
     "scottie barnes"
   ],
-  "myTeamKeys": [
-    "anthony edwards"
-  ]
+  "myTeamKeys": []
 }
