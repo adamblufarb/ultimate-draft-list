@@ -5,9 +5,11 @@
    order so un-drafting puts them back where they were. Locked players keep
    their exact position when the list is reset. */
 (function (global) {
+  const POSITIONS = ['PG', 'SG', 'SF', 'PF', 'C'];
   let container;
   let reorderable;
   let selectedIds = [];
+  let selectedPositions = [];
 
   function init(rootEl) {
     container = rootEl;
@@ -136,6 +138,7 @@
     }
 
     container.appendChild(renderSourceToggles());
+    container.appendChild(renderPositionToggles());
     container.appendChild(renderIncludeDraftedToggle());
 
     const toolbar = document.createElement('div');
@@ -145,7 +148,6 @@
     resetBtn.className = 'btn btn-secondary';
     resetBtn.textContent = 'Reset';
     resetBtn.addEventListener('click', () => {
-      if (!confirm('Replace unlocked players with the current combined average (based on the checked lists)? Locked players stay put.')) return;
       App.state.draftOrder = buildResetOrder(selectedIds);
       App.persist();
       render();
@@ -163,16 +165,25 @@
 
     container.appendChild(toolbar);
 
+    const index = Ranking.buildIndex(App.state.sources);
     const fullOrder = App.state.draftOrder || [];
     const includeDrafted = App.getIncludeDrafted();
-    const visibleItems = fullOrder.filter((item) => includeDrafted || !App.isDrafted(item.key));
+    const visibleItems = fullOrder.filter((item) => {
+      if (!includeDrafted && App.isDrafted(item.key)) return false;
+      if (selectedPositions.length > 0 && !matchesPositionFilter(item.key, index)) return false;
+      return true;
+    });
 
     if (visibleItems.length === 0) {
       const empty = document.createElement('p');
       empty.className = 'empty-hint';
-      empty.textContent = fullOrder.length > 0
-        ? 'All players have been drafted. Check "Include drafted players" to see them.'
-        : 'No players yet — add a source or hit Reset once you have.';
+      if (fullOrder.length === 0) {
+        empty.textContent = 'No players yet — add a source or hit Reset once you have.';
+      } else if (selectedPositions.length > 0) {
+        empty.textContent = 'No players match the selected position filter.';
+      } else {
+        empty.textContent = 'All players have been drafted. Check "Include drafted players" to see them.';
+      }
       container.appendChild(empty);
       return;
     }
@@ -181,7 +192,6 @@
     listEl.className = 'draft-list';
     container.appendChild(listEl);
 
-    const index = Ranking.buildIndex(App.state.sources);
     const combined = Ranking.combineFromIndex(index, selectedIds);
     const avgByKey = new Map(combined.map((row) => [row.key, row.avg]));
 
@@ -195,6 +205,37 @@
       }
     });
     reorderable.setItems(visibleItems);
+  }
+
+  function matchesPositionFilter(key, index) {
+    const entry = index.get(key);
+    if (!entry || !entry.positions) return false;
+    const playerPositions = entry.positions.split(',').map((p) => p.trim().toUpperCase());
+    return selectedPositions.some((p) => playerPositions.includes(p));
+  }
+
+  function renderPositionToggles() {
+    const wrap = document.createElement('div');
+    wrap.className = 'source-toggles';
+    POSITIONS.forEach((pos) => {
+      const label = document.createElement('label');
+      label.className = 'toggle-label';
+      const checkbox = document.createElement('input');
+      checkbox.type = 'checkbox';
+      checkbox.checked = selectedPositions.includes(pos);
+      checkbox.addEventListener('change', () => {
+        if (checkbox.checked) {
+          if (!selectedPositions.includes(pos)) selectedPositions.push(pos);
+        } else {
+          selectedPositions = selectedPositions.filter((p) => p !== pos);
+        }
+        render();
+      });
+      label.appendChild(checkbox);
+      label.appendChild(document.createTextNode(' ' + pos));
+      wrap.appendChild(label);
+    });
+    return wrap;
   }
 
   function renderIncludeDraftedToggle() {
@@ -242,7 +283,7 @@
 
     const row = document.createElement('div');
     row.className = 'draft-row' + (drafted ? ' is-drafted' : '');
-    row.addEventListener('click', () => PlayerDetail.open(item.key));
+    row.addEventListener('click', () => PlayerDetail.open(item.key, selectedIds));
 
     const handle = document.createElement('div');
     handle.className = 'drag-handle' + (locked ? ' is-locked' : '');

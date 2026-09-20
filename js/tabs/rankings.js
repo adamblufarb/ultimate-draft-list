@@ -105,7 +105,7 @@
       const drafted = App.isDrafted(row.key);
       const item = document.createElement('div');
       item.className = 'rank-row' + (drafted ? ' is-drafted' : '') + (index % 2 === 1 ? ' row-alt' : '');
-      item.addEventListener('click', () => PlayerDetail.open(row.key));
+      item.addEventListener('click', () => PlayerDetail.open(row.key, selectedIds));
 
       const rankBadge = document.createElement('div');
       rankBadge.className = 'rank-badge';

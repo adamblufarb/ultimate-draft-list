@@ -1,7 +1,9 @@
-/* Player detail overlay: combined rank + draft position, last-year and
-   this-year-projection stats (+ league rank), and every source's rank/score
-   for one player. Opened by tapping a player row in either the Rankings or
-   Draft List tab. */
+/* Player detail overlay: combined rank (based on whichever sources are
+   currently selected in the calling tab's filter) as its own row up top,
+   then one square per source — every source, not just the special
+   avg/total ones — showing that source's rank big and its score (if any)
+   small, with the currently-selected sources highlighted. Opened by
+   tapping a player row in the Rankings, Draft List, or My Team tab. */
 (function (global) {
   let overlayEl = null;
 
@@ -23,7 +25,7 @@
     if (overlayEl) overlayEl.classList.remove('open');
   }
 
-  function statCard(label, value, subtext) {
+  function statCard(label, value) {
     const card = document.createElement('div');
     card.className = 'stat-card';
 
@@ -37,12 +39,6 @@
       valueEl.className = 'stat-value';
       valueEl.textContent = value;
       card.appendChild(valueEl);
-      if (subtext) {
-        const subEl = document.createElement('div');
-        subEl.className = 'stat-rank';
-        subEl.textContent = subtext;
-        card.appendChild(subEl);
-      }
     } else {
       const empty = document.createElement('div');
       empty.className = 'stat-empty';
@@ -52,24 +48,52 @@
     return card;
   }
 
-  function scoreStatCard(label, source, entry) {
-    const bySource = source ? entry.bySource[source.id] : null;
-    if (source && bySource && bySource.score !== null) {
-      return statCard(label, Constants.formatScore(bySource.score), `League rank: ${bySource.rank}`);
+  // One square per source: rank shown big (the primary thing you scan for),
+  // its score (if this source has one) shown small underneath. Sources with
+  // no score at all (pure ranking lists) just show the rank alone.
+  function sourceCard(source, entry, isSelected) {
+    const bySource = entry.bySource[source.id];
+    const card = document.createElement('div');
+    card.className = 'stat-card' + (isSelected ? ' stat-card-selected' : '');
+
+    const titleEl = document.createElement('div');
+    titleEl.className = 'stat-title';
+    titleEl.textContent = source.name || 'Untitled source';
+    card.appendChild(titleEl);
+
+    if (bySource) {
+      const valueEl = document.createElement('div');
+      valueEl.className = 'stat-value';
+      valueEl.textContent = String(bySource.rank);
+      card.appendChild(valueEl);
+      if (bySource.score !== null) {
+        const subEl = document.createElement('div');
+        subEl.className = 'stat-rank';
+        subEl.textContent = Constants.formatScore(bySource.score);
+        card.appendChild(subEl);
+      }
+    } else {
+      const empty = document.createElement('div');
+      empty.className = 'stat-empty';
+      empty.textContent = 'Not ranked';
+      card.appendChild(empty);
     }
-    return statCard(label, null);
+    return card;
   }
 
-  function open(key) {
+  // selectedSourceIds: the calling tab's current source filter, used both to
+  // compute Combined Rank the same way that tab does, and to highlight
+  // matching squares blue. Defaults to every source when not given (e.g.
+  // opened from My Team, which has no such filter).
+  function open(key, selectedSourceIds) {
     const overlay = ensureOverlay();
     const index = Ranking.buildIndex(App.state.sources);
     const entry = index.get(key);
     if (!entry) return;
 
     const allIds = App.state.sources.map((s) => s.id);
-    const combinedList = Ranking.combineFromIndex(index, allIds);
-    const position = combinedList.findIndex((r) => r.key === key);
-    const combinedEntry = position >= 0 ? combinedList[position] : null;
+    const activeIds = selectedSourceIds || allIds;
+    const combinedEntry = Ranking.combineFromIndex(index, activeIds).find((r) => r.key === key) || null;
 
     overlay.innerHTML = '';
     const sheet = document.createElement('div');
@@ -95,61 +119,24 @@
     header.appendChild(closeBtn);
     sheet.appendChild(header);
 
-    const summaryWrap = document.createElement('div');
-    summaryWrap.className = 'detail-stats';
-    summaryWrap.appendChild(statCard('Combined Rank', combinedEntry ? combinedEntry.avg.toFixed(1) : null));
-    summaryWrap.appendChild(statCard('Draft Position', position >= 0 ? `#${position + 1}` : null));
-    sheet.appendChild(summaryWrap);
+    const combinedRow = document.createElement('div');
+    combinedRow.className = 'detail-combined-row';
+    combinedRow.appendChild(statCard('Combined Rank', combinedEntry ? combinedEntry.avg.toFixed(1) : null));
+    sheet.appendChild(combinedRow);
 
-    const statsWrap = document.createElement('div');
-    statsWrap.className = 'detail-stats';
-    const lyAvgSource = App.state.sources.find((s) => s.scoreType === 'ly_avg');
-    const lyTotalSource = App.state.sources.find((s) => s.scoreType === 'ly_total');
-    const tyAvgSource = App.state.sources.find((s) => s.scoreType === 'ty_avg_proj');
-    const tyTotalSource = App.state.sources.find((s) => s.scoreType === 'ty_total_proj');
-    statsWrap.appendChild(scoreStatCard('Projection Avg', tyAvgSource, entry));
-    statsWrap.appendChild(scoreStatCard('Projection Total', tyTotalSource, entry));
-    statsWrap.appendChild(scoreStatCard('2026 Avg', lyAvgSource, entry));
-    statsWrap.appendChild(scoreStatCard('2026 Total', lyTotalSource, entry));
-    sheet.appendChild(statsWrap);
-
-    const listsWrap = document.createElement('div');
-    listsWrap.className = 'detail-lists';
-    const listsTitle = document.createElement('div');
-    listsTitle.className = 'detail-section-title';
-    listsTitle.textContent = 'All ranking lists';
-    listsWrap.appendChild(listsTitle);
-
+    const gridWrap = document.createElement('div');
+    gridWrap.className = 'detail-stats';
     if (App.state.sources.length === 0) {
       const none = document.createElement('p');
       none.className = 'empty-hint';
       none.textContent = 'No sources yet.';
-      listsWrap.appendChild(none);
+      gridWrap.appendChild(none);
+    } else {
+      App.state.sources.forEach((source) => {
+        gridWrap.appendChild(sourceCard(source, entry, activeIds.includes(source.id)));
+      });
     }
-
-    App.state.sources.forEach((source) => {
-      const bySource = entry.bySource[source.id];
-      const row = document.createElement('div');
-      row.className = 'detail-list-row';
-      const nameSpan = document.createElement('span');
-      nameSpan.className = 'detail-list-name';
-      nameSpan.textContent = source.name || 'Untitled source';
-      const valSpan = document.createElement('span');
-      valSpan.className = 'detail-list-value';
-      if (bySource) {
-        const scoreText = bySource.score !== null
-          ? ` · ${Constants.scoreTypeLabel(source.scoreType)}: ${Constants.formatScore(bySource.score)}`
-          : '';
-        valSpan.textContent = `Rank ${bySource.rank}${scoreText}`;
-      } else {
-        valSpan.textContent = 'Not ranked';
-        valSpan.classList.add('detail-not-ranked');
-      }
-      row.appendChild(nameSpan);
-      row.appendChild(valSpan);
-      listsWrap.appendChild(row);
-    });
-    sheet.appendChild(listsWrap);
+    sheet.appendChild(gridWrap);
 
     const drafted = App.isDrafted(key);
     const draftBtn = document.createElement('button');
