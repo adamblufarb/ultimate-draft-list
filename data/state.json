@@ -8067,12 +8067,12 @@
       "name": "Luka Doncic"
     },
     {
-      "key": "shai gilgeous alexander",
-      "name": "Shai Gilgeous-Alexander"
-    },
-    {
       "key": "victor wembanyama",
       "name": "Victor Wembanyama"
+    },
+    {
+      "key": "shai gilgeous alexander",
+      "name": "Shai Gilgeous-Alexander"
     },
     {
       "key": "giannis antetokounmpo",
@@ -9024,6 +9024,13 @@
     }
   ],
   "draftedKeys": [],
-  "lockedKeys": [],
+  "lockedKeys": [
+    "nikola jokic",
+    "luka doncic",
+    "shai gilgeous alexander",
+    "victor wembanyama",
+    "giannis antetokounmpo",
+    "cade cunningham"
+  ],
   "myTeamKeys": []
 }
