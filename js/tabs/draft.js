@@ -19,6 +19,7 @@
   let searchQuery = '';
   let searchInputEl;
   let searchClearBtn;
+  let searchDebounceTimer = null;
   // How many of the best remaining (undrafted) picks each position count
   // is scoped to — e.g. 20 means "of the next 20 available players, how
   // many hold this position".
@@ -140,6 +141,7 @@
   }
 
   function render() {
+    clearTimeout(searchDebounceTimer);
     container.innerHTML = '';
 
     if (App.state.sources.length === 0 && (!App.state.draftOrder || App.state.draftOrder.length === 0)) {
@@ -224,7 +226,10 @@
     searchInputEl.addEventListener('input', () => {
       searchQuery = searchInputEl.value;
       searchClearBtn.classList.toggle('is-visible', searchQuery.length > 0);
-      renderListSection();
+      // Debounced: re-filtering rebuilds every visible row, which typing
+      // fast enough would otherwise trigger on every single keystroke.
+      clearTimeout(searchDebounceTimer);
+      searchDebounceTimer = setTimeout(renderListSection, 150);
     });
     wrap.appendChild(searchInputEl);
 
@@ -234,6 +239,7 @@
     searchClearBtn.textContent = '✕';
     searchClearBtn.setAttribute('aria-label', 'Clear search');
     searchClearBtn.addEventListener('click', () => {
+      clearTimeout(searchDebounceTimer);
       searchQuery = '';
       searchInputEl.value = '';
       searchClearBtn.classList.remove('is-visible');

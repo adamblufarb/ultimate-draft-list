@@ -4,12 +4,27 @@
 (function (global) {
   const { normalize } = global.NameMatch;
 
+  // buildIndex re-normalizes every player name across every source (real
+  // lists run into the hundreds per source), and used to get called fresh
+  // on every filter click/keystroke and every single player-detail open —
+  // by far the biggest cost in either interaction. The result only changes
+  // when the sources themselves do, so it's cached here and invalidated
+  // centrally (see App.emit in app.js) on 'sources-changed' /
+  // 'remote-state-loaded' — the two events every add/edit/delete/reorder
+  // and remote-sync path already emits.
+  let cachedIndex = null;
+
+  function invalidateIndexCache() {
+    cachedIndex = null;
+  }
+
   // sources: [{ id, name, scoreType, players: [{rank, name, positions, score}] }]
   // Returns Map<key, { key, displayName, positions, bySource: { sourceId: {rank, positions, score} } }>
   // built from ALL sources, regardless of any Tab 1 selection — positions
   // and per-source detail shouldn't disappear just because a source is
   // unchecked in the combined-average view.
   function buildIndex(sources) {
+    if (cachedIndex) return cachedIndex;
     const map = new Map();
     sources.forEach((source) => {
       source.players.forEach((p) => {
@@ -26,6 +41,7 @@
         };
       });
     });
+    cachedIndex = map;
     return map;
   }
 
@@ -69,5 +85,5 @@
     return combineFromIndex(buildIndex(sources), selectedIds);
   }
 
-  global.Ranking = { computeCombined, buildIndex, combineFromIndex };
+  global.Ranking = { computeCombined, buildIndex, combineFromIndex, invalidateIndexCache };
 })(window);

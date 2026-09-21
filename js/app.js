@@ -10,7 +10,14 @@
     (listeners[event] = listeners[event] || []).push(cb);
   }
 
+  // 'sources-changed' and 'remote-state-loaded' are the two events every
+  // add/edit/delete/reorder and remote-sync path already emits whenever
+  // sources' content changes — the single choke point for invalidating
+  // Ranking's index cache, so no individual call site has to remember to.
   function emit(event, payload) {
+    if (event === 'sources-changed' || event === 'remote-state-loaded') {
+      Ranking.invalidateIndexCache();
+    }
     (listeners[event] || []).forEach((cb) => cb(payload));
   }
 
