@@ -9039,7 +9039,9 @@
     "scottie barnes"
   ],
   "myTeamKeys": [],
-  "breakoutLevels": {},
+  "breakoutLevels": {
+    "cedric coward": 1
+  },
   "sleeperLevels": {
     "matas buzelis": 1,
     "ivica zubac": 1,
