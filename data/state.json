@@ -9040,6 +9040,8 @@
   ],
   "myTeamKeys": [],
   "breakoutLevels": {},
-  "sleeperLevels": {},
+  "sleeperLevels": {
+    "matas buzelis": 1
+  },
   "doNotDraftKeys": []
 }
