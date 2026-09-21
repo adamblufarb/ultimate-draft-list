@@ -8067,12 +8067,12 @@
       "name": "Luka Doncic"
     },
     {
-      "key": "shai gilgeous alexander",
-      "name": "Shai Gilgeous-Alexander"
-    },
-    {
       "key": "victor wembanyama",
       "name": "Victor Wembanyama"
+    },
+    {
+      "key": "shai gilgeous alexander",
+      "name": "Shai Gilgeous-Alexander"
     },
     {
       "key": "giannis antetokounmpo",
@@ -8083,20 +8083,20 @@
       "name": "Cade Cunningham"
     },
     {
-      "key": "jalen johnson",
-      "name": "Jalen Johnson"
-    },
-    {
       "key": "anthony edwards",
       "name": "Anthony Edwards"
     },
     {
-      "key": "tyrese maxey",
-      "name": "Tyrese Maxey"
+      "key": "jalen johnson",
+      "name": "Jalen Johnson"
     },
     {
-      "key": "donovan mitchell",
-      "name": "Donovan Mitchell"
+      "key": "jayson tatum",
+      "name": "Jayson Tatum"
+    },
+    {
+      "key": "tyrese maxey",
+      "name": "Tyrese Maxey"
     },
     {
       "key": "alperen sengun",
@@ -8105,6 +8105,10 @@
     {
       "key": "scottie barnes",
       "name": "Scottie Barnes"
+    },
+    {
+      "key": "donovan mitchell",
+      "name": "Donovan Mitchell"
     },
     {
       "key": "josh giddey",
@@ -8129,10 +8133,6 @@
     {
       "key": "karl anthony towns",
       "name": "Karl-Anthony Towns"
-    },
-    {
-      "key": "jayson tatum",
-      "name": "Jayson Tatum"
     },
     {
       "key": "devin booker",
@@ -9024,6 +9024,19 @@
     }
   ],
   "draftedKeys": [],
-  "lockedKeys": [],
+  "lockedKeys": [
+    "nikola jokic",
+    "luka doncic",
+    "shai gilgeous alexander",
+    "victor wembanyama",
+    "giannis antetokounmpo",
+    "cade cunningham",
+    "anthony edwards",
+    "jalen johnson",
+    "jayson tatum",
+    "tyrese maxey",
+    "alperen sengun",
+    "scottie barnes"
+  ],
   "myTeamKeys": []
 }
