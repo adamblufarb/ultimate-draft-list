@@ -31,6 +31,7 @@
     App.on('sources-changed', onSourcesChanged);
     App.on('drafted-changed', () => { if (isVisible()) render(); });
     App.on('include-drafted-changed', () => { if (isVisible()) render(); });
+    App.on('tags-changed', () => { if (isVisible()) render(); });
     // A single lock toggle updates just that row's button in place rather
     // than rebuilding the whole list — a full container.innerHTML rebuild
     // right after the lock button had focus was resetting scroll to the
@@ -206,12 +207,21 @@
       gap: 6,
       renderRow: (item, i) => renderRow(item, i, avgByKey, index),
       canDrag: (key) => !App.isLocked(key),
+      dividerEvery: 10,
+      renderDivider: (count) => renderListDivider(count),
       onReorder: (newVisibleOrder) => {
         App.state.draftOrder = mergeReorder(App.state.draftOrder, newVisibleOrder);
         App.persist();
       }
     });
     reorderable.setItems(visibleItems);
+  }
+
+  function renderListDivider(count) {
+    const el = document.createElement('div');
+    el.className = 'list-divider';
+    el.textContent = '— ' + count + ' —';
+    return el;
   }
 
   function renderSearchBox() {
@@ -447,7 +457,25 @@
     row.appendChild(badge);
     row.appendChild(lockBtn);
     row.appendChild(name);
+    const tagsBadge = playerTagsBadge(item.key);
+    if (tagsBadge) row.appendChild(tagsBadge);
     return row;
+  }
+
+  // Breakout/sleeper/do-not-draft tags are only ever set from the player
+  // detail view — list rows just display whatever's active, right-aligned.
+  function playerTagsBadge(key) {
+    const parts = [];
+    const breakoutLevel = App.getBreakoutLevel(key);
+    if (breakoutLevel >= 2) parts.push('🌟'); else if (breakoutLevel === 1) parts.push('⭐');
+    const sleeperLevel = App.getSleeperLevel(key);
+    if (sleeperLevel >= 2) parts.push('😴'); else if (sleeperLevel === 1) parts.push('🥱');
+    if (App.isDoNotDraft(key)) parts.push('🚫');
+    if (parts.length === 0) return null;
+    const el = document.createElement('span');
+    el.className = 'player-tags';
+    el.textContent = parts.join(' ');
+    return el;
   }
 
   global.DraftTab = { init, show, render };

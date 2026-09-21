@@ -1,14 +1,15 @@
 /* Player detail overlay: combined rank (based on whichever sources are
-   currently selected in the calling tab's filter) as its own row up top,
-   then one square per source — every source, not just the special
-   avg/total ones — showing that source's rank and score side by side on
-   one row, with the currently-selected sources highlighted. Tapping a
-   source square toggles it in/out of the filter used for Combined Rank,
-   live. However the filter is left when the overlay closes (by the ✕, the
-   backdrop, Escape, or an action button) is reported back to whichever tab
-   opened it, via the optional onActiveIdsChange callback, so the tab's own
-   filter and order pick up the change too. Opened by tapping a player row
-   in the Rankings, Draft List, or My Team tab. */
+   currently selected in the calling tab's filter), plus the Breakout/
+   Sleeper/Do Not Draft tag toggles, share a row up top. Below that, one
+   square per source — every source, not just the special avg/total ones —
+   showing that source's rank and score side by side on one row, with the
+   currently-selected sources highlighted. Tapping a source square toggles
+   it in/out of the filter used for Combined Rank, live. However the filter
+   is left when the overlay closes (by the ✕, the backdrop, Escape, or an
+   action button) is reported back to whichever tab opened it, via the
+   optional onActiveIdsChange callback, so the tab's own filter and order
+   pick up the change too. Opened by tapping a player row in the Rankings,
+   Draft List, or My Team tab. */
 (function (global) {
   let overlayEl = null;
   // Re-pointed on every open() to that call's own close/sync logic — the
@@ -55,6 +56,15 @@
       empty.textContent = 'No data';
       card.appendChild(empty);
     }
+  }
+
+  function tagToggleButton(label) {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'tag-toggle';
+    btn.setAttribute('aria-label', label);
+    btn.title = label;
+    return btn;
   }
 
   function statCard(label, value) {
@@ -154,6 +164,46 @@
     combinedRow.className = 'detail-combined-row';
     const combinedCard = statCard('Combined Rank', null);
     combinedRow.appendChild(combinedCard);
+
+    // Breakout/sleeper cycle untagged -> level 1 -> level 2 -> untagged;
+    // do-not-draft just toggles on/off. Only settable here — list rows
+    // only ever display the result.
+    const breakoutBtn = tagToggleButton('Breakout');
+    breakoutBtn.addEventListener('click', () => {
+      App.cycleBreakoutLevel(key);
+      refreshTagButtons();
+    });
+    combinedRow.appendChild(breakoutBtn);
+
+    const sleeperBtn = tagToggleButton('Sleeper');
+    sleeperBtn.addEventListener('click', () => {
+      App.cycleSleeperLevel(key);
+      refreshTagButtons();
+    });
+    combinedRow.appendChild(sleeperBtn);
+
+    const doNotDraftBtn = tagToggleButton('Do Not Draft');
+    doNotDraftBtn.addEventListener('click', () => {
+      App.toggleDoNotDraft(key);
+      refreshTagButtons();
+    });
+    combinedRow.appendChild(doNotDraftBtn);
+
+    function refreshTagButtons() {
+      const breakoutLevel = App.getBreakoutLevel(key);
+      breakoutBtn.classList.toggle('is-active', breakoutLevel > 0);
+      breakoutBtn.textContent = breakoutLevel >= 2 ? '🌟' : '⭐';
+
+      const sleeperLevel = App.getSleeperLevel(key);
+      sleeperBtn.classList.toggle('is-active', sleeperLevel > 0);
+      sleeperBtn.textContent = sleeperLevel >= 2 ? '😴' : '🥱';
+
+      const doNotDraft = App.isDoNotDraft(key);
+      doNotDraftBtn.classList.toggle('is-active', doNotDraft);
+      doNotDraftBtn.textContent = '🚫';
+    }
+    refreshTagButtons();
+
     sheet.appendChild(combinedRow);
 
     function updateCombined() {

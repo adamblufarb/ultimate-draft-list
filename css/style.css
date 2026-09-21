@@ -235,11 +235,15 @@ body {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 20px;
-  padding: 5px 4px;
+  padding: 5px 10px;
   font: inherit;
   font-size: 12px;
   color: var(--text);
   cursor: pointer;
+  text-align: center;
+  text-align-last: center;
+  -webkit-appearance: none;
+  appearance: none;
 }
 
 .include-drafted-toggle {
@@ -707,12 +711,35 @@ body {
   border: 1px solid var(--danger);
 }
 
-.detail-combined-row .stat-card {
-  padding: 14px 12px;
+.detail-combined-row {
+  display: flex;
+  align-items: stretch;
+  gap: 8px;
 }
 
-.detail-combined-row .stat-value {
-  font-size: 26px;
+.detail-combined-row .stat-card {
+  flex: 1;
+  min-width: 0;
+}
+
+.tag-toggle {
+  flex-shrink: 0;
+  width: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-size: 22px;
+  padding: 0;
+  cursor: pointer;
+  -webkit-appearance: none;
+}
+
+.tag-toggle.is-active {
+  background: var(--accent);
+  border-color: var(--accent);
 }
 
 .detail-stats {
@@ -866,6 +893,25 @@ body {
   border: 1px solid var(--border);
   border-radius: 8px;
   padding: 1px 6px;
+  white-space: nowrap;
+}
+
+.player-tags {
+  flex-shrink: 0;
+  font-size: 16px;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.list-divider {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 0;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-dim);
   white-space: nowrap;
 }
 

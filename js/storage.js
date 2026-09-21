@@ -9,7 +9,10 @@
       draftOrder: null,      // [{ key, name }] custom order, or null if never initialized
       draftedKeys: [],       // normalized keys of players marked drafted (hidden unless "include drafted" is on)
       lockedKeys: [],        // normalized keys of players that stay put when the Draft List is reset
-      myTeamKeys: []          // normalized keys of players drafted by the user, in pick order
+      myTeamKeys: [],         // normalized keys of players drafted by the user, in pick order
+      breakoutLevels: {},    // key -> 1 (⭐) or 2 (🌟); absent/0 means untagged
+      sleeperLevels: {},     // key -> 1 (🥱) or 2 (😴); absent/0 means untagged
+      doNotDraftKeys: []     // normalized keys tagged "do not draft" (🚫)
     };
   }
 

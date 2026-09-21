@@ -12,16 +12,27 @@
     // canDrag(key): optional — return false to make that row's handle inert.
     //   Checked fresh on every pointerdown, not cached, so it stays correct
     //   even though rows aren't recreated when e.g. a lock toggles.
-    constructor(container, { renderRow, onReorder, gap = 0, canDrag }) {
+    // dividerEvery / renderDivider(count): optional — a non-draggable,
+    //   non-interactive marker (e.g. "— 10 —") inserted after every Nth
+    //   row. Rows keep their own uniform height/spacing; dividers just add
+    //   extra vertical space before the row they precede. Divider position
+    //   is index-based, not item-based, so it never moves mid-drag — only
+    //   the offset table (see _computeOffsets) needs to account for it.
+    constructor(container, { renderRow, onReorder, gap = 0, canDrag, dividerEvery = 0, renderDivider }) {
       this.container = container;
       this.renderRow = renderRow;
       this.onReorder = onReorder;
       this.gap = gap;
       this.canDrag = canDrag || (() => true);
+      this.dividerEvery = dividerEvery;
+      this.renderDivider = renderDivider || null;
       this.items = [];
       this.rows = [];
       this.rowHeight = 0;
       this.slotHeight = 0;
+      this.dividerHeight = 0;
+      this.dividerSlotHeight = 0;
+      this.offsets = [];
       this.dragState = null;
       this.container.style.position = 'relative';
     }
@@ -33,6 +44,24 @@
 
     getOrder() {
       return this.items.slice();
+    }
+
+    // offsets[i] = top px for row i, accounting for any divider slots
+    // inserted before it. Index-based and constant for the life of this
+    // render pass — reordering which item sits at index i never changes
+    // offsets[i] itself, so drag math and divider placement can both use
+    // it as a stable lookup table.
+    _computeOffsets() {
+      const offsets = [];
+      let cursor = 0;
+      for (let i = 0; i < this.rows.length; i++) {
+        if (this.dividerEvery > 0 && i > 0 && i % this.dividerEvery === 0) {
+          cursor += this.dividerSlotHeight;
+        }
+        offsets[i] = cursor;
+        cursor += this.slotHeight;
+      }
+      return offsets;
     }
 
     _renderAll() {
@@ -52,13 +81,43 @@
         if (this.rows.length > 0) {
           this.rowHeight = this.rows[0].getBoundingClientRect().height;
           this.slotHeight = this.rowHeight + this.gap;
-          this.rows.forEach((row, i) => {
-            row.style.top = (i * this.slotHeight) + 'px';
-            row.classList.toggle('row-alt', i % 2 === 1);
-          });
         }
+
+        if (this.dividerEvery > 0 && this.renderDivider) {
+          const probe = this.renderDivider(this.dividerEvery);
+          probe.style.position = 'absolute';
+          probe.style.visibility = 'hidden';
+          probe.style.left = '0';
+          probe.style.right = '0';
+          this.container.appendChild(probe);
+          this.dividerHeight = probe.getBoundingClientRect().height;
+          this.container.removeChild(probe);
+          this.dividerSlotHeight = this.dividerHeight + this.gap;
+        }
+
+        this.offsets = this._computeOffsets();
+
+        this.rows.forEach((row, i) => {
+          row.style.top = this.offsets[i] + 'px';
+          row.classList.toggle('row-alt', i % 2 === 1);
+        });
+
+        if (this.dividerEvery > 0 && this.renderDivider) {
+          for (let i = 0; i < this.rows.length; i++) {
+            if (i > 0 && i % this.dividerEvery === 0) {
+              const divider = this.renderDivider(i);
+              divider.style.position = 'absolute';
+              divider.style.left = '0';
+              divider.style.right = '0';
+              divider.style.top = (this.offsets[i] - this.dividerSlotHeight) + 'px';
+              divider.style.height = this.dividerHeight + 'px';
+              this.container.appendChild(divider);
+            }
+          }
+        }
+
         const totalHeight = this.rows.length > 0
-          ? (this.rows.length * this.slotHeight) - this.gap
+          ? this.offsets[this.rows.length - 1] + this.slotHeight - this.gap
           : 0;
         this.container.style.height = totalHeight + 'px';
         this._attachHandlers();
@@ -78,7 +137,7 @@
       if (!this.canDrag(row.dataset.key)) return;
       e.preventDefault();
       const startIndex = this.rows.indexOf(row);
-      const startTop = startIndex * this.slotHeight;
+      const startTop = this.offsets[startIndex];
 
       row.style.transition = 'none';
       row.style.zIndex = '10';
@@ -97,17 +156,34 @@
       row.addEventListener('pointercancel', onUp);
     }
 
+    // Nearest row index for a given pixel offset — a linear scan over the
+    // (monotonically increasing) offsets table. List lengths here run in
+    // the hundreds at most, so this stays effectively free even at
+    // pointermove's event rate.
+    _indexForTop(top) {
+      let closest = 0;
+      let closestDist = Infinity;
+      for (let i = 0; i < this.offsets.length; i++) {
+        const dist = Math.abs(this.offsets[i] - top);
+        if (dist < closestDist) {
+          closestDist = dist;
+          closest = i;
+        }
+      }
+      return closest;
+    }
+
     _onPointerMove(e) {
       const ds = this.dragState;
       if (!ds) return;
       const dy = e.clientY - ds.startY;
       if (!ds.moved && Math.abs(dy) > 4) ds.moved = true;
       let newTop = ds.startTop + dy;
-      const maxTop = (this.rows.length - 1) * this.slotHeight;
+      const maxTop = this.offsets[this.rows.length - 1];
       newTop = Math.max(0, Math.min(maxTop, newTop));
       ds.row.style.top = newTop + 'px';
 
-      const newIndex = Math.round(newTop / this.slotHeight);
+      const newIndex = this._indexForTop(newTop);
       if (newIndex !== ds.currentIndex) {
         this._moveItem(ds.currentIndex, newIndex);
         ds.currentIndex = newIndex;
@@ -123,7 +199,7 @@
       this.rows.forEach((r, i) => {
         r.classList.toggle('row-alt', i % 2 === 1);
         if (r === this.dragState.row) return;
-        r.style.top = (i * this.slotHeight) + 'px';
+        r.style.top = this.offsets[i] + 'px';
       });
     }
 
@@ -136,7 +212,7 @@
       row.removeEventListener('pointercancel', onUp);
 
       row.style.transition = '';
-      row.style.top = (ds.currentIndex * this.slotHeight) + 'px';
+      row.style.top = this.offsets[ds.currentIndex] + 'px';
       row.style.zIndex = '';
       row.classList.remove('dragging');
 

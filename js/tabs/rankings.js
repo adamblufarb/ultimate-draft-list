@@ -11,6 +11,7 @@
     App.on('sources-changed', onSourcesChanged);
     App.on('drafted-changed', render);
     App.on('include-drafted-changed', render);
+    App.on('tags-changed', render);
     App.on('remote-state-loaded', onSourcesChanged);
     render();
   }
@@ -78,6 +79,29 @@
     return wrap;
   }
 
+  // Breakout/sleeper/do-not-draft tags are only ever set from the player
+  // detail view — list rows just display whatever's active, right-aligned.
+  function playerTagsBadge(key) {
+    const parts = [];
+    const breakoutLevel = App.getBreakoutLevel(key);
+    if (breakoutLevel >= 2) parts.push('🌟'); else if (breakoutLevel === 1) parts.push('⭐');
+    const sleeperLevel = App.getSleeperLevel(key);
+    if (sleeperLevel >= 2) parts.push('😴'); else if (sleeperLevel === 1) parts.push('🥱');
+    if (App.isDoNotDraft(key)) parts.push('🚫');
+    if (parts.length === 0) return null;
+    const el = document.createElement('span');
+    el.className = 'player-tags';
+    el.textContent = parts.join(' ');
+    return el;
+  }
+
+  function renderListDivider(count) {
+    const el = document.createElement('div');
+    el.className = 'list-divider';
+    el.textContent = '— ' + count + ' —';
+    return el;
+  }
+
   function renderList(combined) {
     const wrap = document.createElement('div');
     wrap.className = 'rankings-list';
@@ -127,7 +151,14 @@
 
       item.appendChild(rankBadge);
       item.appendChild(nameEl);
+      const tagsBadge = playerTagsBadge(row.key);
+      if (tagsBadge) item.appendChild(tagsBadge);
       wrap.appendChild(item);
+
+      const position = index + 1;
+      if (position % 10 === 0 && position < visible.length) {
+        wrap.appendChild(renderListDivider(position));
+      }
     });
 
     return wrap;

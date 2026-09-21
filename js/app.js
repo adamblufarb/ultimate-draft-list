@@ -119,10 +119,50 @@
     emit('drafted-changed', { key, drafted: false });
   }
 
+  // Breakout/sleeper tags: 0 (untagged) -> 1 -> 2 -> back to 0. Only ever
+  // settable from the player detail view; list rows just display them.
+  function getBreakoutLevel(key) {
+    return state.breakoutLevels[key] || 0;
+  }
+
+  function cycleBreakoutLevel(key) {
+    const next = (getBreakoutLevel(key) + 1) % 3;
+    if (next > 0) state.breakoutLevels[key] = next; else delete state.breakoutLevels[key];
+    persist();
+    emit('tags-changed', { key });
+  }
+
+  function getSleeperLevel(key) {
+    return state.sleeperLevels[key] || 0;
+  }
+
+  function cycleSleeperLevel(key) {
+    const next = (getSleeperLevel(key) + 1) % 3;
+    if (next > 0) state.sleeperLevels[key] = next; else delete state.sleeperLevels[key];
+    persist();
+    emit('tags-changed', { key });
+  }
+
+  // Do Not Draft: a single on/off tag (no second level).
+  function isDoNotDraft(key) {
+    return state.doNotDraftKeys.includes(key);
+  }
+
+  function toggleDoNotDraft(key) {
+    const set = new Set(state.doNotDraftKeys);
+    if (set.has(key)) set.delete(key); else set.add(key);
+    state.doNotDraftKeys = Array.from(set);
+    persist();
+    emit('tags-changed', { key });
+  }
+
   global.App = {
     state, on, emit, persist, genId,
     isDrafted, setDrafted, getIncludeDrafted, setIncludeDrafted,
     isLocked, setLocked, unlockAll, undraftAll,
-    isOnMyTeam, draftedByMe, removeFromMyTeam
+    isOnMyTeam, draftedByMe, removeFromMyTeam,
+    getBreakoutLevel, cycleBreakoutLevel,
+    getSleeperLevel, cycleSleeperLevel,
+    isDoNotDraft, toggleDoNotDraft
   };
 })(window);
