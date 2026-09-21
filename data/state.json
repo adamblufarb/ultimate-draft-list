@@ -9039,9 +9039,7 @@
     "scottie barnes"
   ],
   "myTeamKeys": [],
-  "breakoutLevels": {
-    "cedric coward": 1
-  },
+  "breakoutLevels": {},
   "sleeperLevels": {
     "matas buzelis": 1,
     "ivica zubac": 1,
@@ -9050,7 +9048,8 @@
     "kristaps porzingis": 1,
     "kel el ware": 1,
     "cj mccollum": 1,
-    "ausar thompson": 1
+    "ausar thompson": 1,
+    "cedric coward": 1
   },
   "doNotDraftKeys": []
 }
