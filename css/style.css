@@ -185,6 +185,7 @@ body {
   display: flex;
   align-items: center;
   gap: 6px;
+  min-height: 32.5px;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 20px;
@@ -232,6 +233,7 @@ body {
 
 .pool-size-select {
   flex: 0 0 auto;
+  min-height: 32.5px;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 20px;
