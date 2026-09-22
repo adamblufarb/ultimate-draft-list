@@ -8054,6 +8054,14 @@
           "score": null
         }
       ]
+    },
+    {
+      "id": "src_mucyjff0_w6g63",
+      "name": "",
+      "url": "",
+      "rawText": "",
+      "scoreType": "none",
+      "players": []
     }
   ],
   "selectedSourceIds": [],
@@ -9055,5 +9063,9 @@
   },
   "doNotDraftKeys": [
     "donovan mitchell"
-  ]
+  ],
+  "dataList": {
+    "rawText": "",
+    "players": []
+  }
 }
