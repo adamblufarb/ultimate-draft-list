@@ -1,5 +1,5 @@
 /* Player detail overlay: name and position badge share a row up top, with
-   the player's age (and team, if known — "25 | DAL") from the Sources
+   the player's age (and team, if known — "25 · DAL") from the Sources
    tab's Data List below it. Height is parsed from the Data List too but
    not shown anywhere yet.
    Combined rank (based on whichever sources are currently selected in the
@@ -174,7 +174,7 @@
     const ageEl = document.createElement('div');
     ageEl.className = 'detail-age';
     ageEl.textContent = dataEntry
-      ? (dataEntry.team ? dataEntry.age + ' | ' + dataEntry.team : String(dataEntry.age))
+      ? (dataEntry.team ? dataEntry.age + ' · ' + dataEntry.team : String(dataEntry.age))
       : 'Age unknown';
     titleWrap.appendChild(ageEl);
 
