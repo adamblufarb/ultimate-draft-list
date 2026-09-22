@@ -1,9 +1,9 @@
 /* Tab 3 — Sources: add/edit/delete up to MAX_SOURCES ranking sources, paste
    raw rankings, preview the parsed result, and save. Each source shows a
    read-only summary once saved; "Edit" switches it back to the full form.
-   Also hosts the Data List — a single, separate paste-in list (name + age)
-   that never feeds any ranking; it's just extra info shown in the player
-   detail view. */
+   Also hosts the Data List — a single, separate paste-in list (name, age,
+   optionally team and height) that never feeds any ranking; it's just
+   extra info shown in the player detail view. */
 (function (global) {
   const MAX_SOURCES = Constants.MAX_SOURCES;
   let container;
@@ -423,7 +423,7 @@
 
     const desc = document.createElement('p');
     desc.className = 'source-view-meta';
-    desc.textContent = 'Extra per-player info (currently just age) shown in Player Detail — never used in any ranking.';
+    desc.textContent = 'Extra per-player info (age, team) shown in Player Detail — never used in any ranking.';
     card.appendChild(desc);
 
     const countLine = document.createElement('div');
@@ -458,17 +458,17 @@
 
     const desc = document.createElement('p');
     desc.className = 'source-view-meta';
-    desc.textContent = 'Extra per-player info (currently just age) shown in Player Detail — never used in any ranking.';
+    desc.textContent = 'Extra per-player info (age, team) shown in Player Detail — never used in any ranking.';
     card.appendChild(desc);
 
     const pasteLabel = document.createElement('label');
     pasteLabel.textContent = 'Paste player list';
     const pasteHint = document.createElement('p');
     pasteHint.className = 'paste-hint';
-    pasteHint.textContent = 'One player per block, separated by a blank line: Player Name, then Age.';
+    pasteHint.textContent = 'One player per block, separated by a blank line: Player Name, Age, Team (optional), Height (optional).';
     const textarea = document.createElement('textarea');
     textarea.rows = 8;
-    textarea.placeholder = 'LeBron James\n33\n\nNikola Jokic\n30';
+    textarea.placeholder = 'Santi Aldama\n25\nDAL\n7\'0"\n\nNikola Jokic\n30\nDEN\n6\'11"';
     textarea.value = App.state.dataList.rawText || '';
 
     const previewWrap = document.createElement('div');
@@ -495,8 +495,12 @@
           const tdAge = document.createElement('td');
           tdAge.className = 'preview-secondary';
           tdAge.textContent = e.age;
+          const tdTeam = document.createElement('td');
+          tdTeam.className = 'preview-secondary';
+          tdTeam.textContent = e.team || '—';
           tr.appendChild(tdName);
           tr.appendChild(tdAge);
+          tr.appendChild(tdTeam);
           tbody.appendChild(tr);
         });
         table.appendChild(tbody);

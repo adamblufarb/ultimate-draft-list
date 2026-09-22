@@ -13,7 +13,7 @@
       breakoutLevels: {},    // key -> 1 (⭐) or 2 (🌟); absent/0 means untagged
       sleeperLevels: {},     // key -> 1 (🥱) or 2 (😴); absent/0 means untagged
       doNotDraftKeys: [],    // normalized keys tagged "do not draft" (🚫)
-      dataList: { rawText: '', players: [] } // [{ name, age }] — extra player info shown only in Player Detail, never part of any ranking
+      dataList: { rawText: '', players: [] } // [{ name, age, team, height }] — extra player info shown only in Player Detail, never part of any ranking
     };
   }
 

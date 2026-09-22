@@ -65,9 +65,13 @@
     return { entries, warnings };
   }
 
-  // Parses the Data List's raw pasted text into [{ name, age }]. Same
-  // blank-line-separated block format as rankings, but each block is just
-  // Player Name then Age — no rank, no positions, no score.
+  // Parses the Data List's raw pasted text into [{ name, age, team, height }].
+  // Same blank-line-separated block format as rankings, but each block is:
+  //   Player Name
+  //   Age
+  //   Team     (optional)
+  //   Height   (optional)
+  // No rank, no positions, no score — this list never feeds any ranking.
   function parseDataList(rawText) {
     const text = (rawText || '').replace(/\r\n/g, '\n').replace(/\r/g, '\n');
     const blocks = text.split(/\n\s*\n+/).map((b) => b.trim()).filter(Boolean);
@@ -87,6 +91,8 @@
         return;
       }
       const age = parseInt(lines[1], 10);
+      const team = lines[2] || null;
+      const height = lines[3] || null;
 
       const key = name.toLowerCase();
       if (seenKeys.has(key)) {
@@ -94,7 +100,7 @@
         return;
       }
       seenKeys.add(key);
-      entries.push({ name, age });
+      entries.push({ name, age, team, height });
     });
 
     return { entries, warnings };

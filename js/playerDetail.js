@@ -1,5 +1,7 @@
 /* Player detail overlay: name and position badge share a row up top, with
-   the player's age (from the Sources tab's Data List, if any) below it.
+   the player's age (and team, if known — "25 | DAL") from the Sources
+   tab's Data List below it. Height is parsed from the Data List too but
+   not shown anywhere yet.
    Combined rank (based on whichever sources are currently selected in the
    calling tab's filter), plus the Breakout/Sleeper/Do Not Draft tag
    toggles, share the next row. Below that, one square per source — every
@@ -44,12 +46,12 @@
     return sortedA.every((id, i) => id === sortedB[i]);
   }
 
-  // Looks up age from the Data List by the same normalized-name matching
-  // used everywhere else — the Data List is never part of App.state.sources
-  // and has no bearing on any ranking, so this is its own small lookup.
-  function getPlayerAge(key) {
-    const match = App.state.dataList.players.find((p) => NameMatch.normalize(p.name) === key);
-    return match ? match.age : null;
+  // Looks up this player's Data List entry (age, team, height — height
+  // unused for now) by the same normalized-name matching used everywhere
+  // else. The Data List is never part of App.state.sources and has no
+  // bearing on any ranking, so this is its own small lookup.
+  function getDataListEntry(key) {
+    return App.state.dataList.players.find((p) => NameMatch.normalize(p.name) === key) || null;
   }
 
   function setCardValue(card, value) {
@@ -168,10 +170,12 @@
     }
     titleWrap.appendChild(nameRow);
 
-    const age = getPlayerAge(key);
+    const dataEntry = getDataListEntry(key);
     const ageEl = document.createElement('div');
     ageEl.className = 'detail-age';
-    ageEl.textContent = age !== null ? 'Age ' + age : 'Age unknown';
+    ageEl.textContent = dataEntry
+      ? (dataEntry.team ? dataEntry.age + ' | ' + dataEntry.team : String(dataEntry.age))
+      : 'Age unknown';
     titleWrap.appendChild(ageEl);
 
     const closeBtn = document.createElement('button');
