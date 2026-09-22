@@ -1,6 +1,18 @@
 /* Touch-friendly drag-to-reorder list using Pointer Events (works for mouse,
    touch, and pen) with absolute-positioned rows for smooth reflow. */
 (function (global) {
+  // Row and divider heights are driven entirely by fixed CSS (.draft-row's
+  // explicit height; .list-divider's padding + line-height), never by
+  // variable content, so once measured they're the same on every future
+  // render — including new ReorderableList instances, since draft.js
+  // creates a fresh one on every render() call. Caching them here (module
+  // scope, not per-instance) turns what was two forced synchronous
+  // reflows on every single filter/search re-render into two, ever, for
+  // the life of the page — this was the single biggest cost in that path
+  // with a couple hundred rows on a real phone.
+  let cachedRowHeight = null;
+  let cachedDividerHeight = null;
+
   class ReorderableList {
     // container: element to hold rows (position:relative is set for you)
     // renderRow(item, index): returns a row element; may include a child
@@ -79,19 +91,25 @@
 
       requestAnimationFrame(() => {
         if (this.rows.length > 0) {
-          this.rowHeight = this.rows[0].getBoundingClientRect().height;
+          if (cachedRowHeight === null) {
+            cachedRowHeight = this.rows[0].getBoundingClientRect().height;
+          }
+          this.rowHeight = cachedRowHeight;
           this.slotHeight = this.rowHeight + this.gap;
         }
 
         if (this.dividerEvery > 0 && this.renderDivider) {
-          const probe = this.renderDivider(this.dividerEvery);
-          probe.style.position = 'absolute';
-          probe.style.visibility = 'hidden';
-          probe.style.left = '0';
-          probe.style.right = '0';
-          this.container.appendChild(probe);
-          this.dividerHeight = probe.getBoundingClientRect().height;
-          this.container.removeChild(probe);
+          if (cachedDividerHeight === null) {
+            const probe = this.renderDivider(this.dividerEvery);
+            probe.style.position = 'absolute';
+            probe.style.visibility = 'hidden';
+            probe.style.left = '0';
+            probe.style.right = '0';
+            this.container.appendChild(probe);
+            cachedDividerHeight = probe.getBoundingClientRect().height;
+            this.container.removeChild(probe);
+          }
+          this.dividerHeight = cachedDividerHeight;
           this.dividerSlotHeight = this.dividerHeight + this.gap;
         }
 
