@@ -1,15 +1,17 @@
-/* Player detail overlay: combined rank (based on whichever sources are
-   currently selected in the calling tab's filter), plus the Breakout/
-   Sleeper/Do Not Draft tag toggles, share a row up top. Below that, one
-   square per source — every source, not just the special avg/total ones —
-   showing that source's rank and score side by side on one row, with the
-   currently-selected sources highlighted. Tapping a source square toggles
-   it in/out of the filter used for Combined Rank, live. However the filter
-   is left when the overlay closes (by the ✕, the backdrop, Escape, or an
-   action button) is reported back to whichever tab opened it, via the
-   optional onActiveIdsChange callback, so the tab's own filter and order
-   pick up the change too. Opened by tapping a player row in the Rankings,
-   Draft List, or My Team tab. */
+/* Player detail overlay: name and position badge share a row up top, with
+   the player's age (from the Sources tab's Data List, if any) below it.
+   Combined rank (based on whichever sources are currently selected in the
+   calling tab's filter), plus the Breakout/Sleeper/Do Not Draft tag
+   toggles, share the next row. Below that, one square per source — every
+   source, not just the special avg/total ones — showing that source's rank
+   and score side by side on one row, with the currently-selected sources
+   highlighted. Tapping a source square toggles it in/out of the filter
+   used for Combined Rank, live. However the filter is left when the
+   overlay closes (by the ✕, the backdrop, Escape, or an action button) is
+   reported back to whichever tab opened it, via the optional
+   onActiveIdsChange callback, so the tab's own filter and order pick up
+   the change too. Opened by tapping a player row in the Rankings, Draft
+   List, or My Team tab. */
 (function (global) {
   let overlayEl = null;
   // Re-pointed on every open() to that call's own close/sync logic — the
@@ -40,6 +42,14 @@
     const sortedA = a.slice().sort();
     const sortedB = b.slice().sort();
     return sortedA.every((id, i) => id === sortedB[i]);
+  }
+
+  // Looks up age from the Data List by the same normalized-name matching
+  // used everywhere else — the Data List is never part of App.state.sources
+  // and has no bearing on any ranking, so this is its own small lookup.
+  function getPlayerAge(key) {
+    const match = App.state.dataList.players.find((p) => NameMatch.normalize(p.name) === key);
+    return match ? match.age : null;
   }
 
   function setCardValue(card, value) {
@@ -143,14 +153,27 @@
     const header = document.createElement('div');
     header.className = 'detail-header';
     const titleWrap = document.createElement('div');
+
+    const nameRow = document.createElement('div');
+    nameRow.className = 'detail-name-row';
     const nameEl = document.createElement('h2');
     nameEl.className = 'detail-name';
     nameEl.textContent = entry.displayName;
-    const posEl = document.createElement('div');
-    posEl.className = 'detail-positions';
-    posEl.textContent = entry.positions || 'Position unknown';
-    titleWrap.appendChild(nameEl);
-    titleWrap.appendChild(posEl);
+    nameRow.appendChild(nameEl);
+    if (entry.positions) {
+      const posBadge = document.createElement('span');
+      posBadge.className = 'player-positions detail-positions-badge';
+      posBadge.textContent = entry.positions;
+      nameRow.appendChild(posBadge);
+    }
+    titleWrap.appendChild(nameRow);
+
+    const age = getPlayerAge(key);
+    const ageEl = document.createElement('div');
+    ageEl.className = 'detail-age';
+    ageEl.textContent = age !== null ? 'Age ' + age : 'Age unknown';
+    titleWrap.appendChild(ageEl);
+
     const closeBtn = document.createElement('button');
     closeBtn.className = 'btn-link detail-close';
     closeBtn.textContent = '✕';

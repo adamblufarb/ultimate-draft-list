@@ -51,6 +51,15 @@ Notes:
   ```
   Rank and Name are required; Positions and Score are each optional.
 
-Player names are matched across sources by normalizing them (case, accents, punctuation, Jr./Sr./III-style suffixes).
+  Below the sources sits the **Data List** — a single, separate list that's never part of any ranking (it doesn't feed the combined average, the source filter, or the per-source grid in player detail). It's just extra per-player info to show in the player detail view — for now, age. Paste format is simpler, no rank or blank fields: one player per block, name then age —
+  ```
+  LeBron James
+  40
 
-Tapping a player opens a detail view with their combined rank average (based on whichever sources are selected in the tab you opened it from) and three tag toggles sharing a row up top: ⭐/🌟 Breakout, 🥱/😴 Sleeper (each tap cycles untagged → level 1 → level 2 → untagged), and 🚫 Do Not Draft (a plain on/off toggle). A toggle turns solid blue while tagged — this is the only place you can set these; list rows just display whichever emoji ends up active, on the right of the row. Below that, one square per source — every source you've added, not just the special avg/total ones. Each square shows that source's rank and, if it has one, its actual stat (e.g. an avg or total) side by side on the same row; squares for sources currently active are highlighted blue. Tap a square to toggle that source in or out — the Combined Rank at the top updates live. Closing the view (✕, tapping outside, or Escape) carries that filter change back to the tab you opened it from, updating its chips and — in Draft List — resyncing the order to match. At the bottom: "Mark Drafted"/"Undraft" plus "Drafted by me"/"Remove from My Team" — the latter both marks them drafted and adds them to the My Team tab in one step.
+  Nikola Jokic
+  30
+  ```
+
+Player names are matched across sources (and the Data List) by normalizing them (case, accents, punctuation, Jr./Sr./III-style suffixes).
+
+Tapping a player opens a detail view. Up top, their name (with a position badge — same style as the list rows' — to its right, sized to match the name's own row height) and, below that, their age from the Data List (or "Age unknown" if they're not in it). Next, their combined rank average (based on whichever sources are selected in the tab you opened it from) and three tag toggles share a row: ⭐/🌟 Breakout, 🥱/😴 Sleeper (each tap cycles untagged → level 1 → level 2 → untagged), and 🚫 Do Not Draft (a plain on/off toggle). A toggle turns solid blue while tagged — this is the only place you can set these; list rows just display whichever emoji ends up active, on the right of the row. Below that, one square per source — every source you've added, not just the special avg/total ones. Each square shows that source's rank and, if it has one, its actual stat (e.g. an avg or total) side by side on the same row; squares for sources currently active are highlighted blue. Tap a square to toggle that source in or out — the Combined Rank at the top updates live. Closing the view (✕, tapping outside, or Escape) carries that filter change back to the tab you opened it from, updating its chips and — in Draft List — resyncing the order to match. At the bottom: "Mark Drafted"/"Undraft" plus "Drafted by me"/"Remove from My Team" — the latter both marks them drafted and adds them to the My Team tab in one step.

@@ -1,10 +1,14 @@
-/* Tab 3 — Data Sources: add/edit/delete up to MAX_SOURCES sources, paste raw
-   rankings, preview the parsed result, and save. Each source shows a
-   read-only summary once saved; "Edit" switches it back to the full form. */
+/* Tab 3 — Sources: add/edit/delete up to MAX_SOURCES ranking sources, paste
+   raw rankings, preview the parsed result, and save. Each source shows a
+   read-only summary once saved; "Edit" switches it back to the full form.
+   Also hosts the Data List — a single, separate paste-in list (name + age)
+   that never feeds any ranking; it's just extra info shown in the player
+   detail view. */
 (function (global) {
   const MAX_SOURCES = Constants.MAX_SOURCES;
   let container;
   const editingIds = new Set();
+  let dataListEditing = false;
 
   function init(rootEl) {
     container = rootEl;
@@ -51,6 +55,8 @@
       empty.textContent = 'No sources yet. Add one and paste in a ranked player list.';
       container.insertBefore(empty, addBtn);
     }
+
+    container.appendChild(dataListEditing ? renderDataListEditCard() : renderDataListViewCard());
   }
 
   function onAddSource() {
@@ -390,6 +396,153 @@
     if (urlLink) card.appendChild(urlLink);
     card.appendChild(scoreLabel);
     card.appendChild(scoreSelect);
+    card.appendChild(pasteLabel);
+    card.appendChild(pasteHint);
+    card.appendChild(textarea);
+    card.appendChild(warningsWrap);
+    card.appendChild(previewWrap);
+    card.appendChild(actions);
+
+    refreshPreview();
+    return card;
+  }
+
+  // Data List: not a ranking source — never feeds any combined average or
+  // the per-source filter/grid. Just extra per-player info (currently:
+  // age) looked up by name and shown only in the player detail view. A
+  // single fixed list (unlike Sources, there's only ever one), so no
+  // add/delete/reorder — just edit its paste text in place.
+  function renderDataListViewCard() {
+    const card = document.createElement('div');
+    card.className = 'source-card source-card-view';
+
+    const nameEl = document.createElement('div');
+    nameEl.className = 'source-view-name';
+    nameEl.textContent = 'Data List';
+    card.appendChild(nameEl);
+
+    const desc = document.createElement('p');
+    desc.className = 'source-view-meta';
+    desc.textContent = 'Extra per-player info (currently just age) shown in Player Detail — never used in any ranking.';
+    card.appendChild(desc);
+
+    const countLine = document.createElement('div');
+    countLine.className = 'source-view-meta';
+    const count = App.state.dataList.players.length;
+    countLine.textContent = `${count} player${count === 1 ? '' : 's'} parsed`;
+    card.appendChild(countLine);
+
+    const actions = document.createElement('div');
+    actions.className = 'source-actions';
+    const editBtn = document.createElement('button');
+    editBtn.className = 'btn btn-secondary';
+    editBtn.textContent = 'Edit';
+    editBtn.addEventListener('click', () => {
+      dataListEditing = true;
+      render();
+    });
+    actions.appendChild(editBtn);
+    card.appendChild(actions);
+
+    return card;
+  }
+
+  function renderDataListEditCard() {
+    const card = document.createElement('div');
+    card.className = 'source-card';
+
+    const nameEl = document.createElement('div');
+    nameEl.className = 'source-view-name';
+    nameEl.textContent = 'Data List';
+    card.appendChild(nameEl);
+
+    const desc = document.createElement('p');
+    desc.className = 'source-view-meta';
+    desc.textContent = 'Extra per-player info (currently just age) shown in Player Detail — never used in any ranking.';
+    card.appendChild(desc);
+
+    const pasteLabel = document.createElement('label');
+    pasteLabel.textContent = 'Paste player list';
+    const pasteHint = document.createElement('p');
+    pasteHint.className = 'paste-hint';
+    pasteHint.textContent = 'One player per block, separated by a blank line: Player Name, then Age.';
+    const textarea = document.createElement('textarea');
+    textarea.rows = 8;
+    textarea.placeholder = 'LeBron James\n33\n\nNikola Jokic\n30';
+    textarea.value = App.state.dataList.rawText || '';
+
+    const previewWrap = document.createElement('div');
+    previewWrap.className = 'preview-wrap';
+    const warningsWrap = document.createElement('div');
+    warningsWrap.className = 'preview-warnings';
+
+    function refreshPreview() {
+      const { entries, warnings } = Parser.parseDataList(textarea.value);
+      previewWrap.innerHTML = '';
+      const heading = document.createElement('div');
+      heading.className = 'preview-heading';
+      heading.textContent = `Parsed ${entries.length} player${entries.length === 1 ? '' : 's'}`;
+      previewWrap.appendChild(heading);
+
+      if (entries.length > 0) {
+        const table = document.createElement('table');
+        table.className = 'preview-table';
+        const tbody = document.createElement('tbody');
+        entries.slice(0, 500).forEach((e) => {
+          const tr = document.createElement('tr');
+          const tdName = document.createElement('td');
+          tdName.textContent = e.name;
+          const tdAge = document.createElement('td');
+          tdAge.className = 'preview-secondary';
+          tdAge.textContent = e.age;
+          tr.appendChild(tdName);
+          tr.appendChild(tdAge);
+          tbody.appendChild(tr);
+        });
+        table.appendChild(tbody);
+        previewWrap.appendChild(table);
+      }
+
+      warningsWrap.innerHTML = '';
+      warnings.forEach((w) => {
+        const p = document.createElement('p');
+        p.className = 'warning';
+        p.textContent = w;
+        warningsWrap.appendChild(p);
+      });
+    }
+
+    let debounceTimer = null;
+    textarea.addEventListener('input', () => {
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(refreshPreview, 150);
+    });
+
+    const actions = document.createElement('div');
+    actions.className = 'source-actions';
+
+    const saveBtn = document.createElement('button');
+    saveBtn.className = 'btn btn-primary';
+    saveBtn.textContent = 'Save';
+    saveBtn.addEventListener('click', () => {
+      const { entries } = Parser.parseDataList(textarea.value);
+      App.state.dataList.rawText = textarea.value;
+      App.state.dataList.players = entries;
+      dataListEditing = false;
+      App.persist();
+      render();
+    });
+    actions.appendChild(saveBtn);
+
+    const cancelBtn = document.createElement('button');
+    cancelBtn.className = 'btn btn-secondary';
+    cancelBtn.textContent = 'Cancel';
+    cancelBtn.addEventListener('click', () => {
+      dataListEditing = false;
+      render();
+    });
+    actions.appendChild(cancelBtn);
+
     card.appendChild(pasteLabel);
     card.appendChild(pasteHint);
     card.appendChild(textarea);

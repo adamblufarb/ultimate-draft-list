@@ -65,5 +65,40 @@
     return { entries, warnings };
   }
 
-  global.Parser = { parseRankings };
+  // Parses the Data List's raw pasted text into [{ name, age }]. Same
+  // blank-line-separated block format as rankings, but each block is just
+  // Player Name then Age — no rank, no positions, no score.
+  function parseDataList(rawText) {
+    const text = (rawText || '').replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+    const blocks = text.split(/\n\s*\n+/).map((b) => b.trim()).filter(Boolean);
+    const entries = [];
+    const warnings = [];
+    const seenKeys = new Set();
+
+    blocks.forEach((block, blockIndex) => {
+      const lines = block.split('\n').map((l) => l.trim()).filter(Boolean);
+      if (lines.length < 2) {
+        warnings.push(`Skipped block ${blockIndex + 1}: needs a name and an age.`);
+        return;
+      }
+      const name = lines[0];
+      if (!isNumericToken(lines[1])) {
+        warnings.push(`Skipped block ${blockIndex + 1}: "${lines[1]}" isn't a valid age.`);
+        return;
+      }
+      const age = parseInt(lines[1], 10);
+
+      const key = name.toLowerCase();
+      if (seenKeys.has(key)) {
+        warnings.push(`Duplicate entry skipped: "${name}"`);
+        return;
+      }
+      seenKeys.add(key);
+      entries.push({ name, age });
+    });
+
+    return { entries, warnings };
+  }
+
+  global.Parser = { parseRankings, parseDataList };
 })(window);

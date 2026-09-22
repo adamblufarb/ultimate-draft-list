@@ -672,12 +672,24 @@ body {
   gap: 10px;
 }
 
-.detail-name {
-  margin: 0;
-  font-size: 20px;
+.detail-name-row {
+  display: flex;
+  align-items: stretch;
+  gap: 8px;
 }
 
-.detail-positions {
+.detail-name {
+  margin: 0;
+  font-size: 23px;
+}
+
+.detail-positions-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.detail-age {
   font-size: 16px;
   font-weight: 600;
   color: var(--text-dim);
