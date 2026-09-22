@@ -7,7 +7,12 @@
    were. Locked players keep their exact position on resync. Each position
    chip also shows how many of the next N undrafted picks hold that
    position (N chosen from the pool-size dropdown), flagging scarcity in
-   orange/red as that count runs low relative to N. */
+   orange/red as that count runs low relative to N. Smart Search (its own
+   overlay, js/smartSearch.js) replaces the position filter's narrowing
+   with a structured "metric A vs metric B, by at least N ranks" query
+   while active; touching any of the quick filters (source, position,
+   Include Drafted Players) clears it, but tagging a player or the plain
+   search box do not. */
 (function (global) {
   const POSITIONS = ['PG', 'SG', 'SF', 'PF', 'C'];
   const POOL_SIZE_OPTIONS = [10, 20, 30, 40, 50, 75, 100];
@@ -24,6 +29,8 @@
   // is scoped to — e.g. 20 means "of the next 20 available players, how
   // many hold this position".
   let poolSize = 20;
+  // { fieldA, direction, fieldB, threshold } from Smart Search, or null.
+  let smartSearchCriteria = null;
 
   function init(rootEl) {
     container = rootEl;
@@ -171,6 +178,7 @@
     }
 
     container.appendChild(renderSearchBox());
+    container.appendChild(renderSmartSearchRow());
     container.appendChild(renderSourceToggles());
     container.appendChild(renderPositionToggles());
     container.appendChild(renderIncludeDraftedRow());
@@ -190,9 +198,14 @@
     const fullOrder = App.state.draftOrder || [];
     const includeDrafted = App.getIncludeDrafted();
     const query = searchQuery.trim().toLowerCase();
+    const smartMatches = smartSearchCriteria ? computeSmartSearchMatches(index, smartSearchCriteria) : null;
     const visibleItems = fullOrder.filter((item) => {
       if (!includeDrafted && App.isDrafted(item.key)) return false;
-      if (selectedPositions.length > 0 && !matchesPositionFilter(item.key, index)) return false;
+      if (smartMatches) {
+        if (!smartMatches.has(item.key)) return false;
+      } else if (selectedPositions.length > 0 && !matchesPositionFilter(item.key, index)) {
+        return false;
+      }
       if (query && !item.name.toLowerCase().includes(query)) return false;
       return true;
     });
@@ -204,6 +217,8 @@
         empty.textContent = 'No players yet — add a source to build your draft list.';
       } else if (query) {
         empty.textContent = 'No players match your search.';
+      } else if (smartMatches) {
+        empty.textContent = 'No players match your Smart Search.';
       } else if (selectedPositions.length > 0) {
         empty.textContent = 'No players match the selected position filter.';
       } else {
@@ -308,6 +323,69 @@
     return counts;
   }
 
+  // Resolves one player's "rank" for a given Smart Search metric id:
+  // 'combined' is the same average the Combined Rank badges use (over the
+  // currently checked List filter sources); anything else is that
+  // player's literal rank on that specific source's list. Returns null if
+  // the player isn't ranked under that metric at all (excluded from the
+  // comparison, same as any other missing-data case elsewhere).
+  function computeSmartSearchMatches(index, criteria) {
+    const combined = Ranking.combineFromIndex(index, selectedIds);
+    const combinedByKey = new Map(combined.map((r) => [r.key, r.avg]));
+
+    function valueFor(key, fieldId) {
+      if (fieldId === 'combined') {
+        return combinedByKey.has(key) ? combinedByKey.get(key) : null;
+      }
+      const entry = index.get(key);
+      const bySource = entry && entry.bySource[fieldId];
+      return bySource ? bySource.rank : null;
+    }
+
+    const matches = new Set();
+    (App.state.draftOrder || []).forEach((item) => {
+      const a = valueFor(item.key, criteria.fieldA);
+      const b = valueFor(item.key, criteria.fieldB);
+      if (a === null || b === null) return;
+      // "Better" means a lower/better rank number — A at least `threshold`
+      // ranks better than B means B's number exceeds A's by that much.
+      const diff = criteria.direction === 'better' ? (b - a) : (a - b);
+      if (diff >= criteria.threshold) matches.add(item.key);
+    });
+    return matches;
+  }
+
+  function openSmartSearch() {
+    const metrics = [{ id: 'combined', label: 'Combined Rank' }]
+      .concat(App.state.sources.map((s) => ({ id: s.id, label: s.name || 'Untitled source' })));
+    SmartSearch.open(metrics, smartSearchCriteria, (criteria) => {
+      smartSearchCriteria = criteria;
+      render();
+    });
+  }
+
+  function renderSmartSearchRow() {
+    const wrap = document.createElement('div');
+    wrap.className = 'source-toggles draft-actions-row';
+
+    if (!smartSearchCriteria) {
+      wrap.appendChild(renderToggleChip('Smart Search', false, openSmartSearch));
+    } else {
+      wrap.appendChild(renderToggleChip('Edit Search', true, openSmartSearch));
+      const clearBtn = document.createElement('button');
+      clearBtn.type = 'button';
+      clearBtn.className = 'tag-toggle';
+      clearBtn.textContent = '✕';
+      clearBtn.setAttribute('aria-label', 'Clear Smart Search');
+      clearBtn.addEventListener('click', () => {
+        smartSearchCriteria = null;
+        render();
+      });
+      wrap.appendChild(clearBtn);
+    }
+    return wrap;
+  }
+
   function renderToggleChip(text, isActive, onClick) {
     const btn = document.createElement('button');
     btn.type = 'button';
@@ -341,6 +419,7 @@
       btn.appendChild(posEl);
       btn.appendChild(countEl);
       btn.addEventListener('click', () => {
+        smartSearchCriteria = null;
         if (isActive) {
           selectedPositions = selectedPositions.filter((p) => p !== pos);
         } else {
@@ -375,6 +454,7 @@
     wrap.className = 'source-toggles include-drafted-toggle draft-actions-row';
     const isActive = App.getIncludeDrafted();
     wrap.appendChild(renderToggleChip('Include Drafted Players', isActive, () => {
+      smartSearchCriteria = null;
       App.setIncludeDrafted(!isActive);
     }));
     const unlockBtn = renderToggleChip('Unlock All', false, () => {
@@ -396,6 +476,7 @@
     App.state.sources.forEach((source) => {
       const isActive = selectedIds.includes(source.id);
       wrap.appendChild(renderToggleChip(source.name || 'Untitled source', isActive, () => {
+        smartSearchCriteria = null;
         if (isActive) {
           selectedIds = selectedIds.filter((id) => id !== source.id);
         } else {
