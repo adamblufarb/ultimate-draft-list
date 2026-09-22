@@ -11,7 +11,14 @@
     App.on('sources-changed', onSourcesChanged);
     App.on('drafted-changed', render);
     App.on('include-drafted-changed', render);
-    App.on('tags-changed', render);
+    // Tagging a player from the (still-open) player detail view fires this
+    // repeatedly in quick succession — a full render() would tear down and
+    // rebuild the whole list each time, resetting scroll to the top. Update
+    // just that row's tags in place instead, same fix as the lock button.
+    App.on('tags-changed', (payload) => {
+      if (payload && payload.key) updateRowTags(payload.key);
+      else render();
+    });
     App.on('remote-state-loaded', onSourcesChanged);
     render();
   }
@@ -79,6 +86,16 @@
     return wrap;
   }
 
+  function updateRowTags(key) {
+    if (!container) return;
+    const row = container.querySelector('.rank-row[data-key="' + CSS.escape(key) + '"]');
+    if (!row) return;
+    const existingBadge = row.querySelector('.player-tags');
+    if (existingBadge) existingBadge.remove();
+    const newBadge = playerTagsBadge(key);
+    if (newBadge) row.appendChild(newBadge);
+  }
+
   // Breakout/sleeper/do-not-draft tags are only ever set from the player
   // detail view — list rows just display whatever's active, right-aligned.
   function playerTagsBadge(key) {
@@ -127,6 +144,7 @@
       const drafted = App.isDrafted(row.key);
       const item = document.createElement('div');
       item.className = 'rank-row' + (drafted ? ' is-drafted' : '') + (index % 2 === 1 ? ' row-alt' : '');
+      item.dataset.key = row.key;
       item.addEventListener('click', () => PlayerDetail.open(row.key, selectedIds, (newIds) => {
         selectedIds = newIds;
         render();

@@ -31,7 +31,14 @@
     App.on('sources-changed', onSourcesChanged);
     App.on('drafted-changed', () => { if (isVisible()) render(); });
     App.on('include-drafted-changed', () => { if (isVisible()) render(); });
-    App.on('tags-changed', () => { if (isVisible()) render(); });
+    // Same reasoning as locked-changed below — tagging a player from the
+    // still-open player detail view fires this repeatedly, and a full
+    // render() would reset scroll to the top each time.
+    App.on('tags-changed', (payload) => {
+      if (!isVisible()) return;
+      if (payload && payload.key) updateRowTags(payload.key);
+      else render();
+    });
     // A single lock toggle updates just that row's button in place rather
     // than rebuilding the whole list — a full container.innerHTML rebuild
     // right after the lock button had focus was resetting scroll to the
@@ -75,6 +82,16 @@
       handle.classList.toggle('is-locked', locked);
       handle.title = locked ? "Locked — can't be dragged" : '';
     }
+  }
+
+  function updateRowTags(key) {
+    if (!container) return;
+    const row = container.querySelector('.draft-row[data-key="' + CSS.escape(key) + '"]');
+    if (!row) return;
+    const existingBadge = row.querySelector('.player-tags');
+    if (existingBadge) existingBadge.remove();
+    const newBadge = playerTagsBadge(key);
+    if (newBadge) row.appendChild(newBadge);
   }
 
   function onSourcesChanged() {
