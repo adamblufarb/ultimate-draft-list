@@ -8099,16 +8099,16 @@
       "name": "Tyrese Maxey"
     },
     {
+      "key": "donovan mitchell",
+      "name": "Donovan Mitchell"
+    },
+    {
       "key": "alperen sengun",
       "name": "Alperen Sengun"
     },
     {
       "key": "scottie barnes",
       "name": "Scottie Barnes"
-    },
-    {
-      "key": "donovan mitchell",
-      "name": "Donovan Mitchell"
     },
     {
       "key": "josh giddey",
@@ -9033,10 +9033,7 @@
     "cade cunningham",
     "anthony edwards",
     "jalen johnson",
-    "jayson tatum",
-    "tyrese maxey",
-    "alperen sengun",
-    "scottie barnes"
+    "jayson tatum"
   ],
   "myTeamKeys": [],
   "breakoutLevels": {
