@@ -9041,7 +9041,6 @@
   "breakoutLevels": {
     "cedric coward": 1,
     "cooper flagg": 1,
-    "tyrese haliburton": 1,
     "lamelo ball": 1
   },
   "sleeperLevels": {
@@ -9054,7 +9053,8 @@
     "cj mccollum": 1,
     "ausar thompson": 1,
     "cedric coward": 1,
-    "chet holmgren": 1
+    "chet holmgren": 1,
+    "tyrese haliburton": 1
   },
   "doNotDraftKeys": [
     "donovan mitchell"
