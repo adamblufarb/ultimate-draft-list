@@ -16,7 +16,7 @@
     DraftedPlayersTab.init(panels.drafted);
     SourcesTab.init(panels.sources);
 
-    // My Team, Drafted Players, and Sources already stay in sync reactively
+    // My Team, Draft Board, and Sources already stay in sync reactively
     // (each listens for the relevant state-change events; Sources only
     // re-renders on its own explicit actions, so in-progress paste/edit text
     // is never lost by switching tabs away and back). Draft is the

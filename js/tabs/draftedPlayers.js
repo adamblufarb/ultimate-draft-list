@@ -1,4 +1,4 @@
-/* Tab 3 — Drafted Players: every player marked drafted (by any means —
+/* Tab 3 — Draft Board: every player marked drafted (by any means —
    "Mark Drafted" or "Drafted by me"), in the order they were drafted.
    That order is fixed — it's a record of what happened during the draft,
    not something you reorder — so this list has no drag handle, unlike
