@@ -185,14 +185,20 @@
   // health. seasonStats is ordered most-recent-first: values[0] = most
   // recent, values[1] = middle, values[2] = oldest. Two adjacent-year
   // windows are checked independently — oldest→middle and middle→most
-  // recent — each needing the right direction in at least 3 of these 6
-  // categories; the specific 3-or-more don't have to be identical between
-  // the two windows, but at least 2 categories must be common to both, so
-  // a real sustained trend reads differently from two unrelated one-year
-  // blips. A category only counts toward a window if it moved by at least
-  // its own minimum amount — a 0.1 blip in PTS shouldn't count the same as
-  // a real jump. Same categories and thresholds as the Show Data overlay's
-  // single-year arrows (js/seasonStatsOverlay.js).
+  // recent. A category only counts toward a window if it moved by at
+  // least its own minimum amount — a 0.1 blip in PTS shouldn't count the
+  // same as a real jump — and moving by a whole extra multiple of that
+  // minimum counts extra: 2x the minimum is worth 2 points, 3x is worth 3,
+  // and so on (Math.floor(change / minChange)). Same categories and
+  // thresholds as the Show Data overlay's single-year arrows (js/
+  // seasonStatsOverlay.js). A player earns the badge either way:
+  //  - the broad, single-year way: at least 4 of the 6 categories moved
+  //    the right way from last season (middle→most-recent) alone, however
+  //    small each move was past its own minimum; or
+  //  - the sustained way: each window totals at least 3 points, and at
+  //    least 2 categories qualified in both — so a real sustained trend
+  //    reads differently from two unrelated one-year blips, without
+  //    requiring the exact same 3-or-more stats both years.
   const TREND_MIN_CHANGE = {
     pts_per_g: 1,
     trb_per_g: 1,
@@ -202,14 +208,17 @@
     ft_per_g: 1
   };
   const TREND_CATEGORIES = Object.keys(TREND_MIN_CHANGE);
-  const TREND_MIN_CATEGORIES = 3;
+  const TREND_MIN_POINTS = 3;
   const TREND_MIN_OVERLAP = 2;
+  const TREND_BROAD_MIN_CATEGORIES = 4;
 
   // direction: 1 for improvement (a rise counts), -1 for decline (a drop
   // counts).
   function getTrendEmoji(key, direction, emoji) {
     const windowOldToMid = new Set();
     const windowMidToNew = new Set();
+    let pointsOldToMid = 0;
+    let pointsMidToNew = 0;
     TREND_CATEGORIES.forEach((statId) => {
       const minChange = TREND_MIN_CHANGE[statId];
       const values = state.seasonStats.map((slot) => {
@@ -219,16 +228,30 @@
         return Number.isNaN(value) ? null : value;
       });
       const [recent, middle, oldest] = values;
-      if (oldest !== null && middle !== null && direction * (middle - oldest) >= minChange) {
-        windowOldToMid.add(statId);
+      if (oldest !== null && middle !== null) {
+        const change = direction * (middle - oldest);
+        if (change >= minChange) {
+          windowOldToMid.add(statId);
+          pointsOldToMid += Math.floor(change / minChange);
+        }
       }
-      if (middle !== null && recent !== null && direction * (recent - middle) >= minChange) {
-        windowMidToNew.add(statId);
+      if (middle !== null && recent !== null) {
+        const change = direction * (recent - middle);
+        if (change >= minChange) {
+          windowMidToNew.add(statId);
+          pointsMidToNew += Math.floor(change / minChange);
+        }
       }
     });
-    if (windowOldToMid.size < TREND_MIN_CATEGORIES || windowMidToNew.size < TREND_MIN_CATEGORIES) {
-      return null;
-    }
+
+    // Broad single-year rule: last season alone moved 4+ of the 6
+    // categories the right way — enough on its own, no matter how the
+    // season before that looked.
+    if (windowMidToNew.size >= TREND_BROAD_MIN_CATEGORIES) return emoji;
+
+    // Sustained 2-year rule: each window needs enough total points, and
+    // at least 2 categories have to be the ones carrying both windows.
+    if (pointsOldToMid < TREND_MIN_POINTS || pointsMidToNew < TREND_MIN_POINTS) return null;
     let overlap = 0;
     windowOldToMid.forEach((id) => { if (windowMidToNew.has(id)) overlap += 1; });
     return overlap >= TREND_MIN_OVERLAP ? emoji : null;

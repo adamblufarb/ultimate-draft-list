@@ -7,10 +7,11 @@
    tags along right after FT even though it isn't a main category itself.
    One of those 6 rows also gets a small ⬆️/⬇️ next to its value when it
    moved by at least that stat's own minimum amount from the season
-   before — the single-year version of the health emoji's aggregate ⬆️/⬇️
-   badge (App.getImprovementEmoji/getDeclineEmoji), which needs a
-   sustained 2-year trend across all 3 seasons instead of just one (same
-   categories and thresholds as there).
+   before — ⏫/⏬ instead once it moved by at least *double* that amount —
+   the single-year version of the health emoji's aggregate ⬆️/⬇️ badge
+   (App.getImprovementEmoji/getDeclineEmoji), which needs a sustained
+   2-year trend across all 3 seasons instead of just one (same categories
+   and thresholds as there).
    Same overlay chrome as Player Detail/Smart Search (backdrop, slide-up
    sheet, close on backdrop tap/Escape/✕); purely a read-only view, so
    closing it never has anything to report back. */
@@ -130,10 +131,13 @@
         if (!Number.isNaN(thisValue) && !Number.isNaN(olderValue)) {
           const change = thisValue - olderValue;
           const minChange = MAIN_CATEGORY_MIN_CHANGE[col.id];
-          if (Math.abs(change) >= minChange) {
+          const points = Math.floor(Math.abs(change) / minChange);
+          if (points >= 1) {
             const arrow = document.createElement('span');
             arrow.className = 'season-stat-improved';
-            arrow.textContent = change > 0 ? ' ⬆️' : ' ⬇️';
+            const doubled = points >= 2;
+            if (change > 0) arrow.textContent = doubled ? ' ⏫' : ' ⬆️';
+            else arrow.textContent = doubled ? ' ⏬' : ' ⬇️';
             valueEl.appendChild(arrow);
           }
         }
