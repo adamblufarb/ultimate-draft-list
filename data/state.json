@@ -9025,7 +9025,9 @@
   ],
   "draftedKeys": [
     "anthony davis",
-    "jalen brunson"
+    "jalen brunson",
+    "trae young",
+    "amen thompson"
   ],
   "lockedKeys": [
     "nikola jokic",
@@ -9040,7 +9042,9 @@
     "tyrese maxey",
     "alperen sengun"
   ],
-  "myTeamKeys": [],
+  "myTeamKeys": [
+    "amen thompson"
+  ],
   "breakoutLevels": {
     "cedric coward": 1,
     "cooper flagg": 1,
