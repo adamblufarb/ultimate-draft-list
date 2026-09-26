@@ -192,7 +192,7 @@
   // and so on (Math.floor(change / minChange)). Same categories and
   // thresholds as the Show Data overlay's single-year arrows (js/
   // seasonStatsOverlay.js). A player earns the badge either way:
-  //  - the broad, single-year way: at least 4 of the 6 categories moved
+  //  - the broad, single-year way: at least 5 of the 6 categories moved
   //    the right way from last season (middle→most-recent) alone, however
   //    small each move was past its own minimum; or
   //  - the sustained way: each window totals at least 3 points, and at
@@ -210,7 +210,7 @@
   const TREND_CATEGORIES = Object.keys(TREND_MIN_CHANGE);
   const TREND_MIN_POINTS = 3;
   const TREND_MIN_OVERLAP = 2;
-  const TREND_BROAD_MIN_CATEGORIES = 4;
+  const TREND_BROAD_MIN_CATEGORIES = 5;
 
   // direction: 1 for improvement (a rise counts), -1 for decline (a drop
   // counts).
@@ -244,7 +244,7 @@
       }
     });
 
-    // Broad single-year rule: last season alone moved 4+ of the 6
+    // Broad single-year rule: last season alone moved 5+ of the 6
     // categories the right way — enough on its own, no matter how the
     // season before that looked.
     if (windowMidToNew.size >= TREND_BROAD_MIN_CATEGORIES) return emoji;
