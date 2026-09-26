@@ -705,6 +705,12 @@ body {
   justify-content: center;
 }
 
+.detail-health-icon {
+  display: flex;
+  align-items: center;
+  font-size: 20px;
+}
+
 .detail-age {
   font-size: 16px;
   font-weight: 600;

@@ -27,6 +27,12 @@
     if (overlayEl) overlayEl.classList.remove('open');
   }
 
+  // Age/Team/Position are dropped even for a season uploaded before this
+  // filter existed (Parser.parseSeasonStatsHtml now excludes them for any
+  // upload going forward) — shown elsewhere already (Data List, the
+  // position badge), not wanted a third time here.
+  const HIDDEN_COLUMN_IDS = new Set(['age', 'team_name_abbr', 'pos']);
+
   function seasonBlock(slot, playerEntry) {
     const block = document.createElement('div');
     block.className = 'season-stats-block';
@@ -46,7 +52,7 @@
 
     const grid = document.createElement('div');
     grid.className = 'season-stats-grid';
-    slot.columns.forEach((col) => {
+    slot.columns.filter((col) => !HIDDEN_COLUMN_IDS.has(col.id)).forEach((col) => {
       const row = document.createElement('div');
       row.className = 'season-stat-row';
       const labelEl = document.createElement('span');

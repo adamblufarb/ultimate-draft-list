@@ -156,6 +156,31 @@
     emit('tags-changed', { key });
   }
 
+  // Health emoji, derived from Season Stats (Sources tab) — not a user
+  // toggle like the tags above, just computed from games played. 💪 needs
+  // all 3 season slots to have data for this player and every one to be
+  // 65+ games (missing a season means it can't be confirmed, so no badge);
+  // 🚑 needs 54-or-fewer games in at least 2 of however many seasons do
+  // have data for them. Shared by Draft List (on every row) and Player
+  // Detail (next to the position badge).
+  const HEALTH_DURABLE_GAMES = 65;
+  const HEALTH_INJURY_GAMES = 54;
+
+  function getHealthEmoji(key) {
+    const gamesPerSeason = state.seasonStats.map((slot) => {
+      const entry = slot.players.find((p) => p.key === key);
+      if (!entry) return null;
+      const games = parseInt(entry.values.games, 10);
+      return Number.isNaN(games) ? null : games;
+    });
+    if (gamesPerSeason.every((g) => g !== null && g >= HEALTH_DURABLE_GAMES)) {
+      return '💪';
+    }
+    const lowSeasons = gamesPerSeason.filter((g) => g !== null && g <= HEALTH_INJURY_GAMES).length;
+    if (lowSeasons >= 2) return '🚑';
+    return null;
+  }
+
   global.App = {
     state, on, emit, persist, genId,
     isDrafted, setDrafted, getIncludeDrafted, setIncludeDrafted,
@@ -163,6 +188,7 @@
     isOnMyTeam, draftedByMe, removeFromMyTeam,
     getBreakoutLevel, cycleBreakoutLevel,
     getSleeperLevel, cycleSleeperLevel,
-    isDoNotDraft, toggleDoNotDraft
+    isDoNotDraft, toggleDoNotDraft,
+    getHealthEmoji
   };
 })(window);

@@ -5,6 +5,14 @@
    committed into the repo. */
 (function (global) {
   const TOKEN_KEY = 'udo_github_token';
+  // Set the moment a local change is scheduled to sync, cleared only once a
+  // push actually lands on GitHub. A page load (or an app reopen) that sees
+  // this still set means the previous session ended before its change was
+  // confirmed pushed — e.g. a big upload plus a hard refresh a moment
+  // later, faster than the debounce+network round trip. Guards against the
+  // load-time remote fetch silently overwriting a local change that never
+  // made it out.
+  const DIRTY_KEY = 'udo_sync_dirty';
   const REPO_OWNER = 'adamblufarb';
   const REPO_NAME = 'ultimate-draft-list';
   const BRANCH = 'main';
@@ -14,6 +22,18 @@
   const listeners = {};
   function on(event, cb) { (listeners[event] = listeners[event] || []).push(cb); }
   function emit(event, payload) { (listeners[event] || []).forEach((cb) => cb(payload)); }
+
+  function markDirty() {
+    try { localStorage.setItem(DIRTY_KEY, '1'); } catch (e) { /* ignore */ }
+  }
+
+  function clearDirty() {
+    try { localStorage.removeItem(DIRTY_KEY); } catch (e) { /* ignore */ }
+  }
+
+  function isDirty() {
+    try { return !!localStorage.getItem(DIRTY_KEY); } catch (e) { return false; }
+  }
 
   // disconnected | loading | idle | pending | syncing | error
   let status = 'disconnected';
@@ -105,7 +125,11 @@
     if (!isConnected()) return;
     setStatus('syncing');
     try {
-      const content = utf8ToBase64(JSON.stringify(state, null, 2));
+      // Compact, not pretty-printed — nobody reads this file's diffs by
+      // hand, and season stats can add well over a megabyte, so keeping the
+      // payload smaller means less time in flight (and less risk of a
+      // refresh interrupting the request before it lands).
+      const content = utf8ToBase64(JSON.stringify(state));
       const body = { message: 'Update draft data', content, branch: BRANCH };
       if (sha) body.sha = sha;
 
@@ -137,6 +161,7 @@
 
       const result = await res.json();
       sha = result.content.sha;
+      clearDirty();
       setStatus('idle');
     } catch (err) {
       setStatus('error', err.message || 'Failed to save to GitHub');
@@ -145,9 +170,12 @@
 
   // Called on every App.persist(). Debounces so a burst of local changes
   // (e.g. a drag-reorder, several quick edits) collapses into one commit
-  // instead of one per change.
+  // instead of one per change. Marks dirty immediately (not just once the
+  // debounce fires) — the whole point is to catch a change that never made
+  // it out because the tab was refreshed or closed before that happened.
   function scheduleSync(state) {
     if (!isConnected()) return;
+    markDirty();
     pendingState = state;
     setStatus('pending');
     clearTimeout(debounceTimer);
@@ -158,5 +186,5 @@
     }, DEBOUNCE_MS);
   }
 
-  global.GithubSync = { on, getToken, setToken, isConnected, getStatus, fetchRemote, scheduleSync };
+  global.GithubSync = { on, getToken, setToken, isConnected, getStatus, fetchRemote, scheduleSync, pushNow, isDirty };
 })(window);

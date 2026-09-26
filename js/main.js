@@ -44,14 +44,22 @@
     // If this device has a GitHub sync token, pull the latest saved state
     // in the background and patch it in once it arrives — renders local
     // data immediately rather than blocking the first paint on a network
-    // round trip.
+    // round trip. But if the *previous* session ended before its own last
+    // change was confirmed pushed (GithubSync.isDirty() — e.g. a big
+    // upload followed by a hard refresh before the debounce+network round
+    // trip finished), never let this fetch overwrite it: push what's
+    // already loaded from localStorage first instead.
     if (GithubSync.isConnected()) {
-      GithubSync.fetchRemote().then((remote) => {
-        if (!remote) return;
-        Object.assign(App.state, remote);
-        Storage.save(App.state);
-        App.emit('remote-state-loaded');
-      });
+      if (GithubSync.isDirty()) {
+        GithubSync.pushNow(App.state);
+      } else {
+        GithubSync.fetchRemote().then((remote) => {
+          if (!remote) return;
+          Object.assign(App.state, remote);
+          Storage.save(App.state);
+          App.emit('remote-state-loaded');
+        });
+      }
     }
   });
 })();

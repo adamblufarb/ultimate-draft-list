@@ -154,13 +154,21 @@
         if (!token) return;
         GithubSync.setToken(token);
         render();
-        const remote = await GithubSync.fetchRemote();
-        if (remote) {
-          Object.assign(App.state, remote);
-          Storage.save(App.state);
-          App.emit('remote-state-loaded');
+        // Same guard as the app-load path in main.js: if a leftover dirty
+        // flag says the local state here was never confirmed pushed under
+        // a previous token, push it instead of risking overwriting it with
+        // whatever's already on GitHub.
+        if (GithubSync.isDirty()) {
+          await GithubSync.pushNow(App.state);
         } else {
-          App.persist();
+          const remote = await GithubSync.fetchRemote();
+          if (remote) {
+            Object.assign(App.state, remote);
+            Storage.save(App.state);
+            App.emit('remote-state-loaded');
+          } else {
+            App.persist();
+          }
         }
         render();
       });

@@ -169,6 +169,13 @@
       posBadge.textContent = entry.positions;
       nameRow.appendChild(posBadge);
     }
+    const healthEmoji = App.getHealthEmoji(key);
+    if (healthEmoji) {
+      const healthEl = document.createElement('span');
+      healthEl.className = 'detail-health-icon';
+      healthEl.textContent = healthEmoji;
+      nameRow.appendChild(healthEl);
+    }
     titleWrap.appendChild(nameRow);
 
     const dataEntry = getDataListEntry(key);
