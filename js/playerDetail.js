@@ -1,6 +1,6 @@
 /* Player detail overlay: name and position badge share a row up top, along
-   with the health (💪/🚑) and improvement (⬆️) emoji if this player has
-   one, with the player's age (and team, if known — "25 · DAL") from the
+   with the health (💪/🚑) and trend (⬆️/⬇️) emoji if this player has one,
+   with the player's age (and team, if known — "25 · DAL") from the
    Sources tab's Data List below it. Height is parsed from the Data List
    too but not shown anywhere yet.
    Combined rank (based on whichever source weights are currently active in
@@ -198,6 +198,13 @@
       improvementEl.className = 'detail-health-icon';
       improvementEl.textContent = improvementEmoji;
       nameRow.appendChild(improvementEl);
+    }
+    const declineEmoji = App.getDeclineEmoji(key);
+    if (declineEmoji) {
+      const declineEl = document.createElement('span');
+      declineEl.className = 'detail-health-icon';
+      declineEl.textContent = declineEmoji;
+      nameRow.appendChild(declineEl);
     }
     titleWrap.appendChild(nameRow);
 

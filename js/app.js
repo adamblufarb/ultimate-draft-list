@@ -181,29 +181,53 @@
     return null;
   }
 
-  // Improvement emoji, same Season Stats source as health — ⬆️ needs data
-  // in all 3 season slots for this player, with a strictly increasing
-  // (oldest < middle < most recent) trend in at least 3 of these 5
-  // categories. seasonStats is ordered most-recent-first, so "increasing"
-  // reads back-to-front: values[2] (oldest) < values[1] < values[0] (most
-  // recent).
-  const IMPROVEMENT_CATEGORIES = ['pts_per_g', 'ast_per_g', 'stl_per_g', 'blk_per_g', 'trb_per_g'];
-  const IMPROVEMENT_MIN_CATEGORIES = 3;
+  // Improvement (⬆️) / decline (⬇️) emoji, same Season Stats source as
+  // health. seasonStats is ordered most-recent-first: values[0] = most
+  // recent, values[1] = middle, values[2] = oldest. Two adjacent-year
+  // windows are checked independently — oldest→middle and middle→most
+  // recent — each needing the right direction in at least 3 of these 5
+  // categories; the specific 3-or-more don't have to be identical between
+  // the two windows, but at least 2 categories must be common to both, so
+  // a real sustained trend reads differently from two unrelated one-year
+  // blips.
+  const TREND_CATEGORIES = ['pts_per_g', 'ast_per_g', 'stl_per_g', 'blk_per_g', 'trb_per_g'];
+  const TREND_MIN_CATEGORIES = 3;
+  const TREND_MIN_OVERLAP = 2;
 
-  function getImprovementEmoji(key) {
-    let improvedCount = 0;
-    IMPROVEMENT_CATEGORIES.forEach((statId) => {
+  // direction: 1 for improvement (a rise counts), -1 for decline (a drop
+  // counts).
+  function getTrendEmoji(key, direction, emoji) {
+    const windowOldToMid = new Set();
+    const windowMidToNew = new Set();
+    TREND_CATEGORIES.forEach((statId) => {
       const values = state.seasonStats.map((slot) => {
         const entry = slot.players.find((p) => p.key === key);
         if (!entry) return null;
         const value = parseFloat(entry.values[statId]);
         return Number.isNaN(value) ? null : value;
       });
-      if (values.every((v) => v !== null) && values[2] < values[1] && values[1] < values[0]) {
-        improvedCount += 1;
+      const [recent, middle, oldest] = values;
+      if (oldest !== null && middle !== null && direction * (middle - oldest) > 0) {
+        windowOldToMid.add(statId);
+      }
+      if (middle !== null && recent !== null && direction * (recent - middle) > 0) {
+        windowMidToNew.add(statId);
       }
     });
-    return improvedCount >= IMPROVEMENT_MIN_CATEGORIES ? '⬆️' : null;
+    if (windowOldToMid.size < TREND_MIN_CATEGORIES || windowMidToNew.size < TREND_MIN_CATEGORIES) {
+      return null;
+    }
+    let overlap = 0;
+    windowOldToMid.forEach((id) => { if (windowMidToNew.has(id)) overlap += 1; });
+    return overlap >= TREND_MIN_OVERLAP ? emoji : null;
+  }
+
+  function getImprovementEmoji(key) {
+    return getTrendEmoji(key, 1, '⬆️');
+  }
+
+  function getDeclineEmoji(key) {
+    return getTrendEmoji(key, -1, '⬇️');
   }
 
   global.App = {
@@ -214,6 +238,6 @@
     getBreakoutLevel, cycleBreakoutLevel,
     getSleeperLevel, cycleSleeperLevel,
     isDoNotDraft, toggleDoNotDraft,
-    getHealthEmoji, getImprovementEmoji
+    getHealthEmoji, getImprovementEmoji, getDeclineEmoji
   };
 })(window);

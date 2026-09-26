@@ -17,10 +17,11 @@
    time sets it to 1.5x instead of the usual 1x, shown as a darker chip;
    "Total"-type sources start off by default. Each row also gets a health
    emoji computed from Season Stats (Sources tab) — 💪 for 65+ games in all
-   3 seasons, 🚑 for 54-or-fewer games in at least 2 of them — and an
-   improvement emoji (⬆️) for year-over-year growth in at least 3 of
-   PTS/AST/STL/BLK/TRB across all 3 seasons — both shown only here, not in
-   the other lists. */
+   3 seasons, 🚑 for 54-or-fewer games in at least 2 of them — and a trend
+   emoji (⬆️/⬇️, App.getImprovementEmoji/getDeclineEmoji) for a sustained
+   2-year rise or fall in at least 3 of PTS/AST/STL/BLK/TRB, with at least
+   2 of the same categories trending both years — both shown only here,
+   not in the other lists. */
 (function (global) {
   const POSITIONS = ['PG', 'SG', 'SF', 'PF', 'C'];
   const POOL_SIZE_OPTIONS = [10, 20, 30, 40, 50, 75, 100];
@@ -567,7 +568,7 @@
 
   // Breakout/sleeper/do-not-draft tags are only ever set from the player
   // detail view — list rows just display whatever's active, right-aligned.
-  // The health and improvement emoji (if any) always lead, ahead of the
+  // The health and trend emoji (if any) always lead, ahead of the
   // user-set tags.
   function playerTagsBadge(key) {
     const parts = [];
@@ -575,6 +576,8 @@
     if (healthEmoji) parts.push(healthEmoji);
     const improvementEmoji = App.getImprovementEmoji(key);
     if (improvementEmoji) parts.push(improvementEmoji);
+    const declineEmoji = App.getDeclineEmoji(key);
+    if (declineEmoji) parts.push(declineEmoji);
     const breakoutLevel = App.getBreakoutLevel(key);
     if (breakoutLevel >= 2) parts.push('🌟'); else if (breakoutLevel === 1) parts.push('⭐');
     const sleeperLevel = App.getSleeperLevel(key);

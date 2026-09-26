@@ -1,11 +1,14 @@
 /* Season Stats overlay: opened from Player Detail's "Show Data" button.
    Shows every uploaded season (Sources tab's Season Stats slots, most
    recent first) as its own block of label:value stat rows — whatever
-   columns that season's file happened to have, in the file's own order.
-   A PTS/AST/STL/BLK/TRB row also gets a small ⬆️ next to its value when it
-   improved (strictly increased) over that same stat the season before —
-   the single-year version of the health emoji's aggregate ⬆️ badge (App.
-   getImprovementEmoji), which needs the trend across all 3 seasons.
+   columns that season's file happened to have, in the file's own order,
+   except the 5 main categories (PTS/AST/STL/BLK/TRB) are pulled up to
+   right after MP so they're not buried among the shooting splits.
+   One of those 5 rows also gets a small ⬆️/⬇️ next to its value when it
+   moved (strictly) up or down from that same stat the season before —
+   the single-year version of the health emoji's aggregate ⬆️/⬇️ badge
+   (App.getImprovementEmoji/getDeclineEmoji), which needs a sustained
+   2-year trend across all 3 seasons instead of just one.
    Same overlay chrome as Player Detail/Smart Search (backdrop, slide-up
    sheet, close on backdrop tap/Escape/✕); purely a read-only view, so
    closing it never has anything to report back. */
@@ -37,9 +40,27 @@
   // position badge), not wanted a third time here.
   const HIDDEN_COLUMN_IDS = new Set(['age', 'team_name_abbr', 'pos']);
 
-  // Same 5 categories, and the same "higher is better" assumption, as
-  // App.getImprovementEmoji's aggregate 3-season badge.
-  const IMPROVEMENT_COLUMN_IDS = new Set(['pts_per_g', 'ast_per_g', 'stl_per_g', 'blk_per_g', 'trb_per_g']);
+  // Same 5 categories, in this fixed display order, as App's aggregate
+  // ⬆️/⬇️ badges — used both to reorder columns (pulled up right after MP)
+  // and to decide which rows can get a single-year arrow.
+  const MAIN_CATEGORY_IDS = ['pts_per_g', 'ast_per_g', 'stl_per_g', 'blk_per_g', 'trb_per_g'];
+  const MAIN_CATEGORY_SET = new Set(MAIN_CATEGORY_IDS);
+
+  // Moves the 5 main categories to right after MP, wherever they'd
+  // otherwise fall (Basketball-Reference's own export puts them near the
+  // end, after every shooting-split column) — everything else keeps its
+  // original relative order. If a file has no MP column at all, the main
+  // categories just lead.
+  function reorderColumnsForDisplay(columns) {
+    const mpIndex = columns.findIndex((c) => c.id === 'mp_per_g');
+    const mainCols = MAIN_CATEGORY_IDS.map((id) => columns.find((c) => c.id === id)).filter(Boolean);
+    if (mpIndex === -1) {
+      return mainCols.concat(columns.filter((c) => !MAIN_CATEGORY_SET.has(c.id)));
+    }
+    const before = columns.slice(0, mpIndex + 1);
+    const after = columns.slice(mpIndex + 1).filter((c) => !MAIN_CATEGORY_SET.has(c.id));
+    return before.concat(mainCols, after);
+  }
 
   // olderEntry: this same player's row in the season immediately before
   // this one (one slot older — seasonStats is most-recent-first), or null
@@ -65,7 +86,8 @@
 
     const grid = document.createElement('div');
     grid.className = 'season-stats-grid';
-    slot.columns.filter((col) => !HIDDEN_COLUMN_IDS.has(col.id)).forEach((col) => {
+    const displayColumns = reorderColumnsForDisplay(slot.columns).filter((col) => !HIDDEN_COLUMN_IDS.has(col.id));
+    displayColumns.forEach((col) => {
       const row = document.createElement('div');
       row.className = 'season-stat-row';
       const labelEl = document.createElement('span');
@@ -76,14 +98,15 @@
       const rawValue = playerEntry.values[col.id];
       valueEl.textContent = rawValue || '—';
 
-      if (IMPROVEMENT_COLUMN_IDS.has(col.id) && olderEntry) {
+      if (MAIN_CATEGORY_SET.has(col.id) && olderEntry) {
         const thisValue = parseFloat(rawValue);
         const olderValue = parseFloat(olderEntry.values[col.id]);
-        if (!Number.isNaN(thisValue) && !Number.isNaN(olderValue) && thisValue > olderValue) {
+        if (!Number.isNaN(thisValue) && !Number.isNaN(olderValue)) {
           const arrow = document.createElement('span');
           arrow.className = 'season-stat-improved';
-          arrow.textContent = ' ⬆️';
-          valueEl.appendChild(arrow);
+          if (thisValue > olderValue) arrow.textContent = ' ⬆️';
+          else if (thisValue < olderValue) arrow.textContent = ' ⬇️';
+          if (arrow.textContent) valueEl.appendChild(arrow);
         }
       }
 
