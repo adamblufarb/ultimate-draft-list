@@ -21,9 +21,9 @@
    emoji (⬆️/⬇️, App.getImprovementEmoji/getDeclineEmoji) for either 5+
    points in PTS/AST/STL/BLK/TRB/FT just last season, or a sustained
    2-year version (3+ points each year, with 2 of the same categories
-   carrying both years) — either way, 2x a stat's minimum is worth 2
-   points, not just 1 — both shown only here,
-   not in the other lists. */
+   carrying both years) — either way, 2x a stat's minimum (or more) is
+   worth 2 points, capped there so one huge single-stat swing can't
+   qualify alone — both shown only here, not in the other lists. */
 (function (global) {
   const POSITIONS = ['PG', 'SG', 'SF', 'PF', 'C'];
   const POOL_SIZE_OPTIONS = [10, 20, 30, 40, 50, 75, 100];

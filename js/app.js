@@ -177,9 +177,11 @@
   // recent. A category only counts toward a window if it moved by at
   // least its own minimum amount — a 0.1 blip in PTS shouldn't count the
   // same as a real jump — and moving by a whole extra multiple of that
-  // minimum counts extra: 2x the minimum is worth 2 points, 3x is worth 3,
-  // and so on (Math.floor(change / minChange)). Same categories and
-  // thresholds as the Show Data overlay's single-year arrows (js/
+  // minimum counts extra: 2x the minimum (or more) is worth 2 points, same
+  // as a plain 1x is worth 1 — capped at 2 per category, so one huge swing
+  // in a single stat can't singlehandedly clear the broad rule's bar; the
+  // ⬆️/⏫ (or ⬇️/⏬) shown per-stat in the Show Data overlay always matches
+  // exactly what was scored. Same categories and thresholds as there (js/
   // seasonStatsOverlay.js). A player earns the badge either way:
   //  - the broad, single-year way: at least 5 points' worth moved the
   //    right way from last season (middle→most-recent) alone; or
@@ -220,14 +222,14 @@
         const change = direction * (middle - oldest);
         if (change >= minChange) {
           windowOldToMid.add(statId);
-          pointsOldToMid += Math.floor(change / minChange);
+          pointsOldToMid += Math.min(2, Math.floor(change / minChange));
         }
       }
       if (middle !== null && recent !== null) {
         const change = direction * (recent - middle);
         if (change >= minChange) {
           windowMidToNew.add(statId);
-          pointsMidToNew += Math.floor(change / minChange);
+          pointsMidToNew += Math.min(2, Math.floor(change / minChange));
         }
       }
     });
