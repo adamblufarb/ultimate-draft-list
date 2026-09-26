@@ -466,11 +466,6 @@
       App.unlockAll();
     });
     wrap.appendChild(unlockBtn);
-    const undraftBtn = renderToggleChip('Undraft All', false, () => {
-      if (!confirm('Undraft all players?')) return;
-      App.undraftAll();
-    });
-    wrap.appendChild(undraftBtn);
     return wrap;
   }
 

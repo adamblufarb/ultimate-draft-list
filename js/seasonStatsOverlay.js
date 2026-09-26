@@ -12,6 +12,7 @@
    (App.getImprovementEmoji/getDeclineEmoji), which needs a sustained
    2-year trend across all 3 seasons instead of just one (same categories
    and thresholds as there).
+   Team is pushed to the very bottom of each block, after everything else.
    Same overlay chrome as Player Detail/Smart Search (backdrop, slide-up
    sheet, close on backdrop tap/Escape/✕); purely a read-only view, so
    closing it never has anything to report back. */
@@ -37,11 +38,11 @@
     if (overlayEl) overlayEl.classList.remove('open');
   }
 
-  // Age/Team/Position are dropped even for a season uploaded before this
-  // filter existed (Parser.parseSeasonStatsHtml now excludes them for any
-  // upload going forward) — shown elsewhere already (Data List, the
-  // position badge), not wanted a third time here.
-  const HIDDEN_COLUMN_IDS = new Set(['age', 'team_name_abbr', 'pos']);
+  // Age/Position are dropped — shown elsewhere already (Data List, the
+  // position badge), not wanted a third time here. Team is kept, but
+  // pushed to the bottom of the list (see reorderColumnsForDisplay).
+  const HIDDEN_COLUMN_IDS = new Set(['age', 'pos']);
+  const TEAM_COLUMN_ID = 'team_name_abbr';
 
   // Same categories, thresholds, and display order as App's aggregate
   // ⬆️/⬇️ badges — the minimum a stat has to move (up or down) from the
@@ -113,7 +114,11 @@
 
     const grid = document.createElement('div');
     grid.className = 'season-stats-grid';
-    const displayColumns = reorderColumnsForDisplay(slot.columns).filter((col) => !HIDDEN_COLUMN_IDS.has(col.id));
+    const withoutHidden = reorderColumnsForDisplay(slot.columns).filter((col) => !HIDDEN_COLUMN_IDS.has(col.id));
+    const teamCol = withoutHidden.find((col) => col.id === TEAM_COLUMN_ID);
+    const displayColumns = teamCol
+      ? withoutHidden.filter((col) => col.id !== TEAM_COLUMN_ID).concat(teamCol)
+      : withoutHidden;
     displayColumns.forEach((col) => {
       const row = document.createElement('div');
       row.className = 'season-stat-row';

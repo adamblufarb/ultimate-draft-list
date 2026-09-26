@@ -81,17 +81,6 @@
     emit('locked-changed');
   }
 
-  // Clears every drafted player at once. Mirrors setDrafted's rule that a
-  // player can't be "available" and "on my roster" at the same time, so
-  // My Team is cleared along with it.
-  function undraftAll() {
-    state.draftedKeys = [];
-    state.myTeamKeys = [];
-    persist();
-    emit('drafted-changed');
-    emit('my-team-changed');
-  }
-
   function isOnMyTeam(key) {
     return state.myTeamKeys.includes(key);
   }
@@ -268,7 +257,7 @@
   global.App = {
     state, on, emit, persist, genId,
     isDrafted, setDrafted, getIncludeDrafted, setIncludeDrafted,
-    isLocked, setLocked, unlockAll, undraftAll,
+    isLocked, setLocked, unlockAll,
     isOnMyTeam, draftedByMe, removeFromMyTeam,
     getBreakoutLevel, cycleBreakoutLevel,
     getSleeperLevel, cycleSleeperLevel,

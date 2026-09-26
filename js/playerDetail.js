@@ -1,8 +1,13 @@
 /* Player detail overlay: name and position badge share a row up top, along
-   with the health (💪/🚑) and trend (⬆️/⬇️) emoji if this player has one,
-   with the player's age (and team, if known — "25 · DAL") from the
-   Sources tab's Data List below it. Height is parsed from the Data List
-   too but not shown anywhere yet.
+   with the health (💪/🚑), trend (⬆️/⬇️), and team-change (🔁) emoji if
+   this player has one, with the player's age (and team, if known —
+   "25 · DAL") from the Sources tab's Data List below it — plus their last
+   season's team in parens ("25 · DAL (MEM)") whenever 🔁 is showing.
+   🔁 fires when the most recent Season Stats season is itself a
+   multi-team code (traded mid-season) or differs from the Data List's
+   current team (started this season elsewhere); only shown here, never
+   in Draft List. Height is parsed from the Data List too but not shown
+   anywhere yet.
    Combined rank (based on whichever source weights are currently active in
    the calling tab's filter), plus the Breakout/Sleeper/Do Not Draft tag
    toggles, share the next row. Below that, one square per source — every
@@ -48,6 +53,24 @@
   // bearing on any ranking, so this is its own small lookup.
   function getDataListEntry(key) {
     return App.state.dataList.players.find((p) => NameMatch.normalize(p.name) === key) || null;
+  }
+
+  // 🔁 fires when either: the most recent Season Stats season itself shows
+  // a multi-team code ("2TM"/"3TM"/etc — traded mid-season), or that
+  // season's team differs from the Data List's current team (started this
+  // season somewhere new). Only Player Detail shows this, not Draft List.
+  // Returns the last-season team to show in parens next to the current
+  // one, or null if there's no Season Stats row for this player at all (or
+  // no actual change to report).
+  function getTeamChangeInfo(key, dataEntry) {
+    const recentSlot = App.state.seasonStats[0];
+    const seasonEntry = recentSlot && recentSlot.players.find((p) => p.key === key);
+    const lastTeam = seasonEntry && seasonEntry.values.team_name_abbr;
+    if (!lastTeam) return null;
+    const midSeasonTrade = /^\d+TM$/.test(lastTeam.trim());
+    const currentTeam = dataEntry && dataEntry.team;
+    const startedSomewhereNew = currentTeam && currentTeam.trim().toUpperCase() !== lastTeam.trim().toUpperCase();
+    return (midSeasonTrade || startedSomewhereNew) ? { lastTeam } : null;
   }
 
   function setCardValue(card, value) {
@@ -173,6 +196,9 @@
     header.className = 'detail-header';
     const titleWrap = document.createElement('div');
 
+    const dataEntry = getDataListEntry(key);
+    const teamChange = getTeamChangeInfo(key, dataEntry);
+
     const nameRow = document.createElement('div');
     nameRow.className = 'detail-name-row';
     const nameEl = document.createElement('h2');
@@ -206,14 +232,20 @@
       declineEl.textContent = declineEmoji;
       nameRow.appendChild(declineEl);
     }
+    if (teamChange) {
+      const teamChangeEl = document.createElement('span');
+      teamChangeEl.className = 'detail-health-icon';
+      teamChangeEl.textContent = '🔁';
+      nameRow.appendChild(teamChangeEl);
+    }
     titleWrap.appendChild(nameRow);
 
-    const dataEntry = getDataListEntry(key);
     const ageEl = document.createElement('div');
     ageEl.className = 'detail-age';
-    ageEl.textContent = dataEntry
-      ? (dataEntry.team ? dataEntry.age + ' · ' + dataEntry.team : String(dataEntry.age))
-      : 'Age unknown';
+    let ageText = dataEntry ? String(dataEntry.age) : null;
+    if (dataEntry && dataEntry.team) ageText += ' · ' + dataEntry.team;
+    if (dataEntry && teamChange) ageText += ' (' + teamChange.lastTeam + ')';
+    ageEl.textContent = ageText || 'Age unknown';
     titleWrap.appendChild(ageEl);
 
     const closeBtn = document.createElement('button');

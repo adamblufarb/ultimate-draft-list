@@ -112,12 +112,14 @@
   // than column position, so it doesn't matter which stats a given export
   // includes or what order they're in. 'ranker' (the table's own row
   // number) and 'name_display' (used as the row key, not a stat) are
-  // dropped from the returned columns, along with age/team/position (shown
+  // dropped from the returned columns, along with age/position (shown
   // elsewhere already — Data List, the position badge — not wanted here).
+  // Team is kept — the Show Data overlay pushes it to the bottom of the
+  // list, and it also feeds Player Detail's 🔁 team-change indicator.
   // A player traded mid-season appears as multiple rows (one per team) plus
   // one combined-season row whose team is "2TM"/"3TM"/etc. — that combined
   // row is preferred when present, since it's the player's real full-season
-  // line (still true even though the team column itself is dropped below).
+  // line.
   function parseSeasonStatsHtml(rawHtml) {
     const warnings = [];
     let doc;
@@ -131,7 +133,7 @@
       return { columns: [], players: [], warnings: ['No table found in this file — expected an HTML-format .xls export.'] };
     }
 
-    const SKIP_COLUMNS = new Set(['ranker', 'name_display', 'age', 'team_name_abbr', 'pos']);
+    const SKIP_COLUMNS = new Set(['ranker', 'name_display', 'age', 'pos']);
     const columns = Array.from(table.querySelectorAll('thead th[data-stat]'))
       .filter((th) => !SKIP_COLUMNS.has(th.getAttribute('data-stat')))
       .map((th) => ({
