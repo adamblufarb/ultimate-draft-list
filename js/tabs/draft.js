@@ -18,11 +18,11 @@
    "Total"-type sources start off by default. Each row also gets a health
    emoji computed from Season Stats (Sources tab) — 💪 for 65+ games in all
    3 seasons, 🚑 for 54-or-fewer games in at least 2 of them — and a trend
-   emoji (⬆️/⬇️, App.getImprovementEmoji/getDeclineEmoji) for either 5+ of
-   PTS/AST/STL/BLK/TRB/FT moving the same way just last season, or a
-   sustained 2-year version (3+ points each year — 2x a stat's minimum is
-   worth 2 points, not just 1 — with 2 of the same categories carrying
-   both years) — both shown only here,
+   emoji (⬆️/⬇️, App.getImprovementEmoji/getDeclineEmoji) for either 5+
+   points in PTS/AST/STL/BLK/TRB/FT just last season, or a sustained
+   2-year version (3+ points each year, with 2 of the same categories
+   carrying both years) — either way, 2x a stat's minimum is worth 2
+   points, not just 1 — both shown only here,
    not in the other lists. */
 (function (global) {
   const POSITIONS = ['PG', 'SG', 'SF', 'PF', 'C'];
