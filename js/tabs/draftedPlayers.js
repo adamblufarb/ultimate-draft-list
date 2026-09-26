@@ -2,17 +2,19 @@
    "Mark Drafted" or "Drafted by me"), in the order they were drafted.
    That order is fixed — it's a record of what happened during the draft,
    not something you reorder — so this list has no drag handle, unlike
-   Draft List. It does carry the same "List filters" (source toggle chips)
-   as the other lists, but here they only change which sources feed the
+   Draft List. It does carry the same "List filters" (source toggle chips,
+   with the same weighted-cycling behavior — see js/sourceWeights.js) as
+   the other lists, but here they only change which sources feed the
    combined rank average shown next to each name; they never change the
    order players appear in. */
 (function (global) {
   let container;
-  let selectedIds = [];
+  // { [sourceId]: 0 | 1 | 1.5 } — see js/sourceWeights.js.
+  let sourceWeights = {};
 
   function init(rootEl) {
     container = rootEl;
-    selectedIds = App.state.sources.map((s) => s.id);
+    sourceWeights = SourceWeights.defaultWeights(App.state.sources);
     App.on('sources-changed', onSourcesChanged);
     App.on('drafted-changed', render);
     // Same reasoning as Draft List/Rankings: tagging a player from the
@@ -28,11 +30,7 @@
   }
 
   function onSourcesChanged() {
-    const currentIds = new Set(App.state.sources.map((s) => s.id));
-    selectedIds = selectedIds.filter((id) => currentIds.has(id));
-    App.state.sources.forEach((s) => {
-      if (!selectedIds.includes(s.id)) selectedIds.push(s.id);
-    });
+    sourceWeights = SourceWeights.reconcileWeights(sourceWeights, App.state.sources);
     render();
   }
 
@@ -51,34 +49,29 @@
     container.appendChild(renderSourceToggles());
 
     const index = Ranking.buildIndex(App.state.sources);
-    const combined = Ranking.combineFromIndex(index, selectedIds);
+    const combined = Ranking.combineFromIndex(index, sourceWeights);
     const avgByKey = new Map(combined.map((row) => [row.key, row.avg]));
 
     container.appendChild(renderList(draftedKeys, avgByKey, index));
   }
 
-  function renderToggleChip(text, isActive, onClick) {
-    const btn = document.createElement('button');
-    btn.type = 'button';
-    btn.className = 'toggle-label' + (isActive ? ' is-active' : '');
-    btn.textContent = text;
-    btn.addEventListener('click', onClick);
-    return btn;
-  }
-
+  // Boostable ("Average"-type) sources cycle disabled -> 1x -> 1.5x -> back
+  // to disabled on tap; everything else just toggles 0/1 like before.
   function renderSourceToggles() {
     const wrap = document.createElement('div');
     wrap.className = 'source-toggles';
     App.state.sources.forEach((source) => {
-      const isActive = selectedIds.includes(source.id);
-      wrap.appendChild(renderToggleChip(source.name || 'Untitled source', isActive, () => {
-        if (isActive) {
-          selectedIds = selectedIds.filter((id) => id !== source.id);
-        } else {
-          selectedIds.push(source.id);
-        }
+      const weight = SourceWeights.getWeight(sourceWeights, source.id);
+      const boosted = weight === 1.5;
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'toggle-label' + (weight > 0 ? ' is-active' : '') + (boosted ? ' is-boosted' : '');
+      btn.textContent = (source.name || 'Untitled source') + (boosted ? ' · 1.5x' : '');
+      btn.addEventListener('click', () => {
+        sourceWeights = SourceWeights.cycleWeight(sourceWeights, source);
         render();
-      }));
+      });
+      wrap.appendChild(btn);
     });
     return wrap;
   }
@@ -127,8 +120,8 @@
       const item = document.createElement('div');
       item.className = 'rank-row' + (i % 2 === 1 ? ' row-alt' : '');
       item.dataset.key = key;
-      item.addEventListener('click', () => PlayerDetail.open(key, selectedIds, (newIds) => {
-        selectedIds = newIds;
+      item.addEventListener('click', () => PlayerDetail.open(key, sourceWeights, (newWeights) => {
+        sourceWeights = newWeights;
         render();
       }));
 

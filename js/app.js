@@ -181,6 +181,31 @@
     return null;
   }
 
+  // Improvement emoji, same Season Stats source as health — ⬆️ needs data
+  // in all 3 season slots for this player, with a strictly increasing
+  // (oldest < middle < most recent) trend in at least 3 of these 5
+  // categories. seasonStats is ordered most-recent-first, so "increasing"
+  // reads back-to-front: values[2] (oldest) < values[1] < values[0] (most
+  // recent).
+  const IMPROVEMENT_CATEGORIES = ['pts_per_g', 'ast_per_g', 'stl_per_g', 'blk_per_g', 'trb_per_g'];
+  const IMPROVEMENT_MIN_CATEGORIES = 3;
+
+  function getImprovementEmoji(key) {
+    let improvedCount = 0;
+    IMPROVEMENT_CATEGORIES.forEach((statId) => {
+      const values = state.seasonStats.map((slot) => {
+        const entry = slot.players.find((p) => p.key === key);
+        if (!entry) return null;
+        const value = parseFloat(entry.values[statId]);
+        return Number.isNaN(value) ? null : value;
+      });
+      if (values.every((v) => v !== null) && values[2] < values[1] && values[1] < values[0]) {
+        improvedCount += 1;
+      }
+    });
+    return improvedCount >= IMPROVEMENT_MIN_CATEGORIES ? '⬆️' : null;
+  }
+
   global.App = {
     state, on, emit, persist, genId,
     isDrafted, setDrafted, getIncludeDrafted, setIncludeDrafted,
@@ -189,6 +214,6 @@
     getBreakoutLevel, cycleBreakoutLevel,
     getSleeperLevel, cycleSleeperLevel,
     isDoNotDraft, toggleDoNotDraft,
-    getHealthEmoji
+    getHealthEmoji, getImprovementEmoji
   };
 })(window);

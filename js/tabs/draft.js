@@ -12,17 +12,23 @@
    with a structured "metric A vs metric B, by at least N ranks" query
    while active; touching any of the quick filters (source, position,
    Include Drafted Players) clears it, but tagging a player or the plain
-   search box do not. Each row also gets a health emoji computed from
-   Season Stats (Sources tab) — 💪 for 65+ games in all 3 seasons, 🚑 for
-   54-or-fewer games in at least 2 of them — shown only here, not in the
-   other lists. */
+   search box do not. Source chips can weight, not just toggle, a source
+   (js/sourceWeights.js) — tapping a boostable "Average"-type source a 2nd
+   time sets it to 1.5x instead of the usual 1x, shown as a darker chip;
+   "Total"-type sources start off by default. Each row also gets a health
+   emoji computed from Season Stats (Sources tab) — 💪 for 65+ games in all
+   3 seasons, 🚑 for 54-or-fewer games in at least 2 of them — and an
+   improvement emoji (⬆️) for year-over-year growth in at least 3 of
+   PTS/AST/STL/BLK/TRB across all 3 seasons — both shown only here, not in
+   the other lists. */
 (function (global) {
   const POSITIONS = ['PG', 'SG', 'SF', 'PF', 'C'];
   const POOL_SIZE_OPTIONS = [10, 20, 30, 40, 50, 75, 100];
   let container;
   let listSection;
   let reorderable;
-  let selectedIds = [];
+  // { [sourceId]: 0 | 1 | 1.5 } — see js/sourceWeights.js.
+  let sourceWeights = {};
   let selectedPositions = [];
   let searchQuery = '';
   let searchInputEl;
@@ -37,7 +43,7 @@
 
   function init(rootEl) {
     container = rootEl;
-    selectedIds = App.state.sources.map((s) => s.id);
+    sourceWeights = SourceWeights.defaultWeights(App.state.sources);
     App.on('sources-changed', onSourcesChanged);
     App.on('drafted-changed', () => { if (isVisible()) render(); });
     App.on('include-drafted-changed', () => { if (isVisible()) render(); });
@@ -62,11 +68,7 @@
       else render();
     });
     App.on('remote-state-loaded', () => {
-      const currentIds = new Set(App.state.sources.map((s) => s.id));
-      selectedIds = selectedIds.filter((id) => currentIds.has(id));
-      App.state.sources.forEach((s) => {
-        if (!selectedIds.includes(s.id)) selectedIds.push(s.id);
-      });
+      sourceWeights = SourceWeights.reconcileWeights(sourceWeights, App.state.sources);
       if (isVisible()) show();
     });
   }
@@ -105,18 +107,14 @@
   }
 
   function onSourcesChanged() {
-    const currentIds = new Set(App.state.sources.map((s) => s.id));
-    selectedIds = selectedIds.filter((id) => currentIds.has(id));
-    App.state.sources.forEach((s) => {
-      if (!selectedIds.includes(s.id)) selectedIds.push(s.id);
-    });
+    sourceWeights = SourceWeights.reconcileWeights(sourceWeights, App.state.sources);
     if (isVisible()) render();
   }
 
   function ensureInitialized() {
     if (App.state.draftOrder && App.state.draftOrder.length > 0) return;
-    const allIds = App.state.sources.map((s) => s.id);
-    App.state.draftOrder = Ranking.computeCombined(App.state.sources, allIds)
+    const defaultWeights = SourceWeights.defaultWeights(App.state.sources);
+    App.state.draftOrder = Ranking.computeCombined(App.state.sources, defaultWeights)
       .map((row) => ({ key: row.key, name: row.displayName }));
     App.persist();
   }
@@ -131,11 +129,11 @@
     return fullOrder.map((item) => (visibleKeys.has(item.key) ? queue[qi++] : item));
   }
 
-  // Recomputes the combined average over `ids`, but any locked player keeps
-  // the exact index they're currently sitting at — everyone else re-fills
-  // around them in the fresh sorted order.
-  function buildResetOrder(ids) {
-    const combined = Ranking.computeCombined(App.state.sources, ids);
+  // Recomputes the combined average over `weights`, but any locked player
+  // keeps the exact index they're currently sitting at — everyone else
+  // re-fills around them in the fresh sorted order.
+  function buildResetOrder(weights) {
+    const combined = Ranking.computeCombined(App.state.sources, weights);
     const lockedKeys = new Set(App.state.lockedKeys);
     const oldOrder = App.state.draftOrder || [];
 
@@ -235,7 +233,7 @@
     listEl.className = 'draft-list';
     listSection.appendChild(listEl);
 
-    const combined = Ranking.combineFromIndex(index, selectedIds);
+    const combined = Ranking.combineFromIndex(index, sourceWeights);
     const avgByKey = new Map(combined.map((row) => [row.key, row.avg]));
 
     reorderable = new ReorderableList(listEl, {
@@ -311,7 +309,7 @@
   // reading the user's dragged draft order, so it always reflects whichever
   // sources are currently checked, independent of manual reordering.
   function computeAvailablePositionCounts(index, size) {
-    const combined = Ranking.combineFromIndex(index, selectedIds);
+    const combined = Ranking.combineFromIndex(index, sourceWeights);
     const available = combined.filter((row) => !App.isDrafted(row.key));
     const pool = available.slice(0, size);
     const counts = {};
@@ -333,7 +331,7 @@
   // the player isn't ranked under that metric at all (excluded from the
   // comparison, same as any other missing-data case elsewhere).
   function computeSmartSearchMatches(index, criteria) {
-    const combined = Ranking.combineFromIndex(index, selectedIds);
+    const combined = Ranking.combineFromIndex(index, sourceWeights);
     const combinedByKey = new Map(combined.map((r) => [r.key, r.avg]));
 
     function valueFor(key, fieldId) {
@@ -473,25 +471,29 @@
     return wrap;
   }
 
+  // Boostable ("Average"-type) sources cycle disabled -> 1x -> 1.5x -> back
+  // to disabled on tap; everything else just toggles 0/1 like before.
   function renderSourceToggles() {
     const wrap = document.createElement('div');
     wrap.className = 'source-toggles';
     App.state.sources.forEach((source) => {
-      const isActive = selectedIds.includes(source.id);
-      wrap.appendChild(renderToggleChip(source.name || 'Untitled source', isActive, () => {
+      const weight = SourceWeights.getWeight(sourceWeights, source.id);
+      const boosted = weight === 1.5;
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'toggle-label' + (weight > 0 ? ' is-active' : '') + (boosted ? ' is-boosted' : '');
+      btn.textContent = (source.name || 'Untitled source') + (boosted ? ' · 1.5x' : '');
+      btn.addEventListener('click', () => {
         smartSearchCriteria = null;
-        if (isActive) {
-          selectedIds = selectedIds.filter((id) => id !== source.id);
-        } else {
-          selectedIds.push(source.id);
-        }
+        sourceWeights = SourceWeights.cycleWeight(sourceWeights, source);
         // Filters drive the reset computation directly now (no Reset
         // button) — changing which sources feed the average immediately
         // resyncs everyone who isn't locked in place.
-        App.state.draftOrder = buildResetOrder(selectedIds);
+        App.state.draftOrder = buildResetOrder(sourceWeights);
         App.persist();
         render();
-      }));
+      });
+      wrap.appendChild(btn);
     });
     return wrap;
   }
@@ -504,11 +506,11 @@
 
     const row = document.createElement('div');
     row.className = 'draft-row' + (drafted ? ' is-drafted' : '');
-    row.addEventListener('click', () => PlayerDetail.open(item.key, selectedIds, (newIds) => {
-      selectedIds = newIds;
+    row.addEventListener('click', () => PlayerDetail.open(item.key, sourceWeights, (newWeights) => {
+      sourceWeights = newWeights;
       // Same auto-resync as tapping a source chip: the filter just changed,
       // so unlocked players resync to the newly-filtered average.
-      App.state.draftOrder = buildResetOrder(selectedIds);
+      App.state.draftOrder = buildResetOrder(sourceWeights);
       App.persist();
       render();
     }));
@@ -565,11 +567,14 @@
 
   // Breakout/sleeper/do-not-draft tags are only ever set from the player
   // detail view — list rows just display whatever's active, right-aligned.
-  // The health emoji (if any) always leads, ahead of the user-set tags.
+  // The health and improvement emoji (if any) always lead, ahead of the
+  // user-set tags.
   function playerTagsBadge(key) {
     const parts = [];
     const healthEmoji = App.getHealthEmoji(key);
     if (healthEmoji) parts.push(healthEmoji);
+    const improvementEmoji = App.getImprovementEmoji(key);
+    if (improvementEmoji) parts.push(improvementEmoji);
     const breakoutLevel = App.getBreakoutLevel(key);
     if (breakoutLevel >= 2) parts.push('🌟'); else if (breakoutLevel === 1) parts.push('⭐');
     const sleeperLevel = App.getSleeperLevel(key);

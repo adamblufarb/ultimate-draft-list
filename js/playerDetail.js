@@ -1,20 +1,22 @@
-/* Player detail overlay: name and position badge share a row up top, with
-   the player's age (and team, if known — "25 · DAL") from the Sources
-   tab's Data List below it. Height is parsed from the Data List too but
-   not shown anywhere yet.
-   Combined rank (based on whichever sources are currently selected in the
-   calling tab's filter), plus the Breakout/Sleeper/Do Not Draft tag
+/* Player detail overlay: name and position badge share a row up top, along
+   with the health (💪/🚑) and improvement (⬆️) emoji if this player has
+   one, with the player's age (and team, if known — "25 · DAL") from the
+   Sources tab's Data List below it. Height is parsed from the Data List
+   too but not shown anywhere yet.
+   Combined rank (based on whichever source weights are currently active in
+   the calling tab's filter), plus the Breakout/Sleeper/Do Not Draft tag
    toggles, share the next row. Below that, one square per source — every
    source, not just the special avg/total ones — showing that source's rank
-   and score side by side on one row, with the currently-selected sources
-   highlighted. Tapping a source square toggles it in/out of the filter
-   used for Combined Rank, live. However the filter is left when the
-   overlay closes (by the ✕, the backdrop, Escape, or an action button) is
-   reported back to whichever tab opened it, via the optional
-   onActiveIdsChange callback, so the tab's own filter and order pick up
-   the change too. Below the source squares, "Show Data" opens the Season
-   Stats overlay (js/seasonStatsOverlay.js) for this player. Opened by
-   tapping a player row in Draft List, My Team, or Draft Board. */
+   and score side by side on one row, with the currently-weighted-in
+   sources highlighted (a darker blue plus a "1.5x" label for a boosted
+   one). Tapping a source square cycles its weight (js/sourceWeights.js)
+   live. However the weights are left when the overlay closes (by the ✕,
+   the backdrop, Escape, or an action button) is reported back to whichever
+   tab opened it, via the optional onWeightsChange callback, so the tab's
+   own filter and order pick up the change too. Below the source squares,
+   "Show Data" opens the Season Stats overlay (js/seasonStatsOverlay.js)
+   for this player. Opened by tapping a player row in Draft List, My Team,
+   or Draft Board. */
 (function (global) {
   let overlayEl = null;
   // Re-pointed on every open() to that call's own close/sync logic — the
@@ -38,13 +40,6 @@
 
   function hide() {
     if (overlayEl) overlayEl.classList.remove('open');
-  }
-
-  function sameIds(a, b) {
-    if (a.length !== b.length) return false;
-    const sortedA = a.slice().sort();
-    const sortedB = b.slice().sort();
-    return sortedA.every((id, i) => id === sortedB[i]);
   }
 
   // Looks up this player's Data List entry (age, team, height — height
@@ -94,14 +89,20 @@
   // One square per source: rank and score (if this source has one) shown
   // side by side on one row — rank big, score smaller and gray. Sources
   // with no score at all (pure ranking lists) just show the rank alone.
-  function sourceCard(source, entry, isSelected) {
+  // `weight` is 0 (excluded), 1 (normal — highlighted blue), or 1.5
+  // (boosted — a darker blue plus a "1.5x" label, only ever reachable for
+  // a boostable "Average"-type source; see js/sourceWeights.js).
+  function sourceCard(source, entry, weight) {
     const bySource = entry.bySource[source.id];
+    const boosted = weight === 1.5;
     const card = document.createElement('div');
-    card.className = 'stat-card stat-card-clickable' + (isSelected ? ' stat-card-selected' : '');
+    card.className = 'stat-card stat-card-clickable'
+      + (weight > 0 ? ' stat-card-selected' : '')
+      + (boosted ? ' stat-card-boosted' : '');
 
     const titleEl = document.createElement('div');
     titleEl.className = 'stat-title';
-    titleEl.textContent = source.name || 'Untitled source';
+    titleEl.textContent = (source.name || 'Untitled source') + (boosted ? ' · 1.5x' : '');
     card.appendChild(titleEl);
 
     if (bySource) {
@@ -127,24 +128,39 @@
     return card;
   }
 
-  // selectedSourceIds: the calling tab's current source filter, used both to
-  // seed which squares start highlighted and to compute the initial
-  // Combined Rank. Tapping a square toggles it live for this view; once the
-  // overlay closes, if the filter actually changed, onActiveIdsChange (when
-  // given) is called with the final list so the calling tab can adopt it.
-  function open(key, selectedSourceIds, onActiveIdsChange) {
+  // Updates just a source card's weight-dependent bits in place (class +
+  // title label) after a click cycles its weight — the rank/score content
+  // underneath never changes, so there's no need to rebuild (and
+  // re-listen on) the whole card.
+  function applyCardWeight(card, source, weight) {
+    const boosted = weight === 1.5;
+    card.className = 'stat-card stat-card-clickable'
+      + (weight > 0 ? ' stat-card-selected' : '')
+      + (boosted ? ' stat-card-boosted' : '');
+    const titleEl = card.querySelector('.stat-title');
+    if (titleEl) titleEl.textContent = (source.name || 'Untitled source') + (boosted ? ' · 1.5x' : '');
+  }
+
+  // initialWeights: the calling tab's current source weights
+  // ({ [sourceId]: 0 | 1 | 1.5 }, see js/sourceWeights.js), used both to
+  // seed which squares start highlighted (and which are boosted) and to
+  // compute the initial Combined Rank. Tapping a square cycles it live for
+  // this view; once the overlay closes, if the weights actually changed,
+  // onWeightsChange (when given) is called with the final object so the
+  // calling tab can adopt it.
+  function open(key, initialWeights, onWeightsChange) {
     const overlay = ensureOverlay();
     const index = Ranking.buildIndex(App.state.sources);
     const entry = index.get(key);
     if (!entry) return;
 
-    const allIds = App.state.sources.map((s) => s.id);
-    const initialIds = (selectedSourceIds || allIds).slice();
-    let activeIds = initialIds.slice();
+    const startWeights = initialWeights || SourceWeights.defaultWeights(App.state.sources);
+    const initialSnapshot = Object.assign({}, startWeights);
+    let activeWeights = Object.assign({}, startWeights);
 
     closeHandler = () => {
-      if (onActiveIdsChange && !sameIds(activeIds, initialIds)) {
-        onActiveIdsChange(activeIds.slice());
+      if (onWeightsChange && !SourceWeights.weightsEqual(activeWeights, initialSnapshot)) {
+        onWeightsChange(Object.assign({}, activeWeights));
       }
       hide();
     };
@@ -175,6 +191,13 @@
       healthEl.className = 'detail-health-icon';
       healthEl.textContent = healthEmoji;
       nameRow.appendChild(healthEl);
+    }
+    const improvementEmoji = App.getImprovementEmoji(key);
+    if (improvementEmoji) {
+      const improvementEl = document.createElement('span');
+      improvementEl.className = 'detail-health-icon';
+      improvementEl.textContent = improvementEmoji;
+      nameRow.appendChild(improvementEl);
     }
     titleWrap.appendChild(nameRow);
 
@@ -242,7 +265,7 @@
     sheet.appendChild(combinedRow);
 
     function updateCombined() {
-      const combinedEntry = Ranking.combineFromIndex(index, activeIds).find((r) => r.key === key) || null;
+      const combinedEntry = Ranking.combineFromIndex(index, activeWeights).find((r) => r.key === key) || null;
       setCardValue(combinedCard, combinedEntry ? combinedEntry.avg.toFixed(1) : null);
     }
     updateCombined();
@@ -256,15 +279,10 @@
       gridWrap.appendChild(none);
     } else {
       App.state.sources.forEach((source) => {
-        const card = sourceCard(source, entry, activeIds.includes(source.id));
+        const card = sourceCard(source, entry, SourceWeights.getWeight(activeWeights, source.id));
         card.addEventListener('click', () => {
-          if (activeIds.includes(source.id)) {
-            activeIds = activeIds.filter((id) => id !== source.id);
-            card.classList.remove('stat-card-selected');
-          } else {
-            activeIds.push(source.id);
-            card.classList.add('stat-card-selected');
-          }
+          activeWeights = SourceWeights.cycleWeight(activeWeights, source);
+          applyCardWeight(card, source, SourceWeights.getWeight(activeWeights, source.id));
           updateCombined();
         });
         gridWrap.appendChild(card);

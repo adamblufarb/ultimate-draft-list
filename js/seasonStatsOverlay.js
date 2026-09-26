@@ -2,6 +2,10 @@
    Shows every uploaded season (Sources tab's Season Stats slots, most
    recent first) as its own block of label:value stat rows — whatever
    columns that season's file happened to have, in the file's own order.
+   A PTS/AST/STL/BLK/TRB row also gets a small ⬆️ next to its value when it
+   improved (strictly increased) over that same stat the season before —
+   the single-year version of the health emoji's aggregate ⬆️ badge (App.
+   getImprovementEmoji), which needs the trend across all 3 seasons.
    Same overlay chrome as Player Detail/Smart Search (backdrop, slide-up
    sheet, close on backdrop tap/Escape/✕); purely a read-only view, so
    closing it never has anything to report back. */
@@ -33,7 +37,16 @@
   // position badge), not wanted a third time here.
   const HIDDEN_COLUMN_IDS = new Set(['age', 'team_name_abbr', 'pos']);
 
-  function seasonBlock(slot, playerEntry) {
+  // Same 5 categories, and the same "higher is better" assumption, as
+  // App.getImprovementEmoji's aggregate 3-season badge.
+  const IMPROVEMENT_COLUMN_IDS = new Set(['pts_per_g', 'ast_per_g', 'stl_per_g', 'blk_per_g', 'trb_per_g']);
+
+  // olderEntry: this same player's row in the season immediately before
+  // this one (one slot older — seasonStats is most-recent-first), or null
+  // if that season has no file uploaded or no row for this player. Used
+  // only to mark a single-year improvement on PTS/AST/STL/BLK/TRB; null
+  // just means no arrow, never an error.
+  function seasonBlock(slot, playerEntry, olderEntry) {
     const block = document.createElement('div');
     block.className = 'season-stats-block';
 
@@ -60,7 +73,20 @@
       labelEl.textContent = col.label;
       const valueEl = document.createElement('span');
       valueEl.className = 'season-stat-value';
-      valueEl.textContent = playerEntry.values[col.id] || '—';
+      const rawValue = playerEntry.values[col.id];
+      valueEl.textContent = rawValue || '—';
+
+      if (IMPROVEMENT_COLUMN_IDS.has(col.id) && olderEntry) {
+        const thisValue = parseFloat(rawValue);
+        const olderValue = parseFloat(olderEntry.values[col.id]);
+        if (!Number.isNaN(thisValue) && !Number.isNaN(olderValue) && thisValue > olderValue) {
+          const arrow = document.createElement('span');
+          arrow.className = 'season-stat-improved';
+          arrow.textContent = ' ⬆️';
+          valueEl.appendChild(arrow);
+        }
+      }
+
       row.appendChild(labelEl);
       row.appendChild(valueEl);
       grid.appendChild(row);
@@ -91,16 +117,24 @@
     header.appendChild(closeBtn);
     sheet.appendChild(header);
 
-    const configuredSlots = App.state.seasonStats.filter((slot) => slot.players && slot.players.length > 0);
-    if (configuredSlots.length === 0) {
+    // Fixed 3 slots, most-recent-first — index i+1 is always exactly one
+    // year older than index i, by construction, even if that older slot
+    // itself has no file uploaded (then there's simply no comparison, and
+    // no arrow, rather than comparing across a gap).
+    const allSlots = App.state.seasonStats;
+    const hasAnyData = allSlots.some((slot) => slot.players && slot.players.length > 0);
+    if (!hasAnyData) {
       const empty = document.createElement('p');
       empty.className = 'empty-hint';
       empty.textContent = 'No season stats uploaded yet — add them under Season Stats in the Sources tab.';
       sheet.appendChild(empty);
     } else {
-      configuredSlots.forEach((slot) => {
+      allSlots.forEach((slot, i) => {
+        if (!slot.players || slot.players.length === 0) return;
         const playerEntry = slot.players.find((p) => p.key === key) || null;
-        sheet.appendChild(seasonBlock(slot, playerEntry));
+        const olderSlot = allSlots[i + 1] || null;
+        const olderEntry = olderSlot ? (olderSlot.players.find((p) => p.key === key) || null) : null;
+        sheet.appendChild(seasonBlock(slot, playerEntry, olderEntry));
       });
     }
 

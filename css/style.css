@@ -203,6 +203,11 @@ body {
   color: #fff;
 }
 
+.toggle-label.is-boosted {
+  border-color: var(--accent-dim);
+  background: var(--accent-dim);
+}
+
 .position-chip-count {
   font-size: 9px;
   font-weight: 700;
@@ -813,6 +818,11 @@ body {
   color: rgba(255, 255, 255, 0.75);
 }
 
+.stat-card-boosted {
+  border-color: var(--accent-dim);
+  background: var(--accent-dim);
+}
+
 .stat-card-clickable {
   cursor: pointer;
 }
@@ -888,6 +898,10 @@ body {
 
 .season-stat-value {
   font-weight: 600;
+}
+
+.season-stat-improved {
+  font-weight: 400;
 }
 
 

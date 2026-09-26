@@ -45,18 +45,26 @@
     return map;
   }
 
-  // Averages rank over selectedIds only. Players unranked by every selected
-  // source are excluded (they still exist in the index for lookups elsewhere).
-  function combineFromIndex(index, selectedIds) {
+  // Weighted average of rank over `weights` — { [sourceId]: 0 | 1 | 1.5 },
+  // built/cycled by js/sourceWeights.js. A source missing from the object
+  // (or present at weight 0) doesn't count at all; a 1.5-weighted source
+  // counts its rank 1.5x as heavily as a normal one. Players unranked by
+  // every weighted-in source are excluded (they still exist in the index
+  // for lookups elsewhere).
+  function combineFromIndex(index, weights) {
     const result = [];
     for (const entry of index.values()) {
-      let sum = 0;
+      let weightedSum = 0;
+      let totalWeight = 0;
       let count = 0;
       const perSource = {};
-      selectedIds.forEach((id) => {
+      Object.keys(weights).forEach((id) => {
+        const weight = weights[id];
+        if (!weight) return;
         const bySource = entry.bySource[id];
         if (bySource) {
-          sum += bySource.rank;
+          weightedSum += bySource.rank * weight;
+          totalWeight += weight;
           count += 1;
           perSource[id] = bySource.rank;
         }
@@ -66,9 +74,8 @@
         key: entry.key,
         displayName: entry.displayName,
         positions: entry.positions,
-        avg: sum / count,
+        avg: weightedSum / totalWeight,
         sourceCount: count,
-        totalSelected: selectedIds.length,
         perSource
       });
     }
@@ -81,8 +88,8 @@
     return result;
   }
 
-  function computeCombined(sources, selectedIds) {
-    return combineFromIndex(buildIndex(sources), selectedIds);
+  function computeCombined(sources, weights) {
+    return combineFromIndex(buildIndex(sources), weights);
   }
 
   global.Ranking = { computeCombined, buildIndex, combineFromIndex, invalidateIndexCache };
