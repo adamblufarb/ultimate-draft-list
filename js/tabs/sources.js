@@ -3,7 +3,11 @@
    read-only summary once saved; "Edit" switches it back to the full form.
    Also hosts the Data List — a single, separate paste-in list (name, age,
    optionally team and height) that never feeds any ranking; it's just
-   extra info shown in the player detail view. */
+   extra info shown in the player detail view. And Season Stats — 3 fixed
+   slots for uploading the last 3 seasons' per-game stats (as .xls files
+   exported from Basketball-Reference, which are actually HTML tables under
+   the hood — see Parser.parseSeasonStatsHtml), shown only via Player
+   Detail's "Show Data" button, never part of any ranking. */
 (function (global) {
   const MAX_SOURCES = Constants.MAX_SOURCES;
   let container;
@@ -57,6 +61,7 @@
     }
 
     container.appendChild(dataListEditing ? renderDataListEditCard() : renderDataListViewCard());
+    container.appendChild(renderSeasonStatsSection());
   }
 
   function onAddSource() {
@@ -555,6 +560,113 @@
     card.appendChild(actions);
 
     refreshPreview();
+    return card;
+  }
+
+  // Season Stats: 3 fixed upload slots (unlike Sources, count is fixed and
+  // there's no add/reorder), most-recent season first. Each slot is always
+  // shown editable in place — there's no separate view/edit toggle, since
+  // there's no large paste text to hide; the file input plus a compact
+  // status line ("482 players parsed from 25-26.xls") is the whole card.
+  function renderSeasonStatsSection() {
+    const wrap = document.createElement('div');
+    wrap.className = 'season-stats-section';
+
+    const heading = document.createElement('div');
+    heading.className = 'source-view-name';
+    heading.textContent = 'Season Stats';
+    wrap.appendChild(heading);
+
+    const desc = document.createElement('p');
+    desc.className = 'source-view-meta';
+    desc.textContent = 'Upload the last 3 seasons of per-game stats (.xls export from Basketball-Reference) ' +
+      'to show in Player Detail\'s "Show Data" view. Never used in any ranking.';
+    wrap.appendChild(desc);
+
+    App.state.seasonStats.forEach((slot, i) => {
+      wrap.appendChild(renderSeasonStatsCard(slot, i));
+    });
+
+    return wrap;
+  }
+
+  function renderSeasonStatsCard(slot, i) {
+    const card = document.createElement('div');
+    card.className = 'source-card source-card-view season-stats-card';
+
+    const labelInput = document.createElement('input');
+    labelInput.type = 'text';
+    labelInput.className = 'input-name';
+    labelInput.placeholder = 'e.g. 2025-26';
+    labelInput.value = slot.label || '';
+    labelInput.addEventListener('change', () => {
+      App.state.seasonStats[i].label = labelInput.value.trim();
+      App.persist();
+    });
+    card.appendChild(labelInput);
+
+    const statusLine = document.createElement('div');
+    statusLine.className = 'source-view-meta';
+    statusLine.textContent = slot.players.length > 0
+      ? `${slot.players.length} player${slot.players.length === 1 ? '' : 's'} parsed from ${slot.fileName}`
+      : 'No file uploaded yet.';
+    card.appendChild(statusLine);
+
+    const warningsWrap = document.createElement('div');
+    warningsWrap.className = 'preview-warnings';
+    card.appendChild(warningsWrap);
+
+    const actions = document.createElement('div');
+    actions.className = 'source-actions';
+
+    const fileInput = document.createElement('input');
+    fileInput.type = 'file';
+    fileInput.accept = '.xls,.xlsx,.htm,.html';
+    fileInput.className = 'season-stats-file-input';
+    fileInput.addEventListener('change', () => {
+      const file = fileInput.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        const { columns, players, warnings } = Parser.parseSeasonStatsHtml(String(reader.result));
+        warningsWrap.innerHTML = '';
+        warnings.forEach((w) => {
+          const p = document.createElement('p');
+          p.className = 'warning';
+          p.textContent = w;
+          warningsWrap.appendChild(p);
+        });
+        if (players.length === 0) return;
+        if (!labelInput.value.trim()) {
+          labelInput.value = file.name.replace(/\.[^/.]+$/, '');
+        }
+        App.state.seasonStats[i] = {
+          label: labelInput.value.trim(),
+          fileName: file.name,
+          columns,
+          players
+        };
+        App.persist();
+        render();
+      };
+      reader.readAsText(file);
+    });
+    actions.appendChild(fileInput);
+
+    if (slot.players.length > 0) {
+      const clearBtn = document.createElement('button');
+      clearBtn.className = 'btn btn-danger';
+      clearBtn.textContent = 'Clear';
+      clearBtn.addEventListener('click', () => {
+        if (!confirm(`Clear uploaded data for "${slot.label || 'this season'}"?`)) return;
+        App.state.seasonStats[i] = { label: slot.label, fileName: '', columns: [], players: [] };
+        App.persist();
+        render();
+      });
+      actions.appendChild(clearBtn);
+    }
+
+    card.appendChild(actions);
     return card;
   }
 

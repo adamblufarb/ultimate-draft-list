@@ -596,6 +596,22 @@ body {
   color: var(--text-dim);
 }
 
+.season-stats-section {
+  margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.season-stats-card {
+  gap: 8px;
+}
+
+.season-stats-file-input {
+  flex: 1;
+  min-width: 0;
+}
+
 .sync-card {
   border-color: var(--accent-dim);
 }
@@ -818,6 +834,49 @@ body {
 .stat-empty {
   font-size: 13px;
   color: var(--text-dim);
+}
+
+.detail-show-data-btn {
+  width: 100%;
+}
+
+.season-stats-block {
+  border-top: 1px solid var(--border);
+  padding-top: 12px;
+}
+
+.season-stats-block:first-of-type {
+  border-top: none;
+  padding-top: 0;
+}
+
+.season-stats-block-title {
+  font-size: 14px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.season-stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px 12px;
+}
+
+.season-stat-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 13px;
+  padding: 3px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.season-stat-label {
+  color: var(--text-dim);
+}
+
+.season-stat-value {
+  font-weight: 600;
 }
 
 

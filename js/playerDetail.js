@@ -12,8 +12,9 @@
    overlay closes (by the ✕, the backdrop, Escape, or an action button) is
    reported back to whichever tab opened it, via the optional
    onActiveIdsChange callback, so the tab's own filter and order pick up
-   the change too. Opened by tapping a player row in the Rankings, Draft
-   List, or My Team tab. */
+   the change too. Below the source squares, "Show Data" opens the Season
+   Stats overlay (js/seasonStatsOverlay.js) for this player. Opened by
+   tapping a player row in Draft List, My Team, or Draft Board. */
 (function (global) {
   let overlayEl = null;
   // Re-pointed on every open() to that call's own close/sync logic — the
@@ -263,6 +264,12 @@
       });
     }
     sheet.appendChild(gridWrap);
+
+    const showDataBtn = document.createElement('button');
+    showDataBtn.className = 'btn btn-secondary detail-show-data-btn';
+    showDataBtn.textContent = 'Show Data';
+    showDataBtn.addEventListener('click', () => SeasonStatsOverlay.open(key, entry.displayName));
+    sheet.appendChild(showDataBtn);
 
     const drafted = App.isDrafted(key);
     const draftBtn = document.createElement('button');

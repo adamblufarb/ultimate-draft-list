@@ -13,7 +13,16 @@
       breakoutLevels: {},    // key -> 1 (⭐) or 2 (🌟); absent/0 means untagged
       sleeperLevels: {},     // key -> 1 (🥱) or 2 (😴); absent/0 means untagged
       doNotDraftKeys: [],    // normalized keys tagged "do not draft" (🚫)
-      dataList: { rawText: '', players: [] } // [{ name, age, team, height }] — extra player info shown only in Player Detail, never part of any ranking
+      dataList: { rawText: '', players: [] }, // [{ name, age, team, height }] — extra player info shown only in Player Detail, never part of any ranking
+      // Fixed 3 slots (most-recent season first), each uploaded from an .xls
+      // (HTML-format) per-game stats export. columns: [{ id, label }] in the
+      // file's own order; players: [{ key, displayName, values: { [colId]: text } }].
+      // Never part of any ranking — shown only via Player Detail's "Show Data".
+      seasonStats: [
+        { label: '', fileName: '', columns: [], players: [] },
+        { label: '', fileName: '', columns: [], players: [] },
+        { label: '', fileName: '', columns: [], players: [] }
+      ]
     };
   }
 
