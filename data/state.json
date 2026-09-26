@@ -9023,19 +9023,7 @@
       "name": "Jarace Walker"
     }
   ],
-  "draftedKeys": [
-    "anthony davis",
-    "jalen brunson",
-    "trae young",
-    "amen thompson",
-    "stephen curry",
-    "james harden",
-    "jalen williams",
-    "zion williamson",
-    "chet holmgren",
-    "derrick white",
-    "bam adebayo"
-  ],
+  "draftedKeys": [],
   "lockedKeys": [
     "nikola jokic",
     "luka doncic",
@@ -9049,9 +9037,7 @@
     "tyrese maxey",
     "alperen sengun"
   ],
-  "myTeamKeys": [
-    "amen thompson"
-  ],
+  "myTeamKeys": [],
   "breakoutLevels": {
     "cedric coward": 1,
     "cooper flagg": 1,
