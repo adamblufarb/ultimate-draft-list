@@ -46,12 +46,12 @@
   // ⬆️/⬇️ badges — the minimum a stat has to move (up or down) from the
   // season before to earn an arrow here at all.
   const MAIN_CATEGORY_MIN_CHANGE = {
-    pts_per_g: 1.5,
-    trb_per_g: 1.5,
-    ast_per_g: 0.75,
-    blk_per_g: 0.375,
-    stl_per_g: 0.375,
-    ft_per_g: 1.5
+    pts_per_g: 1,
+    trb_per_g: 1,
+    ast_per_g: 0.5,
+    blk_per_g: 0.25,
+    stl_per_g: 0.25,
+    ft_per_g: 1
   };
   const MAIN_CATEGORY_IDS = Object.keys(MAIN_CATEGORY_MIN_CHANGE);
   const MAIN_CATEGORY_SET = new Set(MAIN_CATEGORY_IDS);

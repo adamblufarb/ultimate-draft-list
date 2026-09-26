@@ -194,12 +194,12 @@
   // a real jump. Same categories and thresholds as the Show Data overlay's
   // single-year arrows (js/seasonStatsOverlay.js).
   const TREND_MIN_CHANGE = {
-    pts_per_g: 1.5,
-    trb_per_g: 1.5,
-    ast_per_g: 0.75,
-    blk_per_g: 0.375,
-    stl_per_g: 0.375,
-    ft_per_g: 1.5
+    pts_per_g: 1,
+    trb_per_g: 1,
+    ast_per_g: 0.5,
+    blk_per_g: 0.25,
+    stl_per_g: 0.25,
+    ft_per_g: 1
   };
   const TREND_CATEGORIES = Object.keys(TREND_MIN_CHANGE);
   const TREND_MIN_CATEGORIES = 3;
