@@ -391,12 +391,12 @@ body {
   background: var(--surface-2);
   color: var(--text);
   border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 8px 12px;
-  font-size: 12px;
-  font-weight: 700;
+  border-radius: var(--radius);
+  padding: 12px 16px;
+  font-size: 15px;
+  font-weight: 600;
   cursor: pointer;
-  min-height: 36px;
+  min-height: 44px;
 }
 
 .btn-draft.is-drafted {
@@ -717,9 +717,14 @@ body {
   color: var(--text-dim);
 }
 
+.detail-draft-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
 .detail-draft-btn {
   width: 100%;
-  margin-top: 4px;
 }
 
 .detail-myteam-btn {
@@ -727,12 +732,12 @@ body {
   background: var(--accent);
   color: #fff;
   border: none;
-  border-radius: 8px;
-  padding: 10px 12px;
-  font-size: 13px;
-  font-weight: 700;
+  border-radius: var(--radius);
+  padding: 12px 16px;
+  font-size: 15px;
+  font-weight: 600;
   cursor: pointer;
-  min-height: 40px;
+  min-height: 44px;
 }
 
 .detail-myteam-btn.is-on-team {

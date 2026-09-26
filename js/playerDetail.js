@@ -271,6 +271,12 @@
     showDataBtn.addEventListener('click', () => SeasonStatsOverlay.open(key, entry.displayName));
     sheet.appendChild(showDataBtn);
 
+    // Grouped in their own wrapper (its own tighter internal gap, matching
+    // the source-squares grid's gap) so the outer sheet's wider gap only
+    // applies above the group as a whole, not between these two buttons.
+    const draftActionsWrap = document.createElement('div');
+    draftActionsWrap.className = 'detail-draft-actions';
+
     const drafted = App.isDrafted(key);
     const draftBtn = document.createElement('button');
     draftBtn.className = 'btn-draft detail-draft-btn' + (drafted ? ' is-drafted' : '');
@@ -279,7 +285,7 @@
       App.setDrafted(key, !drafted);
       closeHandler();
     });
-    sheet.appendChild(draftBtn);
+    draftActionsWrap.appendChild(draftBtn);
 
     const onMyTeam = App.isOnMyTeam(key);
     const myTeamBtn = document.createElement('button');
@@ -290,7 +296,9 @@
       else App.draftedByMe(key);
       closeHandler();
     });
-    sheet.appendChild(myTeamBtn);
+    draftActionsWrap.appendChild(myTeamBtn);
+
+    sheet.appendChild(draftActionsWrap);
 
     overlay.appendChild(sheet);
     overlay.classList.add('open');

@@ -12,7 +12,10 @@
    with a structured "metric A vs metric B, by at least N ranks" query
    while active; touching any of the quick filters (source, position,
    Include Drafted Players) clears it, but tagging a player or the plain
-   search box do not. */
+   search box do not. Each row also gets a health emoji computed from
+   Season Stats (Sources tab) — 💪 for 65+ games in all 3 seasons, 🚑 for
+   54-or-fewer games in at least 2 of them — shown only here, not in the
+   other lists. */
 (function (global) {
   const POSITIONS = ['PG', 'SG', 'SF', 'PF', 'C'];
   const POOL_SIZE_OPTIONS = [10, 20, 30, 40, 50, 75, 100];
@@ -31,6 +34,12 @@
   let poolSize = 20;
   // { fieldA, direction, fieldB, threshold } from Smart Search, or null.
   let smartSearchCriteria = null;
+  // One key->player-entry Map per Season Stats slot, rebuilt at the top of
+  // every renderListSection() call — avoids an O(players) scan per row per
+  // season when computing each row's health emoji.
+  let seasonStatsMaps = [];
+  const HEALTH_DURABLE_GAMES = 65;
+  const HEALTH_INJURY_GAMES = 54;
 
   function init(rootEl) {
     container = rootEl;
@@ -195,6 +204,11 @@
     listSection.innerHTML = '';
 
     const index = Ranking.buildIndex(App.state.sources);
+    seasonStatsMaps = App.state.seasonStats.map((slot) => {
+      const map = new Map();
+      slot.players.forEach((p) => map.set(p.key, p));
+      return map;
+    });
     const fullOrder = App.state.draftOrder || [];
     const includeDrafted = App.getIncludeDrafted();
     const query = searchQuery.trim().toLowerCase();
@@ -560,10 +574,34 @@
     return row;
   }
 
+  // Health icon, derived from Season Stats (Sources tab) — not a user
+  // toggle like the tags below, just computed from games played. 💪 needs
+  // all 3 season slots to have data for this player and every one to be
+  // 65+ games (missing a season means it can't be confirmed, so no badge);
+  // 🚑 needs 54-or-fewer games in at least 2 of however many seasons do
+  // have data for them.
+  function computeHealthEmoji(key) {
+    const gamesPerSeason = seasonStatsMaps.map((map) => {
+      const entry = map.get(key);
+      if (!entry) return null;
+      const games = parseInt(entry.values.games, 10);
+      return Number.isNaN(games) ? null : games;
+    });
+    if (gamesPerSeason.every((g) => g !== null && g >= HEALTH_DURABLE_GAMES)) {
+      return '💪';
+    }
+    const lowSeasons = gamesPerSeason.filter((g) => g !== null && g <= HEALTH_INJURY_GAMES).length;
+    if (lowSeasons >= 2) return '🚑';
+    return null;
+  }
+
   // Breakout/sleeper/do-not-draft tags are only ever set from the player
   // detail view — list rows just display whatever's active, right-aligned.
+  // The health emoji (if any) always leads, ahead of the user-set tags.
   function playerTagsBadge(key) {
     const parts = [];
+    const healthEmoji = computeHealthEmoji(key);
+    if (healthEmoji) parts.push(healthEmoji);
     const breakoutLevel = App.getBreakoutLevel(key);
     if (breakoutLevel >= 2) parts.push('🌟'); else if (breakoutLevel === 1) parts.push('⭐');
     const sleeperLevel = App.getSleeperLevel(key);
