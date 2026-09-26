@@ -185,12 +185,23 @@
   // health. seasonStats is ordered most-recent-first: values[0] = most
   // recent, values[1] = middle, values[2] = oldest. Two adjacent-year
   // windows are checked independently — oldest→middle and middle→most
-  // recent — each needing the right direction in at least 3 of these 5
+  // recent — each needing the right direction in at least 3 of these 6
   // categories; the specific 3-or-more don't have to be identical between
   // the two windows, but at least 2 categories must be common to both, so
   // a real sustained trend reads differently from two unrelated one-year
-  // blips.
-  const TREND_CATEGORIES = ['pts_per_g', 'ast_per_g', 'stl_per_g', 'blk_per_g', 'trb_per_g'];
+  // blips. A category only counts toward a window if it moved by at least
+  // its own minimum amount — a 0.1 blip in PTS shouldn't count the same as
+  // a real jump. Same categories and thresholds as the Show Data overlay's
+  // single-year arrows (js/seasonStatsOverlay.js).
+  const TREND_MIN_CHANGE = {
+    pts_per_g: 1.5,
+    trb_per_g: 1.5,
+    ast_per_g: 0.75,
+    blk_per_g: 0.375,
+    stl_per_g: 0.375,
+    ft_per_g: 1.5
+  };
+  const TREND_CATEGORIES = Object.keys(TREND_MIN_CHANGE);
   const TREND_MIN_CATEGORIES = 3;
   const TREND_MIN_OVERLAP = 2;
 
@@ -200,6 +211,7 @@
     const windowOldToMid = new Set();
     const windowMidToNew = new Set();
     TREND_CATEGORIES.forEach((statId) => {
+      const minChange = TREND_MIN_CHANGE[statId];
       const values = state.seasonStats.map((slot) => {
         const entry = slot.players.find((p) => p.key === key);
         if (!entry) return null;
@@ -207,10 +219,10 @@
         return Number.isNaN(value) ? null : value;
       });
       const [recent, middle, oldest] = values;
-      if (oldest !== null && middle !== null && direction * (middle - oldest) > 0) {
+      if (oldest !== null && middle !== null && direction * (middle - oldest) >= minChange) {
         windowOldToMid.add(statId);
       }
-      if (middle !== null && recent !== null && direction * (recent - middle) > 0) {
+      if (middle !== null && recent !== null && direction * (recent - middle) >= minChange) {
         windowMidToNew.add(statId);
       }
     });

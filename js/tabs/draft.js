@@ -19,8 +19,9 @@
    emoji computed from Season Stats (Sources tab) — 💪 for 65+ games in all
    3 seasons, 🚑 for 54-or-fewer games in at least 2 of them — and a trend
    emoji (⬆️/⬇️, App.getImprovementEmoji/getDeclineEmoji) for a sustained
-   2-year rise or fall in at least 3 of PTS/AST/STL/BLK/TRB, with at least
-   2 of the same categories trending both years — both shown only here,
+   2-year rise or fall (by at least each stat's own minimum amount) in at
+   least 3 of PTS/AST/STL/BLK/TRB/FT, with at least 2 of the same
+   categories trending both years — both shown only here,
    not in the other lists. */
 (function (global) {
   const POSITIONS = ['PG', 'SG', 'SF', 'PF', 'C'];
