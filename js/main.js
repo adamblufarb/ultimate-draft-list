@@ -4,27 +4,27 @@
 (function () {
   document.addEventListener('DOMContentLoaded', () => {
     const panels = {
-      rankings: document.getElementById('panel-rankings'),
       draft: document.getElementById('panel-draft'),
       myteam: document.getElementById('panel-myteam'),
+      drafted: document.getElementById('panel-drafted'),
       sources: document.getElementById('panel-sources')
     };
     const navButtons = document.querySelectorAll('.tab-btn');
 
-    RankingsTab.init(panels.rankings);
     DraftTab.init(panels.draft);
     MyTeamTab.init(panels.myteam);
+    DraftedPlayersTab.init(panels.drafted);
     SourcesTab.init(panels.sources);
 
-    // Rankings and Sources already stay in sync reactively (Rankings
-    // listens for 'sources-changed'; Sources only re-renders on its own
-    // explicit actions, so in-progress paste/edit text is never lost by
-    // switching tabs away and back). Draft is the exception: it needs a
-    // fresh show() each time it becomes visible, both because its
-    // "seed from combined average if still empty" check must see whatever
-    // sources exist *now* (not just at page load), and because its list
-    // measures row height via getBoundingClientRect(), which reads 0 while
-    // the panel is display:none.
+    // My Team, Drafted Players, and Sources already stay in sync reactively
+    // (each listens for the relevant state-change events; Sources only
+    // re-renders on its own explicit actions, so in-progress paste/edit text
+    // is never lost by switching tabs away and back). Draft is the
+    // exception: it needs a fresh show() each time it becomes visible, both
+    // because its "seed from combined average if still empty" check must
+    // see whatever sources exist *now* (not just at page load), and because
+    // its list measures row height via getBoundingClientRect(), which reads
+    // 0 while the panel is display:none.
     function showTab(name) {
       Object.entries(panels).forEach(([key, el]) => {
         el.classList.toggle('active', key === name);
@@ -39,7 +39,7 @@
       btn.addEventListener('click', () => showTab(btn.dataset.tab));
     });
 
-    showTab('rankings');
+    showTab('draft');
 
     // If this device has a GitHub sync token, pull the latest saved state
     // in the background and patch it in once it arrives — renders local
