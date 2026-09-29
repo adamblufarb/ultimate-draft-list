@@ -254,6 +254,35 @@
     return getTrendEmoji(key, -1, '⬇️');
   }
 
+  // Free-text note per player, set only from Player Detail's notes box.
+  function getPlayerNote(key) {
+    return state.playerNotes[key] || '';
+  }
+
+  function setPlayerNote(key, text) {
+    if (text) state.playerNotes[key] = text; else delete state.playerNotes[key];
+    persist();
+  }
+
+  // Smart Search's saved presets — { id, title, fieldA, direction, fieldB,
+  // threshold }. upsertSavedSearch keys off `id`: pass one to update that
+  // existing entry in place, omit it to create a new one (a fresh id is
+  // generated and returned).
+  function upsertSavedSearch(search) {
+    const id = search.id || genId();
+    const record = Object.assign({}, search, { id });
+    const idx = state.savedSearches.findIndex((s) => s.id === id);
+    if (idx === -1) state.savedSearches.push(record);
+    else state.savedSearches[idx] = record;
+    persist();
+    return id;
+  }
+
+  function deleteSavedSearch(id) {
+    state.savedSearches = state.savedSearches.filter((s) => s.id !== id);
+    persist();
+  }
+
   global.App = {
     state, on, emit, persist, genId,
     isDrafted, setDrafted, getIncludeDrafted, setIncludeDrafted,
@@ -262,6 +291,8 @@
     getBreakoutLevel, cycleBreakoutLevel,
     getSleeperLevel, cycleSleeperLevel,
     isDoNotDraft, toggleDoNotDraft,
-    getHealthEmoji, getImprovementEmoji, getDeclineEmoji
+    getHealthEmoji, getImprovementEmoji, getDeclineEmoji,
+    getPlayerNote, setPlayerNote,
+    upsertSavedSearch, deleteSavedSearch
   };
 })(window);

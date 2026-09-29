@@ -6,17 +6,19 @@
    all), 1 (normal chip "on", today's existing behavior), or 1.5 (boosted —
    counts 1.5x as heavily in the combined average). Only "Average"-style
    sources (scoreType 'ly_avg' or 'ty_avg_proj' — Last Year Avg/Game and
-   This Year Avg/Game Projection) can ever reach 1.5; every other source
-   just cycles the plain 0/1 on-off toggle it always has.
+   This Year Avg/Game Projection) and ADP sources (scoreType 'adp' — a
+   continuous consensus score, the same spirit as an average) can ever
+   reach 1.5; every other source just cycles the plain 0/1 on-off toggle it
+   always has.
 
    "Total"-style sources (scoreType 'ly_total' or 'ty_total_proj') start
    excluded by default — a large total number skews a combined *average*
    of ranks/scores the same way an average-style source doesn't, so they
    opt in rather than opt out. Everything else (plain sources with no
-   scoreType, plus the boostable averages) defaults to normal (1x) weight,
-   same as before this existed. */
+   scoreType, ADP, plus the boostable averages) defaults to normal (1x)
+   weight, same as before this existed. */
 (function (global) {
-  const BOOSTABLE_SCORE_TYPES = new Set(['ly_avg', 'ty_avg_proj']);
+  const BOOSTABLE_SCORE_TYPES = new Set(['ly_avg', 'ty_avg_proj', 'adp']);
   const DEFAULT_OFF_SCORE_TYPES = new Set(['ly_total', 'ty_total_proj']);
 
   function isBoostable(source) {

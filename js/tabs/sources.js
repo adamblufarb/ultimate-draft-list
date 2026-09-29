@@ -1,6 +1,10 @@
 /* Tab 3 — Sources: add/edit/delete up to MAX_SOURCES ranking sources, paste
    raw rankings, preview the parsed result, and save. Each source shows a
    read-only summary once saved; "Edit" switches it back to the full form.
+   Picking "ADP" as the Score type switches the paste format itself to
+   plain Name/ADP-score blocks (Parser.parseADPList) instead of the usual
+   rank-led one — see js/parser.js for why (an ADP list's order doesn't
+   correlate with its score).
    Also hosts the Data List — a single, separate paste-in list (name, age,
    optionally team and height) that never feeds any ranking; it's just
    extra info shown in the player detail view. And Season Stats — 3 fixed
@@ -292,15 +296,41 @@
     scoreSelect.value = source.scoreType || 'none';
 
     const pasteLabel = document.createElement('label');
-    pasteLabel.textContent = 'Paste ranked player list';
     const pasteHint = document.createElement('p');
     pasteHint.className = 'paste-hint';
-    pasteHint.textContent = 'One player per block, separated by a blank line: Rank, then Player Name, ' +
-      'then optionally Positions and/or Score, each on their own line.';
     const textarea = document.createElement('textarea');
     textarea.rows = 8;
-    textarea.placeholder = '4\nLeBron James\nPF, SF\n57.2\n\n5\nNikola Jokic\nC\n56';
     textarea.value = source.rawText || '';
+
+    // ADP is a different beast: no rank line at all (a list's order
+    // doesn't correlate with its ADP score), just Name then score — see
+    // Parser.parseADPList. Everything else uses the standard rank-led
+    // format.
+    function isADPMode() {
+      return scoreSelect.value === 'adp';
+    }
+
+    function currentParser() {
+      return isADPMode() ? Parser.parseADPList : Parser.parseRankings;
+    }
+
+    function updatePasteFormatUI() {
+      if (isADPMode()) {
+        pasteLabel.textContent = 'Paste ADP list';
+        pasteHint.textContent = 'One player per block, separated by a blank line: Player Name, then ADP score, each on their own line.';
+        textarea.placeholder = 'LeBron James\n24.7\n\nNikola Jokic\n1.6';
+      } else {
+        pasteLabel.textContent = 'Paste ranked player list';
+        pasteHint.textContent = 'One player per block, separated by a blank line: Rank, then Player Name, ' +
+          'then optionally Positions and/or Score, each on their own line.';
+        textarea.placeholder = '4\nLeBron James\nPF, SF\n57.2\n\n5\nNikola Jokic\nC\n56';
+      }
+    }
+    updatePasteFormatUI();
+    scoreSelect.addEventListener('change', () => {
+      updatePasteFormatUI();
+      refreshPreview();
+    });
 
     const previewWrap = document.createElement('div');
     previewWrap.className = 'preview-wrap';
@@ -309,7 +339,7 @@
     warningsWrap.className = 'preview-warnings';
 
     function refreshPreview() {
-      const { entries, warnings } = Parser.parseRankings(textarea.value);
+      const { entries, warnings } = currentParser()(textarea.value);
       previewWrap.innerHTML = '';
       const heading = document.createElement('div');
       heading.className = 'preview-heading';
@@ -364,7 +394,7 @@
     saveBtn.className = 'btn btn-primary';
     saveBtn.textContent = 'Save';
     saveBtn.addEventListener('click', () => {
-      const { entries } = Parser.parseRankings(textarea.value);
+      const { entries } = currentParser()(textarea.value);
       source.name = nameInput.value.trim() || 'Untitled source';
       source.url = urlInput.value.trim();
       source.scoreType = scoreSelect.value;

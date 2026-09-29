@@ -65,6 +65,52 @@
     return { entries, warnings };
   }
 
+  // Parses an ADP list's raw pasted text into the same [{ rank, name,
+  // positions, score }] shape parseRankings produces, so every downstream
+  // consumer (Ranking, Smart Search, Player Detail's source squares, the
+  // preview table) treats it identically — but the format itself is
+  // different: one player per block, blocks separated by a blank line,
+  // each block is just Player Name then ADP score, no leading rank line
+  // and no positions line. An ADP list's paste order doesn't correlate
+  // with its score (e.g. the #1 player by ADP order might have an ADP
+  // score of 1.6, not 1), so the score itself — not the block's position
+  // in the list — becomes `rank` here, which is what Ranking.combineFromIndex
+  // and every other "this source's rank for this player" display actually
+  // reads. `positions` and `score` are always null; nothing else in the
+  // pasted text carries either.
+  function parseADPList(rawText) {
+    const text = (rawText || '').replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+    const blocks = text.split(/\n\s*\n+/).map((b) => b.trim()).filter(Boolean);
+    const entries = [];
+    const warnings = [];
+    const seenKeys = new Set();
+
+    blocks.forEach((block, blockIndex) => {
+      const lines = block.split('\n').map((l) => l.trim()).filter(Boolean);
+      if (lines.length < 2) {
+        warnings.push(`Skipped block ${blockIndex + 1}: needs a name and an ADP score.`);
+        return;
+      }
+      const name = lines[0];
+      if (!isNumericToken(lines[1])) {
+        warnings.push(`Skipped block ${blockIndex + 1}: "${lines[1]}" isn't a valid ADP score.`);
+        return;
+      }
+      const adp = parseFloat(lines[1]);
+
+      const key = name.toLowerCase();
+      if (seenKeys.has(key)) {
+        warnings.push(`Duplicate entry skipped: "${name}"`);
+        return;
+      }
+      seenKeys.add(key);
+      entries.push({ rank: adp, name, positions: null, score: null });
+    });
+
+    entries.sort((a, b) => a.rank - b.rank);
+    return { entries, warnings };
+  }
+
   // Parses the Data List's raw pasted text into [{ name, age, team, height }].
   // Same blank-line-separated block format as rankings, but each block is:
   //   Player Name
@@ -175,5 +221,5 @@
     return { columns, players, warnings };
   }
 
-  global.Parser = { parseRankings, parseDataList, parseSeasonStatsHtml };
+  global.Parser = { parseRankings, parseADPList, parseDataList, parseSeasonStatsHtml };
 })(window);

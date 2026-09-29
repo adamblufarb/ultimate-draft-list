@@ -8,6 +8,17 @@
    metrics' rank numbers directly — a lower number is a better rank, same
    as everywhere else in the app.
 
+   Saved Searches — a 2-column grid of tiles (same .stat-card style as
+   Player Detail's source squares), one per App.state.savedSearches entry,
+   plus a trailing "Add a Search" tile — sits above the criteria form.
+   Tapping a tile loads that saved search's title and criteria into the
+   form below (fully editable — lists, numbers, and title); tapping
+   "Add a Search" clears the form for a new one. Giving the form a title
+   and hitting Search both saves it (updating the tile you loaded it from,
+   or adding a new one) and applies it; leaving the title blank runs it
+   without saving, same as before this existed. Each tile also has its own
+   ✕ to delete it.
+
    Same overlay chrome as the player detail view (backdrop, slide-up
    sheet, close on backdrop tap/Escape/✕), but its own self-contained
    form. Closing without hitting Search just discards whatever was being
@@ -36,10 +47,11 @@
   }
 
   // metrics: [{ id, label }], id 'combined' plus one entry per source.
-  // initial: a previously-run criteria object to pre-fill (Edit Search),
-  //   or null for a blank form.
-  // onSearch(criteria): called with { fieldA, direction, fieldB, threshold }
-  //   once the user taps Search with valid inputs.
+  // initial: a previously-run criteria object to pre-fill (Edit Search) —
+  //   may itself carry { id, title } if it came from a saved search — or
+  //   null for a blank form.
+  // onSearch(criteria): called with { fieldA, direction, fieldB, threshold,
+  //   [id, title] } once the user taps Search with valid inputs.
   function open(metrics, initial, onSearch) {
     const overlay = ensureOverlay();
     closeHandler = () => hide();
@@ -62,17 +74,20 @@
     header.appendChild(closeBtn);
     sheet.appendChild(header);
 
-    let fieldA = (initial && initial.fieldA) || (metrics[0] && metrics[0].id) || null;
-    let direction = (initial && initial.direction) || 'better';
-    let fieldB = (initial && initial.fieldB) || null;
+    const savedLabel = document.createElement('div');
+    savedLabel.className = 'smart-search-label';
+    savedLabel.textContent = 'Saved Searches';
+    sheet.appendChild(savedLabel);
 
-    function otherMetrics(excludeId) {
-      return metrics.filter((m) => m.id !== excludeId);
-    }
-    if (!fieldB || fieldB === fieldA) {
-      const opts = otherMetrics(fieldA);
-      fieldB = opts[0] ? opts[0].id : null;
-    }
+    const savedGrid = document.createElement('div');
+    savedGrid.className = 'detail-stats smart-search-saved-grid';
+    sheet.appendChild(savedGrid);
+
+    const searchTitleInput = document.createElement('input');
+    searchTitleInput.type = 'text';
+    searchTitleInput.className = 'smart-search-title-input';
+    searchTitleInput.placeholder = 'Search title (optional — saves it here)';
+    sheet.appendChild(searchTitleInput);
 
     const promptLabel = document.createElement('div');
     promptLabel.className = 'smart-search-label';
@@ -108,13 +123,21 @@
     thresholdInput.min = '1';
     thresholdInput.inputMode = 'numeric';
     thresholdInput.className = 'smart-search-threshold-input';
-    thresholdInput.value = String((initial && initial.threshold) || 10);
     const thresholdSuffix = document.createElement('span');
     thresholdSuffix.textContent = 'ranks.';
     thresholdRow.appendChild(thresholdPrefix);
     thresholdRow.appendChild(thresholdInput);
     thresholdRow.appendChild(thresholdSuffix);
     sheet.appendChild(thresholdRow);
+
+    let fieldA = null;
+    let direction = 'better';
+    let fieldB = null;
+    let editingId = null;
+
+    function otherMetrics(excludeId) {
+      return metrics.filter((m) => m.id !== excludeId);
+    }
 
     function populateFieldA() {
       fieldASelect.innerHTML = '';
@@ -143,9 +166,62 @@
       worseBtn.className = 'toggle-label' + (direction === 'worse' ? ' is-active' : '');
     }
 
-    populateFieldA();
-    populateFieldB();
-    updateDirectionButtons();
+    // Loads a saved search (or, for `null`, a blank form) into the fields —
+    // used for the initial population and whenever a Saved Searches tile
+    // (or "Add a Search") is tapped. Every field it sets stays fully
+    // editable afterward.
+    function loadIntoForm(saved) {
+      editingId = saved ? saved.id : null;
+      searchTitleInput.value = (saved && saved.title) || '';
+      fieldA = (saved && saved.fieldA) || (metrics[0] && metrics[0].id) || null;
+      direction = (saved && saved.direction) || 'better';
+      fieldB = (saved && saved.fieldB) || null;
+      if (!fieldB || fieldB === fieldA) {
+        const opts = otherMetrics(fieldA);
+        fieldB = opts[0] ? opts[0].id : null;
+      }
+      thresholdInput.value = String((saved && saved.threshold) || 10);
+      populateFieldA();
+      populateFieldB();
+      updateDirectionButtons();
+    }
+
+    function renderSavedGrid() {
+      savedGrid.innerHTML = '';
+      App.state.savedSearches.forEach((saved) => {
+        const tile = document.createElement('div');
+        tile.className = 'stat-card stat-card-clickable smart-search-saved-tile';
+        tile.addEventListener('click', () => loadIntoForm(saved));
+
+        const titleDiv = document.createElement('div');
+        titleDiv.className = 'smart-search-saved-title';
+        titleDiv.textContent = saved.title;
+        tile.appendChild(titleDiv);
+
+        const deleteBtn = document.createElement('button');
+        deleteBtn.type = 'button';
+        deleteBtn.className = 'smart-search-saved-delete';
+        deleteBtn.textContent = '✕';
+        deleteBtn.setAttribute('aria-label', 'Delete "' + saved.title + '"');
+        deleteBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          if (!confirm('Delete saved search "' + saved.title + '"?')) return;
+          App.deleteSavedSearch(saved.id);
+          if (editingId === saved.id) loadIntoForm(null);
+          renderSavedGrid();
+        });
+        tile.appendChild(deleteBtn);
+
+        savedGrid.appendChild(tile);
+      });
+
+      const addTile = document.createElement('button');
+      addTile.type = 'button';
+      addTile.className = 'stat-card stat-card-clickable smart-search-add-tile';
+      addTile.textContent = '+ Add a Search';
+      addTile.addEventListener('click', () => loadIntoForm(null));
+      savedGrid.appendChild(addTile);
+    }
 
     fieldASelect.addEventListener('change', () => {
       fieldA = fieldASelect.value;
@@ -175,10 +251,19 @@
     searchBtn.addEventListener('click', () => {
       const n = parseInt(thresholdInput.value, 10);
       if (!fieldA || !fieldB || !n || n < 1) return;
+      const title = searchTitleInput.value.trim();
+      const criteria = { fieldA, direction, fieldB, threshold: n };
+      if (title) {
+        criteria.id = App.upsertSavedSearch({ id: editingId, title, fieldA, direction, fieldB, threshold: n });
+        criteria.title = title;
+      }
       hide();
-      onSearch({ fieldA, direction, fieldB, threshold: n });
+      onSearch(criteria);
     });
     sheet.appendChild(searchBtn);
+
+    renderSavedGrid();
+    loadIntoForm(initial);
 
     overlay.appendChild(sheet);
     overlay.classList.add('open');

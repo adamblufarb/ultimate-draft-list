@@ -3,13 +3,18 @@
   const MAX_SOURCES = 8;
 
   // What the "Score" number in a pasted list means. Selected per-source in
-  // the Sources tab (not embedded in the pasted text itself).
+  // the Sources tab (not embedded in the pasted text itself). 'adp' is a
+  // different beast from the rest — it switches the paste format itself
+  // (Sources tab) to plain Name/ADP-score blocks, no rank line, since an
+  // ADP list's order doesn't correlate with its score the way a rank does
+  // (see js/parser.js's parseADPList and js/ranking.js's ADP note).
   const SCORE_TYPES = [
     { value: 'none', label: 'No score data' },
     { value: 'ly_avg', label: 'Last year – Avg/Game' },
     { value: 'ly_total', label: 'Last year – Total' },
     { value: 'ty_avg_proj', label: 'This year – Avg/Game Projection' },
-    { value: 'ty_total_proj', label: 'This year – Total Projection' }
+    { value: 'ty_total_proj', label: 'This year – Total Projection' },
+    { value: 'adp', label: 'ADP (Average Draft Position)' }
   ];
 
   function scoreTypeLabel(value) {

@@ -728,6 +728,25 @@ body {
   color: var(--text-dim);
 }
 
+.detail-notes {
+  width: 100%;
+  min-height: calc(2 * 1.4em + 20px);
+  background: var(--bg);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 10px 12px;
+  font: inherit;
+  font-size: 14px;
+  line-height: 1.4;
+  resize: none;
+  overflow: hidden;
+}
+
+.detail-notes::placeholder {
+  opacity: 0.5;
+}
+
 .detail-draft-actions {
   display: flex;
   flex-direction: column;
@@ -974,6 +993,66 @@ body {
 
 .smart-search-submit {
   width: 100%;
+}
+
+.smart-search-saved-grid {
+  margin-bottom: 4px;
+}
+
+.smart-search-saved-tile {
+  position: relative;
+  min-height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.smart-search-saved-title {
+  font-weight: 700;
+  padding: 0 20px;
+  overflow-wrap: break-word;
+}
+
+.smart-search-saved-delete {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.25);
+  color: var(--text-dim);
+  font-size: 12px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.smart-search-add-tile {
+  color: var(--accent);
+  font-weight: 700;
+  font: inherit;
+  -webkit-appearance: none;
+}
+
+.smart-search-title-input {
+  width: 100%;
+  padding: 12px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  color: var(--text);
+  font: inherit;
+  font-size: 15px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.smart-search-title-input::placeholder {
+  font-weight: 400;
+  color: var(--text-dim);
 }
 
 /* My Team tab */

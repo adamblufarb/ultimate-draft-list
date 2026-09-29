@@ -22,7 +22,9 @@
         { label: '', fileName: '', columns: [], players: [] },
         { label: '', fileName: '', columns: [], players: [] },
         { label: '', fileName: '', columns: [], players: [] }
-      ]
+      ],
+      playerNotes: {}, // key -> free-text note, set from Player Detail
+      savedSearches: [] // [{ id, title, fieldA, direction, fieldB, threshold }] — Smart Search's saved presets
     };
   }
 

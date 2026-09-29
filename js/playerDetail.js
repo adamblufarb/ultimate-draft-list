@@ -10,8 +10,11 @@
    anywhere yet.
    Combined rank (based on whichever source weights are currently active in
    the calling tab's filter), plus the Breakout/Sleeper/Do Not Draft tag
-   toggles, share the next row. Below that, one square per source — every
-   source, not just the special avg/total ones — showing that source's rank
+   toggles, share the next row. A free-text notes box (App.getPlayerNote/
+   setPlayerNote, debounced) sits right below — 2 lines tall by default,
+   grows with the content, no title, just an "Add notes" placeholder.
+   Below that, one square per source — every source, not just the special
+   avg/total ones — showing that source's rank
    and score side by side on one row, with the currently-weighted-in
    sources highlighted (a darker blue plus a "1.5x" label for a boosted
    one). Tapping a source square cycles its weight (js/sourceWeights.js)
@@ -303,6 +306,25 @@
 
     sheet.appendChild(combinedRow);
 
+    // Free-text notes, saved per player. Starts at 2 lines tall and grows
+    // with the content — never scrolls internally.
+    const notesEl = document.createElement('textarea');
+    notesEl.className = 'detail-notes';
+    notesEl.placeholder = 'Add notes';
+    notesEl.rows = 2;
+    notesEl.value = App.getPlayerNote(key);
+    function growNotes() {
+      notesEl.style.height = 'auto';
+      notesEl.style.height = notesEl.scrollHeight + 'px';
+    }
+    let notesDebounce = null;
+    notesEl.addEventListener('input', () => {
+      growNotes();
+      clearTimeout(notesDebounce);
+      notesDebounce = setTimeout(() => App.setPlayerNote(key, notesEl.value), 600);
+    });
+    sheet.appendChild(notesEl);
+
     function updateCombined() {
       const combinedEntry = Ranking.combineFromIndex(index, activeWeights).find((r) => r.key === key) || null;
       setCardValue(combinedCard, combinedEntry ? combinedEntry.avg.toFixed(1) : null);
@@ -366,6 +388,9 @@
 
     overlay.appendChild(sheet);
     overlay.classList.add('open');
+    // Needs to happen after 'open' — scrollHeight reads 0 while the
+    // overlay is still display:none.
+    growNotes();
   }
 
   global.PlayerDetail = { open, close: () => closeHandler() };
