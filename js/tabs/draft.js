@@ -378,7 +378,7 @@
       wrap.appendChild(renderToggleChip('Edit Search', true, openSmartSearch));
       const clearBtn = document.createElement('button');
       clearBtn.type = 'button';
-      clearBtn.className = 'tag-toggle';
+      clearBtn.className = 'tag-toggle is-active';
       clearBtn.textContent = '✕';
       clearBtn.setAttribute('aria-label', 'Clear Smart Search');
       clearBtn.addEventListener('click', () => {

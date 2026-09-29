@@ -945,16 +945,22 @@ body {
 
 .smart-search-select {
   width: 100%;
-  padding: 12px;
+  padding: 12px 40px 12px 12px;
   border-radius: var(--radius);
   border: 1px solid var(--border);
-  background: var(--surface-2);
+  background-color: var(--surface-2);
   color: var(--text);
   font: inherit;
   font-size: 17px;
   font-weight: 700;
   text-align: center;
   text-align-last: center;
+  -webkit-appearance: none;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16'%3E%3Cpath d='M4 6l4 4 4-4' stroke='%239aa1ac' stroke-width='2' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  background-size: 16px;
 }
 
 .smart-search-toggle-row {
@@ -999,6 +1005,12 @@ body {
   margin-bottom: 4px;
 }
 
+.smart-search-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
 .smart-search-saved-tile {
   position: relative;
   min-height: 60px;
@@ -1014,17 +1026,16 @@ body {
   overflow-wrap: break-word;
 }
 
-.smart-search-saved-delete {
+.smart-search-saved-edit {
   position: absolute;
   top: 4px;
   right: 4px;
-  width: 22px;
-  height: 22px;
+  width: 24px;
+  height: 24px;
   padding: 0;
   border: none;
   border-radius: 50%;
   background: rgba(0, 0, 0, 0.25);
-  color: var(--text-dim);
   font-size: 12px;
   line-height: 1;
   cursor: pointer;
@@ -1035,6 +1046,10 @@ body {
   font-weight: 700;
   font: inherit;
   -webkit-appearance: none;
+}
+
+.smart-search-delete-btn {
+  width: 100%;
 }
 
 .smart-search-title-input {
