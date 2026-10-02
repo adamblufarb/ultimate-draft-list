@@ -724,8 +724,8 @@
 
     const desc = document.createElement('p');
     desc.className = 'source-view-meta';
-    desc.textContent = 'Practice with scrambled data: every player\'s rank on every list gets a random +10 or -10 ' +
-      '(never below 1), last seasons\' stats shift by ±2, and Breakout/Sleeper/Do Not Draft tags are cleared. ' +
+    desc.textContent = 'Practice with scrambled data: each list gets its own random +10 or -10 on every player\'s rank, ' +
+      'last seasons\' stats shift by ±1.5, and Breakout/Sleeper/Do Not Draft tags and locks are cleared. ' +
       'Nothing is saved or synced — exit (or just reload) and your real data is exactly as you left it.';
     card.appendChild(desc);
 

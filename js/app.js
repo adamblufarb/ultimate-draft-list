@@ -287,16 +287,19 @@
   // Fake Mode: a throwaway sandbox for practicing against scrambled data.
   // Entering takes a deep snapshot of the real state, then scrambles the
   // live state in place (so every tab's existing `App.state.x` reads just
-  // work): each player's rank on each list gets a random +10 or -10 (never
-  // below 1 — the combined average is still just the average of those),
-  // last seasons' numeric stats get a random +2 or -2 (never below 0;
-  // percentages, text like team/awards, and games past 82 are left alone),
-  // and every Breakout/Sleeper/Do Not Draft tag is cleared. The Draft List
-  // order is re-seeded from the scrambled combined average so it agrees
-  // with the numbers shown. While active, persist() is a no-op and Storage
-  // is read-only, so nothing reaches localStorage or GitHub; exiting
-  // restores the snapshot, and a reload does the same for free (the real
-  // data was never overwritten). The mode itself is never persisted.
+  // work): each list (source) as a whole gets its own random +10 or -10
+  // applied to every player's rank on it — so a list keeps its internal
+  // order but drifts relative to the others, and the combined average is
+  // still just the average of those shifted numbers; last seasons' numeric
+  // stats get a random +1.5 or -1.5 (never below 0; percentages, text like
+  // team/awards, and games past 82 are left alone); and every
+  // Breakout/Sleeper/Do Not Draft tag and every lock is cleared. The Draft
+  // List order is re-seeded from the scrambled combined average so it
+  // agrees with the numbers shown. While active, persist() is a no-op and
+  // Storage is read-only, so nothing reaches localStorage or GitHub;
+  // exiting restores the snapshot, and a reload does the same for free
+  // (the real data was never overwritten). The mode itself is never
+  // persisted.
   let fakeSnapshot = null;
 
   function isFakeMode() {
@@ -317,7 +320,7 @@
           const raw = player.values[col.id];
           if (typeof raw !== 'string' || !NUMERIC_TEXT.test(raw)) return;
           const decimals = (raw.split('.')[1] || '').length;
-          let next = parseFloat(raw) + randomSign() * 2;
+          let next = parseFloat(raw) + randomSign() * 1.5;
           next = Math.max(0, next);
           if (col.id === 'games' || col.id === 'games_started') next = Math.min(82, next);
           player.values[col.id] = next.toFixed(decimals);
@@ -335,10 +338,12 @@
     Storage.setReadOnly(true);
 
     state.sources.forEach((source) => {
+      const shift = randomSign() * 10;
       source.players.forEach((p) => {
-        p.rank = Math.max(1, Math.round((p.rank + randomSign() * 10) * 100) / 100);
+        p.rank = Math.round((p.rank + shift) * 100) / 100;
       });
     });
+    state.lockedKeys = [];
     state.breakoutLevels = {};
     state.sleeperLevels = {};
     state.doNotDraftKeys = [];
