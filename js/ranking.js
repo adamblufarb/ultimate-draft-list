@@ -51,6 +51,13 @@
   // counts its rank 2x or 3x as heavily as a normal one. Players unranked by
   // every weighted-in source are excluded (they still exist in the index
   // for lookups elsewhere).
+  // Fake Mode only (App.enterFakeMode): a Map of player key -> number added
+  // to that player's combined average, or null for none.
+  let combinedOffsets = null;
+  function setCombinedOffsets(map) {
+    combinedOffsets = map;
+  }
+
   function combineFromIndex(index, weights) {
     const result = [];
     for (const entry of index.values()) {
@@ -74,7 +81,7 @@
         key: entry.key,
         displayName: entry.displayName,
         positions: entry.positions,
-        avg: weightedSum / totalWeight,
+        avg: weightedSum / totalWeight + (combinedOffsets ? combinedOffsets.get(entry.key) || 0 : 0),
         sourceCount: count,
         perSource
       });
@@ -92,5 +99,5 @@
     return combineFromIndex(buildIndex(sources), weights);
   }
 
-  global.Ranking = { computeCombined, buildIndex, combineFromIndex, invalidateIndexCache };
+  global.Ranking = { setCombinedOffsets, computeCombined, buildIndex, combineFromIndex, invalidateIndexCache };
 })(window);

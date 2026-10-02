@@ -287,18 +287,26 @@
   // Fake Mode: a throwaway sandbox for practicing against scrambled data.
   // Entering takes a deep snapshot of the real state, then scrambles the
   // live state in place (so every tab's existing `App.state.x` reads just
-  // work): each list (source) as a whole gets its own random +10 or -10
-  // applied to every player's rank on it — so a list keeps its internal
-  // order but drifts relative to the others, and the combined average is
-  // still just the average of those shifted numbers; last seasons' numeric
-  // stats get a random +1.5 or -1.5 (never below 0; percentages, text like
-  // team/awards, and games past 82 are left alone); and every
-  // Breakout/Sleeper/Do Not Draft tag and every lock is cleared. The Draft
-  // List order is re-seeded from the scrambled combined average so it
-  // agrees with the numbers shown. While active, persist() is a no-op and
-  // Storage is read-only, so nothing reaches localStorage or GitHub;
-  // exiting restores the snapshot, and a reload does the same for free
-  // (the real data was never overwritten). The mode itself is never
+  // work):
+  //  - each player gets one random shift of 0-30 (random sign), applied to
+  //    their number on a random 1-7 of the lists they appear on (capped at
+  //    however many that is). Each list is then re-ranked by those shifted
+  //    values and the list's own original numbers dealt back out in the new
+  //    order — so a list is still a clean ranking (no ties, no negatives,
+  //    ADP lists keep their real-looking decimal scores) but the players in
+  //    it have moved around, and because one player's shift hits several
+  //    lists together it actually survives the averaging;
+  //  - on top of that, every player's combined rank gets its own random +5
+  //    or -5 (Ranking.setCombinedOffsets);
+  //  - last seasons' numeric stats get a random +1.5 or -1.5 (never below
+  //    0; percentages, text like team/awards, and games past 82 are left
+  //    alone);
+  //  - every Breakout/Sleeper/Do Not Draft tag and every lock is cleared.
+  // The Draft List order is re-seeded from the scrambled combined average
+  // so it agrees with the numbers shown. While active, persist() is a
+  // no-op and Storage is read-only, so nothing reaches localStorage or
+  // GitHub; exiting restores the snapshot, and a reload does the same for
+  // free (the real data was never overwritten). The mode itself is never
   // persisted.
   let fakeSnapshot = null;
 
@@ -329,6 +337,36 @@
     });
   }
 
+  function scrambleLists() {
+    const appearances = new Map(); // normalized name -> [{ source, player }]
+    state.sources.forEach((source) => {
+      source.players.forEach((player) => {
+        const key = NameMatch.normalize(player.name);
+        if (!appearances.has(key)) appearances.set(key, []);
+        appearances.get(key).push(player);
+      });
+    });
+
+    const shiftedValue = new Map(); // player object -> shifted number
+    appearances.forEach((players) => {
+      const shift = randomSign() * Math.random() * 30;
+      const count = Math.min(players.length, 1 + Math.floor(Math.random() * 7));
+      for (let i = players.length - 1; i > 0; i--) { // Fisher-Yates
+        const j = Math.floor(Math.random() * (i + 1));
+        [players[i], players[j]] = [players[j], players[i]];
+      }
+      players.slice(0, count).forEach((player) => shiftedValue.set(player, player.rank + shift));
+    });
+
+    state.sources.forEach((source) => {
+      const originals = source.players.map((p) => p.rank).sort((a, b) => a - b);
+      const valueOf = (p) => (shiftedValue.has(p) ? shiftedValue.get(p) : p.rank);
+      source.players.slice()
+        .sort((a, b) => (valueOf(a) - valueOf(b)) || (a.rank - b.rank))
+        .forEach((p, i) => { p.rank = originals[i]; });
+    });
+  }
+
   function enterFakeMode() {
     if (fakeSnapshot) return;
     fakeSnapshot = JSON.parse(JSON.stringify(state));
@@ -337,12 +375,7 @@
     GithubSync.flushPending();
     Storage.setReadOnly(true);
 
-    state.sources.forEach((source) => {
-      const shift = randomSign() * 10;
-      source.players.forEach((p) => {
-        p.rank = Math.round((p.rank + shift) * 100) / 100;
-      });
-    });
+    scrambleLists();
     state.lockedKeys = [];
     state.breakoutLevels = {};
     state.sleeperLevels = {};
@@ -350,6 +383,9 @@
     scrambleSeasonStats();
 
     Ranking.invalidateIndexCache();
+    const offsets = new Map();
+    Ranking.buildIndex(state.sources).forEach((entry, key) => offsets.set(key, randomSign() * 5));
+    Ranking.setCombinedOffsets(offsets);
     state.draftOrder = Ranking.computeCombined(state.sources, SourceWeights.defaultWeights(state.sources))
       .map((row) => ({ key: row.key, name: row.displayName }));
 
@@ -362,6 +398,7 @@
     const real = fakeSnapshot;
     fakeSnapshot = null;
     Storage.setReadOnly(false);
+    Ranking.setCombinedOffsets(null);
     Object.keys(state).forEach((k) => { delete state[k]; });
     Object.assign(state, real);
     emit('fake-mode-changed', { on: false });
