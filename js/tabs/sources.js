@@ -66,6 +66,7 @@
 
     container.appendChild(dataListEditing ? renderDataListEditCard() : renderDataListViewCard());
     container.appendChild(renderSeasonStatsSection());
+    container.appendChild(renderFakeModeCard());
   }
 
   function onAddSource() {
@@ -705,6 +706,39 @@
     }
 
     card.appendChild(actions);
+    return card;
+  }
+
+  // Fake Mode toggle — lives at the very bottom of the page. All the
+  // actual work (and the explanation of what it scrambles) is in
+  // App.enterFakeMode; this is just the switch. Entering/exiting re-renders
+  // every tab, this one included, so put the scroll position back after.
+  function renderFakeModeCard() {
+    const card = document.createElement('div');
+    card.className = 'source-card source-card-view fake-mode-card';
+
+    const title = document.createElement('div');
+    title.className = 'source-view-name';
+    title.textContent = 'Fake Mode';
+    card.appendChild(title);
+
+    const desc = document.createElement('p');
+    desc.className = 'source-view-meta';
+    desc.textContent = 'Practice with scrambled data: every player\'s rank on every list gets a random +10 or -10 ' +
+      '(never below 1), last seasons\' stats shift by ±2, and Breakout/Sleeper/Do Not Draft tags are cleared. ' +
+      'Nothing is saved or synced — exit (or just reload) and your real data is exactly as you left it.';
+    card.appendChild(desc);
+
+    const on = App.isFakeMode();
+    const btn = document.createElement('button');
+    btn.className = on ? 'btn btn-danger' : 'btn btn-secondary';
+    btn.textContent = on ? 'Exit Fake Mode' : 'Enter Fake Mode';
+    btn.addEventListener('click', () => {
+      const scrollTop = container.scrollTop;
+      if (on) App.exitFakeMode(); else App.enterFakeMode();
+      container.scrollTop = scrollTop;
+    });
+    card.appendChild(btn);
     return card;
   }
 

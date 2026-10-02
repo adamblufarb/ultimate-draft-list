@@ -186,5 +186,17 @@
     }, DEBOUNCE_MS);
   }
 
-  global.GithubSync = { on, getToken, setToken, isConnected, getStatus, fetchRemote, scheduleSync, pushNow, isDirty };
+  // Sends whatever's waiting out the debounce right now instead of later.
+  // Fake Mode calls this before it swaps in scrambled data: the pending
+  // state object is the live App.state itself, so without this the timer
+  // could fire mid-fake-mode and commit the fake data to the repo.
+  function flushPending() {
+    if (!pendingState) return;
+    clearTimeout(debounceTimer);
+    const toSend = pendingState;
+    pendingState = null;
+    pushNow(toSend);
+  }
+
+  global.GithubSync = { on, getToken, setToken, isConnected, getStatus, fetchRemote, scheduleSync, pushNow, isDirty, flushPending };
 })(window);

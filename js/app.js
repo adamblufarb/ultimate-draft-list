@@ -22,6 +22,7 @@
   }
 
   function persist() {
+    if (fakeSnapshot) return; // Fake Mode is a sandbox — nothing saves or syncs
     Storage.save(state);
     GithubSync.scheduleSync(state);
   }
@@ -283,6 +284,85 @@
     persist();
   }
 
+  // Fake Mode: a throwaway sandbox for practicing against scrambled data.
+  // Entering takes a deep snapshot of the real state, then scrambles the
+  // live state in place (so every tab's existing `App.state.x` reads just
+  // work): each player's rank on each list gets a random +10 or -10 (never
+  // below 1 — the combined average is still just the average of those),
+  // last seasons' numeric stats get a random +2 or -2 (never below 0;
+  // percentages, text like team/awards, and games past 82 are left alone),
+  // and every Breakout/Sleeper/Do Not Draft tag is cleared. The Draft List
+  // order is re-seeded from the scrambled combined average so it agrees
+  // with the numbers shown. While active, persist() is a no-op and Storage
+  // is read-only, so nothing reaches localStorage or GitHub; exiting
+  // restores the snapshot, and a reload does the same for free (the real
+  // data was never overwritten). The mode itself is never persisted.
+  let fakeSnapshot = null;
+
+  function isFakeMode() {
+    return fakeSnapshot !== null;
+  }
+
+  function randomSign() {
+    return Math.random() < 0.5 ? -1 : 1;
+  }
+
+  const NUMERIC_TEXT = /^-?\d*\.?\d+$/;
+
+  function scrambleSeasonStats() {
+    state.seasonStats.forEach((slot) => {
+      slot.players.forEach((player) => {
+        slot.columns.forEach((col) => {
+          if (/_pct$/.test(col.id)) return;
+          const raw = player.values[col.id];
+          if (typeof raw !== 'string' || !NUMERIC_TEXT.test(raw)) return;
+          const decimals = (raw.split('.')[1] || '').length;
+          let next = parseFloat(raw) + randomSign() * 2;
+          next = Math.max(0, next);
+          if (col.id === 'games' || col.id === 'games_started') next = Math.min(82, next);
+          player.values[col.id] = next.toFixed(decimals);
+        });
+      });
+    });
+  }
+
+  function enterFakeMode() {
+    if (fakeSnapshot) return;
+    fakeSnapshot = JSON.parse(JSON.stringify(state));
+    // Anything still waiting out the sync debounce is the real data — get it
+    // out before the live object turns fake.
+    GithubSync.flushPending();
+    Storage.setReadOnly(true);
+
+    state.sources.forEach((source) => {
+      source.players.forEach((p) => {
+        p.rank = Math.max(1, Math.round((p.rank + randomSign() * 10) * 100) / 100);
+      });
+    });
+    state.breakoutLevels = {};
+    state.sleeperLevels = {};
+    state.doNotDraftKeys = [];
+    scrambleSeasonStats();
+
+    Ranking.invalidateIndexCache();
+    state.draftOrder = Ranking.computeCombined(state.sources, SourceWeights.defaultWeights(state.sources))
+      .map((row) => ({ key: row.key, name: row.displayName }));
+
+    emit('fake-mode-changed', { on: true });
+    emit('remote-state-loaded');
+  }
+
+  function exitFakeMode() {
+    if (!fakeSnapshot) return;
+    const real = fakeSnapshot;
+    fakeSnapshot = null;
+    Storage.setReadOnly(false);
+    Object.keys(state).forEach((k) => { delete state[k]; });
+    Object.assign(state, real);
+    emit('fake-mode-changed', { on: false });
+    emit('remote-state-loaded');
+  }
+
   global.App = {
     state, on, emit, persist, genId,
     isDrafted, setDrafted, getIncludeDrafted, setIncludeDrafted,
@@ -293,6 +373,7 @@
     isDoNotDraft, toggleDoNotDraft,
     getHealthEmoji, getImprovementEmoji, getDeclineEmoji,
     getPlayerNote, setPlayerNote,
-    upsertSavedSearch, deleteSavedSearch
+    upsertSavedSearch, deleteSavedSearch,
+    isFakeMode, enterFakeMode, exitFakeMode
   };
 })(window);

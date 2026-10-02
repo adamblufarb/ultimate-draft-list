@@ -10,6 +10,8 @@
       sources: document.getElementById('panel-sources')
     };
     const navButtons = document.querySelectorAll('.tab-btn');
+    const fakeBanner = document.getElementById('fake-banner');
+    App.on('fake-mode-changed', ({ on }) => { fakeBanner.hidden = !on; });
 
     DraftTab.init(panels.draft);
     MyTeamTab.init(panels.myteam);

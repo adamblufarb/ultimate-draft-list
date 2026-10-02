@@ -49,6 +49,20 @@ body {
   background: var(--surface);
 }
 
+.fake-banner {
+  flex-shrink: 0;
+  background: var(--warn);
+  color: #1a1200;
+  font-size: 12px;
+  font-weight: 700;
+  text-align: center;
+  padding: 5px 12px;
+}
+
+.fake-banner[hidden] {
+  display: none;
+}
+
 .app-header h1 {
   font-size: 17px;
   font-weight: 600;
