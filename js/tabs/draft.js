@@ -14,7 +14,7 @@
    Include Drafted Players) clears it, but tagging a player or the plain
    search box do not. Source chips can weight, not just toggle, a source
    (js/sourceWeights.js) — tapping a boostable "Average"-type source a 2nd
-   time sets it to 1.5x instead of the usual 1x, shown as a darker chip;
+   time sets it to 2x, a 3rd time 3x (instead of the usual 1x), shown as a darker chip;
    "Total"-type sources start off by default. Each row also gets a health
    emoji computed from Season Stats (Sources tab) — 💪 for 65+ games in all
    3 seasons, 🚑 for 54-or-fewer games in at least 2 of them — and a trend
@@ -30,7 +30,7 @@
   let container;
   let listSection;
   let reorderable;
-  // { [sourceId]: 0 | 1 | 1.5 } — see js/sourceWeights.js.
+  // { [sourceId]: 0 | 1 | 2 | 3 } — see js/sourceWeights.js.
   let sourceWeights = {};
   let selectedPositions = [];
   let searchQuery = '';
@@ -469,18 +469,17 @@
     return wrap;
   }
 
-  // Boostable ("Average"-type) sources cycle disabled -> 1x -> 1.5x -> back
+  // Boostable ("Average"-type) sources cycle disabled -> 1x -> 2x -> 3x -> back
   // to disabled on tap; everything else just toggles 0/1 like before.
   function renderSourceToggles() {
     const wrap = document.createElement('div');
     wrap.className = 'source-toggles';
     App.state.sources.forEach((source) => {
       const weight = SourceWeights.getWeight(sourceWeights, source.id);
-      const boosted = weight === 1.5;
       const btn = document.createElement('button');
       btn.type = 'button';
-      btn.className = 'toggle-label' + (weight > 0 ? ' is-active' : '') + (boosted ? ' is-boosted' : '');
-      btn.textContent = (source.name || 'Untitled source') + (boosted ? ' · 1.5x' : '');
+      btn.className = 'toggle-label' + (weight > 0 ? ' is-active' : '') + SourceWeights.boostClass(weight, 'is-boosted');
+      btn.textContent = (source.name || 'Untitled source') + SourceWeights.boostLabel(weight);
       btn.addEventListener('click', () => {
         smartSearchCriteria = null;
         sourceWeights = SourceWeights.cycleWeight(sourceWeights, source);

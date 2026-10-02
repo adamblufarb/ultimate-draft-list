@@ -851,9 +851,19 @@ body {
   color: rgba(255, 255, 255, 0.75);
 }
 
+.toggle-label.is-boosted-3 {
+  border-color: #2c52a3;
+  background: #2c52a3;
+}
+
 .stat-card-boosted {
   border-color: var(--accent-dim);
   background: var(--accent-dim);
+}
+
+.stat-card-boosted-3 {
+  border-color: #2c52a3;
+  background: #2c52a3;
 }
 
 .stat-card-clickable {

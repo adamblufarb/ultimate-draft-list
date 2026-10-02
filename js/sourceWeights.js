@@ -3,12 +3,12 @@
    way no matter which of those you tap it from.
 
    A weight is 0 (excluded — the source isn't in the weights object at
-   all), 1 (normal chip "on", today's existing behavior), or 1.5 (boosted —
-   counts 1.5x as heavily in the combined average). Only "Average"-style
+   all), 1 (normal chip "on", today's existing behavior), 2 or 3 (boosted —
+   counts that many times as heavily in the combined average). Only "Average"-style
    sources (scoreType 'ly_avg' or 'ty_avg_proj' — Last Year Avg/Game and
    This Year Avg/Game Projection) and ADP sources (scoreType 'adp' — a
    continuous consensus score, the same spirit as an average) can ever
-   reach 1.5; every other source just cycles the plain 0/1 on-off toggle it
+   reach 2 or 3; every other source just cycles the plain 0/1 on-off toggle it
    always has.
 
    "Total"-style sources (scoreType 'ly_total' or 'ty_total_proj') start
@@ -54,14 +54,14 @@
     return weights[id] || 0;
   }
 
-  // Tap cycle: 0 -> 1 -> (1.5 if boostable, else back to 0) -> 0.
+  // Tap cycle: 0 -> 1 -> (2 -> 3 if boostable, else back to 0) -> 0.
   function cycleWeight(weights, source) {
     const current = getWeight(weights, source.id);
     const next = Object.assign({}, weights);
     if (current === 0) {
       next[source.id] = 1;
-    } else if (current === 1 && isBoostable(source)) {
-      next[source.id] = 1.5;
+    } else if (isBoostable(source) && current < 3) {
+      next[source.id] = current + 1;
     } else {
       delete next[source.id];
     }
@@ -76,5 +76,17 @@
     return true;
   }
 
-  global.SourceWeights = { isBoostable, defaultWeights, reconcileWeights, getWeight, cycleWeight, weightsEqual };
+  // Label suffix for a boosted weight (" · 2x"/" · 3x"), '' otherwise —
+  // shared by every chip/square so they all read the same.
+  function boostLabel(weight) {
+    return weight > 1 ? ' · ' + weight + 'x' : '';
+  }
+
+  // Extra CSS class for a boosted weight (darker blue; darker still at 3x).
+  function boostClass(weight, base) {
+    if (weight > 2) return ' ' + base + ' ' + base + '-3';
+    return weight > 1 ? ' ' + base : '';
+  }
+
+  global.SourceWeights = { boostLabel, boostClass, isBoostable, defaultWeights, reconcileWeights, getWeight, cycleWeight, weightsEqual };
 })(window);

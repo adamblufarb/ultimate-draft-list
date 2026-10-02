@@ -9,7 +9,7 @@
    order players appear in. */
 (function (global) {
   let container;
-  // { [sourceId]: 0 | 1 | 1.5 } — see js/sourceWeights.js.
+  // { [sourceId]: 0 | 1 | 2 | 3 } — see js/sourceWeights.js.
   let sourceWeights = {};
 
   function init(rootEl) {
@@ -55,18 +55,17 @@
     container.appendChild(renderList(draftedKeys, avgByKey, index));
   }
 
-  // Boostable ("Average"-type) sources cycle disabled -> 1x -> 1.5x -> back
+  // Boostable ("Average"-type) sources cycle disabled -> 1x -> 2x -> 3x -> back
   // to disabled on tap; everything else just toggles 0/1 like before.
   function renderSourceToggles() {
     const wrap = document.createElement('div');
     wrap.className = 'source-toggles';
     App.state.sources.forEach((source) => {
       const weight = SourceWeights.getWeight(sourceWeights, source.id);
-      const boosted = weight === 1.5;
       const btn = document.createElement('button');
       btn.type = 'button';
-      btn.className = 'toggle-label' + (weight > 0 ? ' is-active' : '') + (boosted ? ' is-boosted' : '');
-      btn.textContent = (source.name || 'Untitled source') + (boosted ? ' · 1.5x' : '');
+      btn.className = 'toggle-label' + (weight > 0 ? ' is-active' : '') + SourceWeights.boostClass(weight, 'is-boosted');
+      btn.textContent = (source.name || 'Untitled source') + SourceWeights.boostLabel(weight);
       btn.addEventListener('click', () => {
         sourceWeights = SourceWeights.cycleWeight(sourceWeights, source);
         render();

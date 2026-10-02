@@ -16,7 +16,7 @@
    Below that, one square per source — every source, not just the special
    avg/total ones — showing that source's rank
    and score side by side on one row, with the currently-weighted-in
-   sources highlighted (a darker blue plus a "1.5x" label for a boosted
+   sources highlighted (a darker blue plus a "2x"/"3x" label for a boosted
    one). Tapping a source square cycles its weight (js/sourceWeights.js)
    live. However the weights are left when the overlay closes (by the ✕,
    the backdrop, Escape, or an action button) is reported back to whichever
@@ -115,20 +115,19 @@
   // One square per source: rank and score (if this source has one) shown
   // side by side on one row — rank big, score smaller and gray. Sources
   // with no score at all (pure ranking lists) just show the rank alone.
-  // `weight` is 0 (excluded), 1 (normal — highlighted blue), or 1.5
-  // (boosted — a darker blue plus a "1.5x" label, only ever reachable for
+  // `weight` is 0 (excluded), 1 (normal — highlighted blue), 2 or 3
+  // (boosted — a darker blue plus a "2x"/"3x" label, only ever reachable for
   // a boostable "Average"-type source; see js/sourceWeights.js).
   function sourceCard(source, entry, weight) {
     const bySource = entry.bySource[source.id];
-    const boosted = weight === 1.5;
     const card = document.createElement('div');
     card.className = 'stat-card stat-card-clickable'
       + (weight > 0 ? ' stat-card-selected' : '')
-      + (boosted ? ' stat-card-boosted' : '');
+      + SourceWeights.boostClass(weight, 'stat-card-boosted');
 
     const titleEl = document.createElement('div');
     titleEl.className = 'stat-title';
-    titleEl.textContent = (source.name || 'Untitled source') + (boosted ? ' · 1.5x' : '');
+    titleEl.textContent = (source.name || 'Untitled source') + SourceWeights.boostLabel(weight);
     card.appendChild(titleEl);
 
     if (bySource) {
@@ -159,16 +158,15 @@
   // underneath never changes, so there's no need to rebuild (and
   // re-listen on) the whole card.
   function applyCardWeight(card, source, weight) {
-    const boosted = weight === 1.5;
     card.className = 'stat-card stat-card-clickable'
       + (weight > 0 ? ' stat-card-selected' : '')
-      + (boosted ? ' stat-card-boosted' : '');
+      + SourceWeights.boostClass(weight, 'stat-card-boosted');
     const titleEl = card.querySelector('.stat-title');
-    if (titleEl) titleEl.textContent = (source.name || 'Untitled source') + (boosted ? ' · 1.5x' : '');
+    if (titleEl) titleEl.textContent = (source.name || 'Untitled source') + SourceWeights.boostLabel(weight);
   }
 
   // initialWeights: the calling tab's current source weights
-  // ({ [sourceId]: 0 | 1 | 1.5 }, see js/sourceWeights.js), used both to
+  // ({ [sourceId]: 0 | 1 | 2 | 3 }, see js/sourceWeights.js), used both to
   // seed which squares start highlighted (and which are boosted) and to
   // compute the initial Combined Rank. Tapping a square cycles it live for
   // this view; once the overlay closes, if the weights actually changed,

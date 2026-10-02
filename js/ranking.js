@@ -45,10 +45,10 @@
     return map;
   }
 
-  // Weighted average of rank over `weights` — { [sourceId]: 0 | 1 | 1.5 },
+  // Weighted average of rank over `weights` — { [sourceId]: 0 | 1 | 2 | 3 },
   // built/cycled by js/sourceWeights.js. A source missing from the object
-  // (or present at weight 0) doesn't count at all; a 1.5-weighted source
-  // counts its rank 1.5x as heavily as a normal one. Players unranked by
+  // (or present at weight 0) doesn't count at all; a 2- or 3-weighted source
+  // counts its rank 2x or 3x as heavily as a normal one. Players unranked by
   // every weighted-in source are excluded (they still exist in the index
   // for lookups elsewhere).
   function combineFromIndex(index, weights) {
