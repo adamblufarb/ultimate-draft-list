@@ -1,10 +1,10 @@
 /* Tab 2 — Draft List: the user's own editable, drag-reorderable list.
    Initialized from the combined average once, then persists independently
-   of source edits. Changing the source filter automatically resyncs
-   unlocked players to the newly-filtered average (no Reset button).
+   of source edits. Changing the source filter automatically resyncs the
+   list to the newly-filtered average (no Reset button).
    Drafted players are hidden (unless "include drafted" is on) but keep
    their place in the full order so un-drafting puts them back where they
-   were. Locked players keep their exact position on resync. Each position
+   were. Each position
    chip also shows how many of the next N undrafted picks hold that
    position (N chosen from the pool-size dropdown), flagging scarcity in
    orange/red as that count runs low relative to N. Smart Search (its own
@@ -50,24 +50,12 @@
     App.on('sources-changed', onSourcesChanged);
     App.on('drafted-changed', () => { if (isVisible()) render(); });
     App.on('include-drafted-changed', () => { if (isVisible()) render(); });
-    // Same reasoning as locked-changed below — tagging a player from the
-    // still-open player detail view fires this repeatedly, and a full
-    // render() would reset scroll to the top each time.
+    // Tagging a player from the still-open player detail view fires this
+    // repeatedly, and a full render() would reset scroll to the top each
+    // time — update just that row's tags in place instead.
     App.on('tags-changed', (payload) => {
       if (!isVisible()) return;
       if (payload && payload.key) updateRowTags(payload.key);
-      else render();
-    });
-    // A single lock toggle updates just that row's button in place rather
-    // than rebuilding the whole list — a full container.innerHTML rebuild
-    // right after the lock button had focus was resetting scroll to the
-    // top on mobile, and could silently drop pointer capture out from
-    // under an in-progress drag on that same row (the row element gets
-    // destroyed and recreated mid-gesture). "Unlock All" has no single
-    // key, so it still does a full render.
-    App.on('locked-changed', (payload) => {
-      if (!isVisible()) return;
-      if (payload && payload.key) updateLockButton(payload.key);
       else render();
     });
     App.on('remote-state-loaded', () => {
@@ -78,25 +66,6 @@
 
   function isVisible() {
     return container && container.classList.contains('active');
-  }
-
-  function updateLockButton(key) {
-    if (!container) return;
-    const row = container.querySelector('.draft-row[data-key="' + CSS.escape(key) + '"]');
-    if (!row) return;
-    const btn = row.querySelector('.btn-lock');
-    const handle = row.querySelector('.drag-handle');
-    if (!btn) return;
-    const locked = App.isLocked(key);
-    btn.className = 'btn-lock' + (locked ? ' is-locked' : '');
-    btn.textContent = locked ? '🔒' : '🔓';
-    btn.title = locked
-      ? "Locked — won't move when you reset"
-      : "Lock — keep this player's position when you reset";
-    if (handle) {
-      handle.classList.toggle('is-locked', locked);
-      handle.title = locked ? "Locked — can't be dragged" : '';
-    }
   }
 
   function updateRowTags(key) {
@@ -132,36 +101,10 @@
     return fullOrder.map((item) => (visibleKeys.has(item.key) ? queue[qi++] : item));
   }
 
-  // Recomputes the combined average over `weights`, but any locked player
-  // keeps the exact index they're currently sitting at — everyone else
-  // re-fills around them in the fresh sorted order.
+  // Recomputes the whole order from the combined average over `weights`.
   function buildResetOrder(weights) {
-    const combined = Ranking.computeCombined(App.state.sources, weights);
-    const lockedKeys = new Set(App.state.lockedKeys);
-    const oldOrder = App.state.draftOrder || [];
-
-    const lockedSlots = [];
-    oldOrder.forEach((item, idx) => {
-      if (lockedKeys.has(item.key)) lockedSlots.push({ index: idx, key: item.key, name: item.name });
-    });
-
-    const nameByKey = new Map(combined.map((r) => [r.key, r.displayName]));
-    const freshQueue = combined.filter((r) => !lockedKeys.has(r.key)).map((r) => ({ key: r.key, name: r.displayName }));
-
-    const length = Math.max(combined.length, 0, ...lockedSlots.map((l) => l.index + 1));
-    const result = new Array(length).fill(null);
-    lockedSlots.forEach((l) => {
-      if (l.index < length) result[l.index] = { key: l.key, name: nameByKey.get(l.key) || l.name };
-    });
-
-    let qi = 0;
-    for (let i = 0; i < length && qi < freshQueue.length; i++) {
-      if (result[i]) continue;
-      result[i] = freshQueue[qi++];
-    }
-    while (qi < freshQueue.length) result.push(freshQueue[qi++]);
-
-    return result.filter(Boolean);
+    return Ranking.computeCombined(App.state.sources, weights)
+      .map((r) => ({ key: r.key, name: r.displayName }));
   }
 
   function show() {
@@ -242,7 +185,6 @@
     reorderable = new ReorderableList(listEl, {
       gap: 6,
       renderRow: (item, i) => renderRow(item, i, avgByKey, index),
-      canDrag: (key) => !App.isLocked(key),
       dividerEvery: 10,
       renderDivider: (count) => renderListDivider(count),
       onReorder: (newVisibleOrder) => {
@@ -461,11 +403,6 @@
       smartSearchCriteria = null;
       App.setIncludeDrafted(!isActive);
     }));
-    const unlockBtn = renderToggleChip('Unlock All', false, () => {
-      if (!confirm('Unlock all locked players?')) return;
-      App.unlockAll();
-    });
-    wrap.appendChild(unlockBtn);
     return wrap;
   }
 
@@ -485,7 +422,7 @@
         sourceWeights = SourceWeights.cycleWeight(sourceWeights, source);
         // Filters drive the reset computation directly now (no Reset
         // button) — changing which sources feed the average immediately
-        // resyncs everyone who isn't locked in place.
+        // resyncs the whole list.
         App.state.draftOrder = buildResetOrder(sourceWeights);
         App.persist();
         render();
@@ -497,7 +434,6 @@
 
   function renderRow(item, _rowIndex, avgByKey, rankingIndex) {
     const drafted = App.isDrafted(item.key);
-    const locked = App.isLocked(item.key);
     const avg = avgByKey.get(item.key);
     const entry = rankingIndex.get(item.key);
 
@@ -506,16 +442,15 @@
     row.addEventListener('click', () => PlayerDetail.open(item.key, sourceWeights, (newWeights) => {
       sourceWeights = newWeights;
       // Same auto-resync as tapping a source chip: the filter just changed,
-      // so unlocked players resync to the newly-filtered average.
+      // so the list resyncs to the newly-filtered average.
       App.state.draftOrder = buildResetOrder(sourceWeights);
       App.persist();
       render();
     }));
 
     const handle = document.createElement('div');
-    handle.className = 'drag-handle' + (locked ? ' is-locked' : '');
+    handle.className = 'drag-handle';
     handle.setAttribute('data-drag-handle', '');
-    handle.title = locked ? "Locked — can't be dragged" : '';
     handle.textContent = '☰';
 
     // Shows the player's combined rank average — a fixed per-player stat,
@@ -524,21 +459,6 @@
     const badge = document.createElement('div');
     badge.className = 'rank-badge';
     badge.textContent = avg !== undefined ? avg.toFixed(1) : '—';
-
-    const lockBtn = document.createElement('button');
-    lockBtn.className = 'btn-lock' + (locked ? ' is-locked' : '');
-    lockBtn.textContent = locked ? '🔒' : '🔓';
-    lockBtn.title = locked
-      ? "Locked — won't move when you reset"
-      : "Lock — keep this player's position when you reset";
-    lockBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      // Reads the live state rather than the `locked` captured at render
-      // time: a lock toggle now updates this row in place (see
-      // updateLockButton) instead of doing a full re-render, so this
-      // handler's closure never gets refreshed with a new `locked` value.
-      App.setLocked(item.key, !App.isLocked(item.key));
-    });
 
     const name = document.createElement('div');
     name.className = 'draft-name';
@@ -555,7 +475,6 @@
 
     row.appendChild(handle);
     row.appendChild(badge);
-    row.appendChild(lockBtn);
     row.appendChild(name);
     const tagsBadge = playerTagsBadge(item.key);
     if (tagsBadge) row.appendChild(tagsBadge);
@@ -578,6 +497,7 @@
     if (breakoutLevel >= 2) parts.push('🌟'); else if (breakoutLevel === 1) parts.push('⭐');
     const sleeperLevel = App.getSleeperLevel(key);
     if (sleeperLevel >= 2) parts.push('😴'); else if (sleeperLevel === 1) parts.push('🥱');
+    if (App.isTarget(key)) parts.push('🎯');
     if (App.isDoNotDraft(key)) parts.push('🚫');
     if (parts.length === 0) return null;
     const el = document.createElement('span');

@@ -9,7 +9,7 @@
    in Draft List. Height is parsed from the Data List too but not shown
    anywhere yet.
    Combined rank (based on whichever source weights are currently active in
-   the calling tab's filter), plus the Breakout/Sleeper/Do Not Draft tag
+   the calling tab's filter), plus the Breakout/Sleeper/Target/Do Not Draft tag
    toggles, share the next row. A free-text notes box (App.getPlayerNote/
    setPlayerNote, debounced) sits right below — 2 lines tall by default,
    grows with the content, no title, just an "Add notes" placeholder.
@@ -280,6 +280,13 @@
     });
     combinedRow.appendChild(sleeperBtn);
 
+    const targetBtn = tagToggleButton('Target');
+    targetBtn.addEventListener('click', () => {
+      App.toggleTarget(key);
+      refreshTagButtons();
+    });
+    combinedRow.appendChild(targetBtn);
+
     const doNotDraftBtn = tagToggleButton('Do Not Draft');
     doNotDraftBtn.addEventListener('click', () => {
       App.toggleDoNotDraft(key);
@@ -295,6 +302,9 @@
       const sleeperLevel = App.getSleeperLevel(key);
       sleeperBtn.classList.toggle('is-active', sleeperLevel > 0);
       sleeperBtn.textContent = sleeperLevel >= 2 ? '😴' : '🥱';
+
+      targetBtn.classList.toggle('is-active', App.isTarget(key));
+      targetBtn.textContent = '🎯';
 
       const doNotDraft = App.isDoNotDraft(key);
       doNotDraftBtn.classList.toggle('is-active', doNotDraft);

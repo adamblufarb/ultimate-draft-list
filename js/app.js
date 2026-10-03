@@ -64,24 +64,6 @@
     emit('include-drafted-changed', value);
   }
 
-  function isLocked(key) {
-    return state.lockedKeys.includes(key);
-  }
-
-  function setLocked(key, locked) {
-    const set = new Set(state.lockedKeys);
-    if (locked) set.add(key); else set.delete(key);
-    state.lockedKeys = Array.from(set);
-    persist();
-    emit('locked-changed', { key, locked });
-  }
-
-  function unlockAll() {
-    state.lockedKeys = [];
-    persist();
-    emit('locked-changed');
-  }
-
   function isOnMyTeam(key) {
     return state.myTeamKeys.includes(key);
   }
@@ -136,6 +118,19 @@
   // Do Not Draft: a single on/off tag (no second level).
   function isDoNotDraft(key) {
     return state.doNotDraftKeys.includes(key);
+  }
+
+  // Target: another single on/off tag (🎯), shown in the lists too.
+  function isTarget(key) {
+    return state.targetKeys.includes(key);
+  }
+
+  function toggleTarget(key) {
+    const set = new Set(state.targetKeys);
+    if (set.has(key)) set.delete(key); else set.add(key);
+    state.targetKeys = Array.from(set);
+    persist();
+    emit('tags-changed', { key });
   }
 
   function toggleDoNotDraft(key) {
@@ -302,7 +297,7 @@
   //  - last seasons' numeric stats get a random +1.5 or -1.5 (never below
   //    0; percentages, text like team/awards, and games past 82 are left
   //    alone);
-  //  - every Breakout/Sleeper/Do Not Draft tag and every lock is cleared.
+  //  - every Breakout/Sleeper/Target/Do Not Draft tag is cleared.
   // The Draft List order is re-seeded from the scrambled combined average
   // so it agrees with the numbers shown. While active, persist() is a
   // no-op and Storage is read-only, so nothing reaches localStorage or
@@ -375,7 +370,7 @@
     Storage.setReadOnly(true);
 
     scrambleLists();
-    state.lockedKeys = [];
+    state.targetKeys = [];
     state.breakoutLevels = {};
     state.sleeperLevels = {};
     state.doNotDraftKeys = [];
@@ -407,11 +402,11 @@
   global.App = {
     state, on, emit, persist, genId,
     isDrafted, setDrafted, getIncludeDrafted, setIncludeDrafted,
-    isLocked, setLocked, unlockAll,
     isOnMyTeam, draftedByMe, removeFromMyTeam,
     getBreakoutLevel, cycleBreakoutLevel,
     getSleeperLevel, cycleSleeperLevel,
     isDoNotDraft, toggleDoNotDraft,
+    isTarget, toggleTarget,
     getHealthEmoji, getImprovementEmoji, getDeclineEmoji,
     getPlayerNote, setPlayerNote,
     upsertSavedSearch, deleteSavedSearch,

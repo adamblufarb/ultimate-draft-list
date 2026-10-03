@@ -726,7 +726,7 @@
     desc.className = 'source-view-meta';
     desc.textContent = 'Practice with heavily scrambled data: every player gets a big random shift (20-100, up or down) across ' +
       'their lists plus a little per-list wobble, then a further 5-15 either way on their combined rank; ' +
-      'last seasons\' stats shift by ±1.5, and Breakout/Sleeper/Do Not Draft tags and locks are cleared. ' +
+      'last seasons\' stats shift by ±1.5, and Breakout/Sleeper/Target/Do Not Draft tags are cleared. ' +
       'Nothing is saved or synced — exit (or just reload) and your real data is exactly as you left it.';
     card.appendChild(desc);
 

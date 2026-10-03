@@ -21,21 +21,17 @@
     // gap: vertical space (px) between rows — since rows are absolutely
     //   positioned, a row's own CSS margin has no effect here; this is the
     //   only thing that controls spacing.
-    // canDrag(key): optional — return false to make that row's handle inert.
-    //   Checked fresh on every pointerdown, not cached, so it stays correct
-    //   even though rows aren't recreated when e.g. a lock toggles.
     // dividerEvery / renderDivider(count): optional — a non-draggable,
     //   non-interactive marker (e.g. "— 10 —") inserted after every Nth
     //   row. Rows keep their own uniform height/spacing; dividers just add
     //   extra vertical space before the row they precede. Divider position
     //   is index-based, not item-based, so it never moves mid-drag — only
     //   the offset table (see _computeOffsets) needs to account for it.
-    constructor(container, { renderRow, onReorder, gap = 0, canDrag, dividerEvery = 0, renderDivider }) {
+    constructor(container, { renderRow, onReorder, gap = 0, dividerEvery = 0, renderDivider }) {
       this.container = container;
       this.renderRow = renderRow;
       this.onReorder = onReorder;
       this.gap = gap;
-      this.canDrag = canDrag || (() => true);
       this.dividerEvery = dividerEvery;
       this.renderDivider = renderDivider || null;
       this.items = [];
@@ -152,7 +148,6 @@
 
     _onPointerDown(e, row) {
       if (e.button !== undefined && e.button !== 0 && e.pointerType === 'mouse') return;
-      if (!this.canDrag(row.dataset.key)) return;
       e.preventDefault();
       const startIndex = this.rows.indexOf(row);
       const startTop = this.offsets[startIndex];
@@ -237,8 +232,7 @@
       // A real drag (pointer moved past the threshold) still ends with the
       // browser firing a "ghost" click afterward — and since rows shift
       // under the finger while dragging, that click can land on a
-      // completely different row's button (e.g. toggling some other
-      // player's lock) rather than the one that was actually dragged.
+      // completely different row's tappable element rather than the one that was actually dragged.
       // Swallow the very next click anywhere in the list, in the capture
       // phase, so it never reaches any row's/button's own listener.
       if (ds.moved) {

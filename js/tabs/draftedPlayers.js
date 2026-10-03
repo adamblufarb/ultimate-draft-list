@@ -93,6 +93,7 @@
     if (breakoutLevel >= 2) parts.push('🌟'); else if (breakoutLevel === 1) parts.push('⭐');
     const sleeperLevel = App.getSleeperLevel(key);
     if (sleeperLevel >= 2) parts.push('😴'); else if (sleeperLevel === 1) parts.push('🥱');
+    if (App.isTarget(key)) parts.push('🎯');
     if (App.isDoNotDraft(key)) parts.push('🚫');
     if (parts.length === 0) return null;
     const el = document.createElement('span');

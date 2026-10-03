@@ -3,7 +3,6 @@
   --surface: #1a1d24;
   --surface-2: #22262f;
   --row-alt: #242932;
-  --lock: #e0b12e;
   --border: #2e333d;
   --text: #eef0f4;
   --text-dim: #9aa1ac;
@@ -385,26 +384,6 @@ body {
   background: var(--row-alt);
 }
 
-.btn-lock {
-  flex-shrink: 0;
-  width: 32px;
-  height: 32px;
-  padding: 0;
-  border-radius: 8px;
-  background: var(--surface-2);
-  border: 1px solid var(--border);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 14px;
-  cursor: pointer;
-}
-
-.btn-lock.is-locked {
-  background: rgba(224, 177, 46, 0.18);
-  border-color: var(--lock);
-}
-
 .btn-draft {
   flex-shrink: 0;
   background: var(--surface-2);
@@ -459,11 +438,6 @@ body {
   font-size: 18px;
   cursor: grab;
   touch-action: none;
-}
-
-.drag-handle.is-locked {
-  opacity: 0.3;
-  cursor: not-allowed;
 }
 
 .draft-name {
