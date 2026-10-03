@@ -288,16 +288,17 @@
   // Entering takes a deep snapshot of the real state, then scrambles the
   // live state in place (so every tab's existing `App.state.x` reads just
   // work):
-  //  - each player gets one random shift of 0-30 (random sign), applied to
-  //    their number on a random 1-7 of the lists they appear on (capped at
-  //    however many that is). Each list is then re-ranked by those shifted
-  //    values and the list's own original numbers dealt back out in the new
-  //    order — so a list is still a clean ranking (no ties, no negatives,
-  //    ADP lists keep their real-looking decimal scores) but the players in
-  //    it have moved around, and because one player's shift hits several
-  //    lists together it actually survives the averaging;
-  //  - on top of that, every player's combined rank gets its own random +5
-  //    or -5 (Ranking.setCombinedOffsets);
+  //  - each player gets one big random shift of 20-100 (random sign) that
+  //    hits their number on every list they appear on, plus a smaller
+  //    independent wobble of up to 15 either way per list. Each list is
+  //    then re-ranked by those shifted values and the list's own original
+  //    numbers dealt back out in the new order — so a list is still a clean
+  //    ranking (no ties, no negatives, ADP lists keep their real-looking
+  //    decimal scores) but the players in it have moved around a lot, and
+  //    because a player's shift lands on all their lists together it
+  //    survives the averaging instead of cancelling out;
+  //  - on top of that, every player's combined rank gets its own random
+  //    5-15 either way (Ranking.setCombinedOffsets);
   //  - last seasons' numeric stats get a random +1.5 or -1.5 (never below
   //    0; percentages, text like team/awards, and games past 82 are left
   //    alone);
@@ -349,13 +350,11 @@
 
     const shiftedValue = new Map(); // player object -> shifted number
     appearances.forEach((players) => {
-      const shift = randomSign() * Math.random() * 30;
-      const count = Math.min(players.length, 1 + Math.floor(Math.random() * 7));
-      for (let i = players.length - 1; i > 0; i--) { // Fisher-Yates
-        const j = Math.floor(Math.random() * (i + 1));
-        [players[i], players[j]] = [players[j], players[i]];
-      }
-      players.slice(0, count).forEach((player) => shiftedValue.set(player, player.rank + shift));
+      const shift = randomSign() * (20 + Math.random() * 80);
+      players.forEach((player) => {
+        const wobble = (Math.random() * 2 - 1) * 15;
+        shiftedValue.set(player, player.rank + shift + wobble);
+      });
     });
 
     state.sources.forEach((source) => {
@@ -384,7 +383,7 @@
 
     Ranking.invalidateIndexCache();
     const offsets = new Map();
-    Ranking.buildIndex(state.sources).forEach((entry, key) => offsets.set(key, randomSign() * 5));
+    Ranking.buildIndex(state.sources).forEach((entry, key) => offsets.set(key, randomSign() * (5 + Math.random() * 10)));
     Ranking.setCombinedOffsets(offsets);
     state.draftOrder = Ranking.computeCombined(state.sources, SourceWeights.defaultWeights(state.sources))
       .map((row) => ({ key: row.key, name: row.displayName }));

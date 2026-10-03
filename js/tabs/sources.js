@@ -724,9 +724,9 @@
 
     const desc = document.createElement('p');
     desc.className = 'source-view-meta';
-    desc.textContent = 'Practice with scrambled data: each player is shifted by a random 0-30 on 1-7 of their lists, ' +
-      'then gets a random +5 or -5 on their combined rank; last seasons\' stats shift by ±1.5, and ' +
-      'Breakout/Sleeper/Do Not Draft tags and locks are cleared. ' +
+    desc.textContent = 'Practice with heavily scrambled data: every player gets a big random shift (20-100, up or down) across ' +
+      'their lists plus a little per-list wobble, then a further 5-15 either way on their combined rank; ' +
+      'last seasons\' stats shift by ±1.5, and Breakout/Sleeper/Do Not Draft tags and locks are cleared. ' +
       'Nothing is saved or synced — exit (or just reload) and your real data is exactly as you left it.';
     card.appendChild(desc);
 
