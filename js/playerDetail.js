@@ -187,8 +187,8 @@
 
     const startWeights = initialWeights || SourceWeights.defaultWeights(App.state.sources);
     const initialSnapshot = Object.assign({}, startWeights);
-    // { weights, iso, lastTap } — see SourceWeights.tap for iso mode.
-    let filter = { weights: Object.assign({}, startWeights), iso: initialIso || null, lastTap: null };
+    // { weights, iso } — see js/sourceWeights.js for iso mode.
+    let filter = { weights: Object.assign({}, startWeights), iso: initialIso || null };
 
     closeHandler = () => {
       if (onWeightsChange && !SourceWeights.sameFilter(filter.weights, filter.iso, initialSnapshot, initialIso || null)) {
@@ -363,11 +363,16 @@
         const card = sourceCard(
           source, entry, SourceWeights.getWeight(filter.weights, source.id), SourceWeights.isIso(filter.iso, source.id)
         );
-        card.addEventListener('click', () => {
-          filter = SourceWeights.tap(filter, source);
+        const apply = (next) => {
+          filter = next;
           refreshCards(); // iso mode changes every square, not just this one
           updateCombined();
-        });
+        };
+        SourceWeights.attachPress(
+          card,
+          () => apply(SourceWeights.tap(filter, source)),
+          () => apply(SourceWeights.longPress(filter, source))
+        );
         cards.push({ card, source });
         gridWrap.appendChild(card);
       });

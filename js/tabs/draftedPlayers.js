@@ -11,9 +11,9 @@
   let container;
   // { [sourceId]: 0 | 1 | 1.5 | 2.5 } — see js/sourceWeights.js.
   let sourceWeights = {};
-  // Iso mode ({ id, saved }) and the last chip tap — see js/sourceWeights.js.
+  // Iso mode ({ ids, saved }), set by long-pressing chips — see
+  // js/sourceWeights.js.
   let iso = null;
-  let lastTap = null;
 
   function init(rootEl) {
     container = rootEl;
@@ -72,13 +72,16 @@
       btn.type = 'button';
       btn.className = 'toggle-label' + (weight > 0 ? ' is-active' : '') + SourceWeights.boostClass(weight, 'is-boosted') + (isolated ? ' is-iso' : '');
       btn.textContent = (source.name || 'Untitled source') + (isolated ? ' · iso' : SourceWeights.boostLabel(weight));
-      btn.addEventListener('click', () => {
-        const next = SourceWeights.tap({ weights: sourceWeights, iso, lastTap }, source);
+      const apply = (next) => {
         sourceWeights = next.weights;
         iso = next.iso;
-        lastTap = next.lastTap;
         render();
-      });
+      };
+      SourceWeights.attachPress(
+        btn,
+        () => apply(SourceWeights.tap({ weights: sourceWeights, iso }, source)),
+        () => apply(SourceWeights.longPress({ weights: sourceWeights, iso }, source))
+      );
       wrap.appendChild(btn);
     });
     return wrap;
@@ -132,7 +135,6 @@
       item.addEventListener('click', () => PlayerDetail.open(key, sourceWeights, (newWeights, newIso) => {
         sourceWeights = newWeights;
         iso = newIso;
-        lastTap = null;
         render();
       }, iso));
 

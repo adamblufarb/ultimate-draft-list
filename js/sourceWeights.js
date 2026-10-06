@@ -18,17 +18,17 @@
    scoreType, ADP, plus the boostable averages) defaults to normal (1x)
    weight, same as before this existed.
 
-   Iso mode: double-tapping a source's chip/square isolates it — only that
+   Iso mode: long-pressing a source's chip/square isolates it — only that
    source counts (weights become { [id]: 1 }), so the combined rank shown
-   is just that source's own rank. The weights from before are kept
-   (iso = { id, saved }) and a single tap on the isolated source puts them
-   back. Tapping a different source while isolated also exits iso first,
-   then taps that source normally; double-tapping a different one moves the
-   iso to it (keeping the original saved weights). tap() is a pure
-   state-in/state-out helper — { weights, iso, lastTap } — so Draft List,
-   Draft Board, and Player Detail all get identical behavior. The first tap
-   of a double-tap is applied right away (no tap delay) and undone when the
-   second one lands. */
+   is just that source's own rank. Long-pressing more sources while in iso
+   adds them (as many as you like; long-pressing a member again drops it,
+   and dropping the last one ends iso). The weights from before are kept
+   (iso = { ids, saved }); a plain tap on any isolated source puts them
+   back, and a plain tap on a non-isolated one exits iso first and then
+   taps that source normally. tap()/longPress() are pure state-in/state-out
+   helpers — { weights, iso } — and attachPress() does the long-press
+   detection, so Draft List, Draft Board, and Player Detail all behave
+   identically. */
 (function (global) {
   const BOOSTABLE_SCORE_TYPES = new Set(['ly_avg', 'ty_avg_proj', 'adp']);
   const DEFAULT_OFF_SCORE_TYPES = new Set(['ly_total', 'ty_total_proj']);
@@ -103,48 +103,92 @@
     return weight > 1 ? ' ' + base : '';
   }
 
-  const DOUBLE_TAP_MS = 300;
+  const LONG_PRESS_MS = 450;
+  // A long press that just fired swallows the click the finger-lift
+  // produces; module-level (not per element) because acting on the press
+  // usually re-renders and replaces the very button being held. Cleared a
+  // beat after the finger comes up — however long it was held.
+  let swallowNextClick = false;
+  const releaseSwallow = () => setTimeout(() => { swallowNextClick = false; }, 60);
+  window.addEventListener('pointerup', releaseSwallow, true);
+  window.addEventListener('pointercancel', releaseSwallow, true);
 
-  function enterIso(weights, iso, id) {
-    const only = {};
-    only[id] = 1;
-    return { weights: only, iso: { id, saved: iso ? iso.saved : weights } };
-  }
-
-  function tap(state, source) {
-    const now = Date.now();
-    const last = state.lastTap;
-    if (last && last.id === source.id && now - last.time < DOUBLE_TAP_MS) {
-      const entered = enterIso(last.prev.weights, last.prev.iso, source.id);
-      return { weights: entered.weights, iso: entered.iso, lastTap: null };
-    }
-    const lastTap = { id: source.id, time: now, prev: { weights: state.weights, iso: state.iso } };
-    if (state.iso) {
-      const restored = state.iso.saved;
-      const wasThis = state.iso.id === source.id;
-      return { weights: wasThis ? restored : cycleWeight(restored, source), iso: null, lastTap };
-    }
-    return { weights: cycleWeight(state.weights, source), iso: null, lastTap };
-  }
-
-  // reconcileWeights, iso-aware: the saved weights are reconciled too, and
-  // iso quietly ends if its source was deleted.
-  function reconcileIso(weights, iso, sources) {
-    if (!iso) return { weights: reconcileWeights(weights, sources), iso: null };
-    const saved = reconcileWeights(iso.saved, sources);
-    if (!sources.some((s) => s.id === iso.id)) return { weights: saved, iso: null };
-    return { weights, iso: { id: iso.id, saved } };
+  function weightsFor(ids) {
+    const weights = {};
+    ids.forEach((id) => { weights[id] = 1; });
+    return weights;
   }
 
   function isIso(iso, id) {
-    return !!iso && iso.id === id;
+    return !!iso && iso.ids.includes(id);
   }
 
-  // Tab/overlay snapshots differ if the effective weights or which source
-  // (if any) is isolated changed.
+  function tap(state, source) {
+    if (state.iso) {
+      const restored = state.iso.saved;
+      return { weights: isIso(state.iso, source.id) ? restored : cycleWeight(restored, source), iso: null };
+    }
+    return { weights: cycleWeight(state.weights, source), iso: null };
+  }
+
+  function longPress(state, source) {
+    if (!state.iso) {
+      return { weights: weightsFor([source.id]), iso: { ids: [source.id], saved: state.weights } };
+    }
+    const ids = isIso(state.iso, source.id)
+      ? state.iso.ids.filter((id) => id !== source.id)
+      : state.iso.ids.concat(source.id);
+    if (ids.length === 0) return { weights: state.iso.saved, iso: null };
+    return { weights: weightsFor(ids), iso: { ids, saved: state.iso.saved } };
+  }
+
+  // reconcileWeights, iso-aware: the saved weights are reconciled too, and
+  // isolated sources that were deleted drop out (iso ends if none are left).
+  function reconcileIso(weights, iso, sources) {
+    if (!iso) return { weights: reconcileWeights(weights, sources), iso: null };
+    const saved = reconcileWeights(iso.saved, sources);
+    const ids = iso.ids.filter((id) => sources.some((s) => s.id === id));
+    if (ids.length === 0) return { weights: saved, iso: null };
+    return { weights: weightsFor(ids), iso: { ids, saved } };
+  }
+
+  // Tab/overlay snapshots differ if the effective weights or which sources
+  // (if any) are isolated changed.
   function sameFilter(weightsA, isoA, weightsB, isoB) {
-    return weightsEqual(weightsA, weightsB) && (isoA ? isoA.id : null) === (isoB ? isoB.id : null);
+    const idsA = isoA ? isoA.ids.slice().sort().join(',') : '';
+    const idsB = isoB ? isoB.ids.slice().sort().join(',') : '';
+    return weightsEqual(weightsA, weightsB) && idsA === idsB;
   }
 
-  global.SourceWeights = { tap, reconcileIso, isIso, sameFilter, boostLabel, boostClass, isBoostable, defaultWeights, reconcileWeights, getWeight, cycleWeight, weightsEqual };
+  // Wires tap vs. long-press onto a chip/square. Moving more than a few px
+  // (a scroll) or lifting early cancels the press; the context menu a long
+  // press would otherwise pop up on touch is suppressed.
+  function attachPress(el, onTap, onLongPress) {
+    let timer = null;
+    let startX = 0;
+    let startY = 0;
+    const cancel = () => { clearTimeout(timer); timer = null; };
+    el.addEventListener('pointerdown', (e) => {
+      if (e.button > 0) return;
+      startX = e.clientX;
+      startY = e.clientY;
+      cancel();
+      timer = setTimeout(() => {
+        timer = null;
+        swallowNextClick = true;
+        onLongPress();
+      }, LONG_PRESS_MS);
+    });
+    el.addEventListener('pointermove', (e) => {
+      if (timer && Math.hypot(e.clientX - startX, e.clientY - startY) > 10) cancel();
+    });
+    ['pointerup', 'pointercancel', 'pointerleave'].forEach((type) => el.addEventListener(type, cancel));
+    el.addEventListener('contextmenu', (e) => e.preventDefault());
+    el.addEventListener('click', () => {
+      if (swallowNextClick) return;
+      onTap();
+    });
+  }
+
+  global.SourceWeights = { tap, longPress, attachPress, reconcileIso, isIso, sameFilter, boostLabel, boostClass, isBoostable, defaultWeights, reconcileWeights, getWeight, cycleWeight, weightsEqual };
 })(window);

@@ -888,9 +888,11 @@ body {
   box-shadow: inset 0 0 0 2px #fff;
 }
 
-.toggle-label,
-.stat-card-clickable {
-  touch-action: manipulation; /* no double-tap zoom — double tap means iso */
+.source-toggles .toggle-label,
+.detail-stats .stat-card-clickable {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none; /* long press means iso, not a text/link menu */
 }
 
 .toggle-label.is-boosted-3 {

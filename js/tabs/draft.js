@@ -32,10 +32,9 @@
   let reorderable;
   // { [sourceId]: 0 | 1 | 1.5 | 2.5 } — see js/sourceWeights.js.
   let sourceWeights = {};
-  // Iso mode ({ id, saved }) and the last chip tap, for double-tap detection
-  // — see js/sourceWeights.js.
+  // Iso mode ({ ids, saved }), set by long-pressing chips — see
+  // js/sourceWeights.js.
   let iso = null;
-  let lastTap = null;
   let selectedPositions = [];
   // Team abbreviations (from the Data List) the list is narrowed to; empty = all.
   let selectedTeams = [];
@@ -483,8 +482,9 @@
   // Boostable ("Average"-type) sources cycle disabled -> 1x -> 1.5x -> 2.5x -> back
   // to disabled on tap; everything else just toggles 0/1 like before.
   // Boostable ("Average"-type) sources cycle disabled -> 1x -> 1.5x -> 2.5x
-  // -> back to disabled on tap; everything else just toggles 0/1. A double
-  // tap isolates that source (iso mode); a single tap on it undoes that.
+  // -> back to disabled on tap; everything else just toggles 0/1. A long
+  // press isolates that source (iso mode; more long presses add more), and
+  // a plain tap on an isolated one undoes it.
   function renderSourceToggles() {
     const wrap = document.createElement('div');
     wrap.className = 'source-toggles';
@@ -495,19 +495,22 @@
       btn.type = 'button';
       btn.className = 'toggle-label' + (weight > 0 ? ' is-active' : '') + SourceWeights.boostClass(weight, 'is-boosted') + (isolated ? ' is-iso' : '');
       btn.textContent = (source.name || 'Untitled source') + (isolated ? ' · iso' : SourceWeights.boostLabel(weight));
-      btn.addEventListener('click', () => {
+      const apply = (next) => {
         smartSearchCriteria = null;
-        const next = SourceWeights.tap({ weights: sourceWeights, iso, lastTap }, source);
         sourceWeights = next.weights;
         iso = next.iso;
-        lastTap = next.lastTap;
         // Filters drive the reset computation directly now (no Reset
         // button) — changing which sources feed the average immediately
         // resyncs the whole list.
         App.state.draftOrder = buildResetOrder(sourceWeights);
         App.persist();
         render();
-      });
+      };
+      SourceWeights.attachPress(
+        btn,
+        () => apply(SourceWeights.tap({ weights: sourceWeights, iso }, source)),
+        () => apply(SourceWeights.longPress({ weights: sourceWeights, iso }, source))
+      );
       wrap.appendChild(btn);
     });
     return wrap;
@@ -523,7 +526,6 @@
     row.addEventListener('click', () => PlayerDetail.open(item.key, sourceWeights, (newWeights, newIso) => {
       sourceWeights = newWeights;
       iso = newIso;
-      lastTap = null;
       // Same auto-resync as tapping a source chip: the filter just changed,
       // so the list resyncs to the newly-filtered average.
       App.state.draftOrder = buildResetOrder(sourceWeights);
