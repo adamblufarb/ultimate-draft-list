@@ -2,7 +2,11 @@
    position chips). A 2-column grid of every team found in the Data List —
    same .stat-card tiles as Player Detail's source squares — where each tile
    shows the team and how many of its players are already drafted, and any
-   number can be picked (blue when picked). "Apply" hands the picked set
+   number can be picked (a white outline and ✓ when picked). A condition at
+   the bottom — "Highlight teams [N] lower than average" — fills in blue
+   every team whose drafted count is at most (average drafted per team − N),
+   to spot the teams you've drafted from least; N is remembered across
+   uses (App.state.teamHighlightGap). "Apply" hands the picked set
    back to Draft List, which then shows only players on those teams; an
    empty pick clears the filter. Closing with ✕/backdrop/Escape discards the
    picks made here. Same overlay chrome as Smart Search and Player Detail. */
@@ -62,13 +66,13 @@
     } else {
       const grid = document.createElement('div');
       grid.className = 'detail-stats';
+      const tiles = [];
       teams.forEach((t) => {
         const tile = document.createElement('div');
-        tile.className = 'stat-card stat-card-clickable team-filter-tile' + (picked.has(t.team) ? ' stat-card-selected' : '');
+        tile.className = 'stat-card stat-card-clickable team-filter-tile';
 
         const abbr = document.createElement('div');
         abbr.className = 'team-filter-abbr';
-        abbr.textContent = t.team;
         const drafted = document.createElement('div');
         drafted.className = 'team-filter-drafted';
         drafted.textContent = t.drafted + ' drafted';
@@ -77,11 +81,62 @@
 
         tile.addEventListener('click', () => {
           if (picked.has(t.team)) picked.delete(t.team); else picked.add(t.team);
-          tile.classList.toggle('stat-card-selected', picked.has(t.team));
+          refreshTile(t, tile, abbr);
         });
+        tiles.push({ t, tile, abbr });
         grid.appendChild(tile);
       });
       sheet.appendChild(grid);
+
+      const average = teams.reduce((sum, t) => sum + t.drafted, 0) / teams.length;
+
+      function refreshTile(t, tile, abbr) {
+        tile.classList.toggle('is-picked', picked.has(t.team));
+        abbr.textContent = (picked.has(t.team) ? '✓ ' : '') + t.team;
+      }
+
+      // Recolors the highlighted teams for the current N; an empty/invalid
+      // N highlights nothing.
+      function refreshHighlights() {
+        const gap = parseFloat(gapInput.value);
+        const limit = Number.isNaN(gap) ? -Infinity : average - gap;
+        tiles.forEach(({ t, tile }) => tile.classList.toggle('is-highlighted', t.drafted <= limit));
+      }
+
+      const conditionRow = document.createElement('div');
+      conditionRow.className = 'smart-search-threshold-row team-filter-condition';
+      const prefix = document.createElement('span');
+      prefix.textContent = 'Highlight teams';
+      const gapInput = document.createElement('input');
+      gapInput.type = 'number';
+      gapInput.min = '0';
+      gapInput.step = 'any';
+      gapInput.inputMode = 'decimal';
+      gapInput.className = 'smart-search-threshold-input';
+      gapInput.value = String(App.state.teamHighlightGap);
+      const suffix = document.createElement('span');
+      suffix.textContent = 'lower than average.';
+      conditionRow.appendChild(prefix);
+      conditionRow.appendChild(gapInput);
+      conditionRow.appendChild(suffix);
+      sheet.appendChild(conditionRow);
+
+      const avgNote = document.createElement('div');
+      avgNote.className = 'team-filter-average';
+      avgNote.textContent = 'Average: ' + (Math.round(average * 10) / 10) + ' drafted per team';
+      sheet.appendChild(avgNote);
+
+      gapInput.addEventListener('input', () => {
+        const gap = parseFloat(gapInput.value);
+        if (!Number.isNaN(gap) && gap >= 0) {
+          App.state.teamHighlightGap = gap;
+          App.persist();
+        }
+        refreshHighlights();
+      });
+
+      tiles.forEach(({ t, tile, abbr }) => refreshTile(t, tile, abbr));
+      refreshHighlights();
     }
 
     const applyBtn = document.createElement('button');

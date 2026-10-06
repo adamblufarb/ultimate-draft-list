@@ -12,6 +12,7 @@
       breakoutLevels: {},    // key -> 1 (⭐) or 2 (🌟); absent/0 means untagged
       sleeperLevels: {},     // key -> 1 (🥱) or 2 (😴); absent/0 means untagged
       targetKeys: [],        // normalized keys tagged "target" (🎯)
+      teamHighlightGap: 1,   // Team filter screen's "highlight teams N lower than average" number
       doNotDraftKeys: [],    // normalized keys tagged "do not draft" (🚫)
       dataList: { rawText: '', players: [] }, // [{ name, age, team, height }] — extra player info shown only in Player Detail, never part of any ranking
       // Fixed 3 slots (most-recent season first), each uploaded from an .xls
