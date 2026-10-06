@@ -16,7 +16,7 @@
    Below that, one square per source — every source, not just the special
    avg/total ones — showing that source's rank
    and score side by side on one row, with the currently-weighted-in
-   sources highlighted (a darker blue plus a "2x"/"3x" label for a boosted
+   sources highlighted (a darker blue plus a "1.5x"/"2.5x" label for a boosted
    one). Tapping a source square cycles its weight (js/sourceWeights.js)
    live. However the weights are left when the overlay closes (by the ✕,
    the backdrop, Escape, or an action button) is reported back to whichever
@@ -115,8 +115,8 @@
   // One square per source: rank and score (if this source has one) shown
   // side by side on one row — rank big, score smaller and gray. Sources
   // with no score at all (pure ranking lists) just show the rank alone.
-  // `weight` is 0 (excluded), 1 (normal — highlighted blue), 2 or 3
-  // (boosted — a darker blue plus a "2x"/"3x" label, only ever reachable for
+  // `weight` is 0 (excluded), 1 (normal — highlighted blue), 1.5 or 2.5
+  // (boosted — a darker blue plus a "1.5x"/"2.5x" label, only ever reachable for
   // a boostable "Average"-type source; see js/sourceWeights.js).
   function sourceCard(source, entry, weight) {
     const bySource = entry.bySource[source.id];
@@ -166,7 +166,7 @@
   }
 
   // initialWeights: the calling tab's current source weights
-  // ({ [sourceId]: 0 | 1 | 2 | 3 }, see js/sourceWeights.js), used both to
+  // ({ [sourceId]: 0 | 1 | 1.5 | 2.5 }, see js/sourceWeights.js), used both to
   // seed which squares start highlighted (and which are boosted) and to
   // compute the initial Combined Rank. Tapping a square cycles it live for
   // this view; once the overlay closes, if the weights actually changed,

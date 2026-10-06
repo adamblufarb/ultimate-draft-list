@@ -9,7 +9,7 @@
    order players appear in. */
 (function (global) {
   let container;
-  // { [sourceId]: 0 | 1 | 2 | 3 } — see js/sourceWeights.js.
+  // { [sourceId]: 0 | 1 | 1.5 | 2.5 } — see js/sourceWeights.js.
   let sourceWeights = {};
 
   function init(rootEl) {
@@ -55,7 +55,7 @@
     container.appendChild(renderList(draftedKeys, avgByKey, index));
   }
 
-  // Boostable ("Average"-type) sources cycle disabled -> 1x -> 2x -> 3x -> back
+  // Boostable ("Average"-type) sources cycle disabled -> 1x -> 1.5x -> 2.5x -> back
   // to disabled on tap; everything else just toggles 0/1 like before.
   function renderSourceToggles() {
     const wrap = document.createElement('div');
