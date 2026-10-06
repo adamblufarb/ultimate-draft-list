@@ -880,6 +880,19 @@ body {
   color: rgba(255, 255, 255, 0.75);
 }
 
+.toggle-label.is-iso {
+  box-shadow: inset 0 0 0 2px #fff;
+}
+
+.stat-card-iso {
+  box-shadow: inset 0 0 0 2px #fff;
+}
+
+.toggle-label,
+.stat-card-clickable {
+  touch-action: manipulation; /* no double-tap zoom — double tap means iso */
+}
+
 .toggle-label.is-boosted-3 {
   border-color: #2c52a3;
   background: #2c52a3;

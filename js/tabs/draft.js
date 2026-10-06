@@ -32,6 +32,10 @@
   let reorderable;
   // { [sourceId]: 0 | 1 | 1.5 | 2.5 } — see js/sourceWeights.js.
   let sourceWeights = {};
+  // Iso mode ({ id, saved }) and the last chip tap, for double-tap detection
+  // — see js/sourceWeights.js.
+  let iso = null;
+  let lastTap = null;
   let selectedPositions = [];
   // Team abbreviations (from the Data List) the list is narrowed to; empty = all.
   let selectedTeams = [];
@@ -61,7 +65,7 @@
       else render();
     });
     App.on('remote-state-loaded', () => {
-      sourceWeights = SourceWeights.reconcileWeights(sourceWeights, App.state.sources);
+      reconcileFilters();
       if (isVisible()) show();
     });
   }
@@ -80,8 +84,14 @@
     if (newBadge) row.appendChild(newBadge);
   }
 
+  function reconcileFilters() {
+    const r = SourceWeights.reconcileIso(sourceWeights, iso, App.state.sources);
+    sourceWeights = r.weights;
+    iso = r.iso;
+  }
+
   function onSourcesChanged() {
-    sourceWeights = SourceWeights.reconcileWeights(sourceWeights, App.state.sources);
+    reconcileFilters();
     if (isVisible()) render();
   }
 
@@ -472,18 +482,25 @@
 
   // Boostable ("Average"-type) sources cycle disabled -> 1x -> 1.5x -> 2.5x -> back
   // to disabled on tap; everything else just toggles 0/1 like before.
+  // Boostable ("Average"-type) sources cycle disabled -> 1x -> 1.5x -> 2.5x
+  // -> back to disabled on tap; everything else just toggles 0/1. A double
+  // tap isolates that source (iso mode); a single tap on it undoes that.
   function renderSourceToggles() {
     const wrap = document.createElement('div');
     wrap.className = 'source-toggles';
     App.state.sources.forEach((source) => {
       const weight = SourceWeights.getWeight(sourceWeights, source.id);
+      const isolated = SourceWeights.isIso(iso, source.id);
       const btn = document.createElement('button');
       btn.type = 'button';
-      btn.className = 'toggle-label' + (weight > 0 ? ' is-active' : '') + SourceWeights.boostClass(weight, 'is-boosted');
-      btn.textContent = (source.name || 'Untitled source') + SourceWeights.boostLabel(weight);
+      btn.className = 'toggle-label' + (weight > 0 ? ' is-active' : '') + SourceWeights.boostClass(weight, 'is-boosted') + (isolated ? ' is-iso' : '');
+      btn.textContent = (source.name || 'Untitled source') + (isolated ? ' · iso' : SourceWeights.boostLabel(weight));
       btn.addEventListener('click', () => {
         smartSearchCriteria = null;
-        sourceWeights = SourceWeights.cycleWeight(sourceWeights, source);
+        const next = SourceWeights.tap({ weights: sourceWeights, iso, lastTap }, source);
+        sourceWeights = next.weights;
+        iso = next.iso;
+        lastTap = next.lastTap;
         // Filters drive the reset computation directly now (no Reset
         // button) — changing which sources feed the average immediately
         // resyncs the whole list.
@@ -503,14 +520,16 @@
 
     const row = document.createElement('div');
     row.className = 'draft-row' + (drafted ? ' is-drafted' : '');
-    row.addEventListener('click', () => PlayerDetail.open(item.key, sourceWeights, (newWeights) => {
+    row.addEventListener('click', () => PlayerDetail.open(item.key, sourceWeights, (newWeights, newIso) => {
       sourceWeights = newWeights;
+      iso = newIso;
+      lastTap = null;
       // Same auto-resync as tapping a source chip: the filter just changed,
       // so the list resyncs to the newly-filtered average.
       App.state.draftOrder = buildResetOrder(sourceWeights);
       App.persist();
       render();
-    }));
+    }, iso));
 
     const handle = document.createElement('div');
     handle.className = 'drag-handle';

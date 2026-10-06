@@ -118,16 +118,25 @@
   // `weight` is 0 (excluded), 1 (normal — highlighted blue), 1.5 or 2.5
   // (boosted — a darker blue plus a "1.5x"/"2.5x" label, only ever reachable for
   // a boostable "Average"-type source; see js/sourceWeights.js).
-  function sourceCard(source, entry, weight) {
+  function cardClass(weight, isolated) {
+    return 'stat-card stat-card-clickable'
+      + (weight > 0 ? ' stat-card-selected' : '')
+      + SourceWeights.boostClass(weight, 'stat-card-boosted')
+      + (isolated ? ' stat-card-iso' : '');
+  }
+
+  function cardTitle(source, weight, isolated) {
+    return (source.name || 'Untitled source') + (isolated ? ' · iso' : SourceWeights.boostLabel(weight));
+  }
+
+  function sourceCard(source, entry, weight, isolated) {
     const bySource = entry.bySource[source.id];
     const card = document.createElement('div');
-    card.className = 'stat-card stat-card-clickable'
-      + (weight > 0 ? ' stat-card-selected' : '')
-      + SourceWeights.boostClass(weight, 'stat-card-boosted');
+    card.className = cardClass(weight, isolated);
 
     const titleEl = document.createElement('div');
     titleEl.className = 'stat-title';
-    titleEl.textContent = (source.name || 'Untitled source') + SourceWeights.boostLabel(weight);
+    titleEl.textContent = cardTitle(source, weight, isolated);
     card.appendChild(titleEl);
 
     if (bySource) {
@@ -157,12 +166,10 @@
   // title label) after a click cycles its weight — the rank/score content
   // underneath never changes, so there's no need to rebuild (and
   // re-listen on) the whole card.
-  function applyCardWeight(card, source, weight) {
-    card.className = 'stat-card stat-card-clickable'
-      + (weight > 0 ? ' stat-card-selected' : '')
-      + SourceWeights.boostClass(weight, 'stat-card-boosted');
+  function applyCardWeight(card, source, weight, isolated) {
+    card.className = cardClass(weight, isolated);
     const titleEl = card.querySelector('.stat-title');
-    if (titleEl) titleEl.textContent = (source.name || 'Untitled source') + SourceWeights.boostLabel(weight);
+    if (titleEl) titleEl.textContent = cardTitle(source, weight, isolated);
   }
 
   // initialWeights: the calling tab's current source weights
@@ -172,7 +179,7 @@
   // this view; once the overlay closes, if the weights actually changed,
   // onWeightsChange (when given) is called with the final object so the
   // calling tab can adopt it.
-  function open(key, initialWeights, onWeightsChange) {
+  function open(key, initialWeights, onWeightsChange, initialIso) {
     const overlay = ensureOverlay();
     const index = Ranking.buildIndex(App.state.sources);
     const entry = index.get(key);
@@ -180,11 +187,12 @@
 
     const startWeights = initialWeights || SourceWeights.defaultWeights(App.state.sources);
     const initialSnapshot = Object.assign({}, startWeights);
-    let activeWeights = Object.assign({}, startWeights);
+    // { weights, iso, lastTap } — see SourceWeights.tap for iso mode.
+    let filter = { weights: Object.assign({}, startWeights), iso: initialIso || null, lastTap: null };
 
     closeHandler = () => {
-      if (onWeightsChange && !SourceWeights.weightsEqual(activeWeights, initialSnapshot)) {
-        onWeightsChange(Object.assign({}, activeWeights));
+      if (onWeightsChange && !SourceWeights.sameFilter(filter.weights, filter.iso, initialSnapshot, initialIso || null)) {
+        onWeightsChange(Object.assign({}, filter.weights), filter.iso);
       }
       hide();
     };
@@ -334,7 +342,7 @@
     sheet.appendChild(notesEl);
 
     function updateCombined() {
-      const combinedEntry = Ranking.combineFromIndex(index, activeWeights).find((r) => r.key === key) || null;
+      const combinedEntry = Ranking.combineFromIndex(index, filter.weights).find((r) => r.key === key) || null;
       setCardValue(combinedCard, combinedEntry ? combinedEntry.avg.toFixed(1) : null);
     }
     updateCombined();
@@ -347,13 +355,20 @@
       none.textContent = 'No sources yet.';
       gridWrap.appendChild(none);
     } else {
+      const cards = [];
+      const refreshCards = () => cards.forEach(({ card, source }) => applyCardWeight(
+        card, source, SourceWeights.getWeight(filter.weights, source.id), SourceWeights.isIso(filter.iso, source.id)
+      ));
       App.state.sources.forEach((source) => {
-        const card = sourceCard(source, entry, SourceWeights.getWeight(activeWeights, source.id));
+        const card = sourceCard(
+          source, entry, SourceWeights.getWeight(filter.weights, source.id), SourceWeights.isIso(filter.iso, source.id)
+        );
         card.addEventListener('click', () => {
-          activeWeights = SourceWeights.cycleWeight(activeWeights, source);
-          applyCardWeight(card, source, SourceWeights.getWeight(activeWeights, source.id));
+          filter = SourceWeights.tap(filter, source);
+          refreshCards(); // iso mode changes every square, not just this one
           updateCombined();
         });
+        cards.push({ card, source });
         gridWrap.appendChild(card);
       });
     }

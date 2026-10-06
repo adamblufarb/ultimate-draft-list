@@ -11,6 +11,9 @@
   let container;
   // { [sourceId]: 0 | 1 | 1.5 | 2.5 } — see js/sourceWeights.js.
   let sourceWeights = {};
+  // Iso mode ({ id, saved }) and the last chip tap — see js/sourceWeights.js.
+  let iso = null;
+  let lastTap = null;
 
   function init(rootEl) {
     container = rootEl;
@@ -30,7 +33,9 @@
   }
 
   function onSourcesChanged() {
-    sourceWeights = SourceWeights.reconcileWeights(sourceWeights, App.state.sources);
+    const r = SourceWeights.reconcileIso(sourceWeights, iso, App.state.sources);
+    sourceWeights = r.weights;
+    iso = r.iso;
     render();
   }
 
@@ -62,12 +67,16 @@
     wrap.className = 'source-toggles';
     App.state.sources.forEach((source) => {
       const weight = SourceWeights.getWeight(sourceWeights, source.id);
+      const isolated = SourceWeights.isIso(iso, source.id);
       const btn = document.createElement('button');
       btn.type = 'button';
-      btn.className = 'toggle-label' + (weight > 0 ? ' is-active' : '') + SourceWeights.boostClass(weight, 'is-boosted');
-      btn.textContent = (source.name || 'Untitled source') + SourceWeights.boostLabel(weight);
+      btn.className = 'toggle-label' + (weight > 0 ? ' is-active' : '') + SourceWeights.boostClass(weight, 'is-boosted') + (isolated ? ' is-iso' : '');
+      btn.textContent = (source.name || 'Untitled source') + (isolated ? ' · iso' : SourceWeights.boostLabel(weight));
       btn.addEventListener('click', () => {
-        sourceWeights = SourceWeights.cycleWeight(sourceWeights, source);
+        const next = SourceWeights.tap({ weights: sourceWeights, iso, lastTap }, source);
+        sourceWeights = next.weights;
+        iso = next.iso;
+        lastTap = next.lastTap;
         render();
       });
       wrap.appendChild(btn);
@@ -120,10 +129,12 @@
       const item = document.createElement('div');
       item.className = 'rank-row' + (i % 2 === 1 ? ' row-alt' : '');
       item.dataset.key = key;
-      item.addEventListener('click', () => PlayerDetail.open(key, sourceWeights, (newWeights) => {
+      item.addEventListener('click', () => PlayerDetail.open(key, sourceWeights, (newWeights, newIso) => {
         sourceWeights = newWeights;
+        iso = newIso;
+        lastTap = null;
         render();
-      }));
+      }, iso));
 
       const rankBadge = document.createElement('div');
       rankBadge.className = 'rank-badge';
