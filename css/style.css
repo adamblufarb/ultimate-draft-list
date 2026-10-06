@@ -282,6 +282,40 @@ body {
   justify-content: center;
 }
 
+.team-filter-chip {
+  min-width: 0;
+}
+
+.team-filter-chip > span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.team-filter-tile {
+  text-align: center;
+}
+
+.team-filter-abbr {
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.team-filter-drafted {
+  font-size: 12px;
+  color: var(--text-dim);
+  margin-top: 2px;
+}
+
+.stat-card-selected .team-filter-drafted {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.team-filter-apply {
+  width: 100%;
+}
+
 .search-box {
   position: relative;
   margin-bottom: 12px;
@@ -793,6 +827,7 @@ body {
 .tag-toggle.is-active {
   background: var(--accent);
   border-color: var(--accent);
+  color: #fff;
 }
 
 .detail-stats {

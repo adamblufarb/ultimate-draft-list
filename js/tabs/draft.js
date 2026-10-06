@@ -33,6 +33,8 @@
   // { [sourceId]: 0 | 1 | 2 | 3 } — see js/sourceWeights.js.
   let sourceWeights = {};
   let selectedPositions = [];
+  // Team abbreviations (from the Data List) the list is narrowed to; empty = all.
+  let selectedTeams = [];
   let searchQuery = '';
   let searchInputEl;
   let searchClearBtn;
@@ -128,6 +130,7 @@
     container.appendChild(renderSmartSearchRow());
     container.appendChild(renderSourceToggles());
     container.appendChild(renderPositionToggles());
+    container.appendChild(renderTeamFilterRow());
     container.appendChild(renderIncludeDraftedRow());
 
     listSection = document.createElement('div');
@@ -146,8 +149,10 @@
     const includeDrafted = App.getIncludeDrafted();
     const query = searchQuery.trim().toLowerCase();
     const smartMatches = smartSearchCriteria ? computeSmartSearchMatches(index, smartSearchCriteria) : null;
+    const teamOf = selectedTeams.length > 0 ? teamByKey() : null;
     const visibleItems = fullOrder.filter((item) => {
       if (!includeDrafted && App.isDrafted(item.key)) return false;
+      if (teamOf && !selectedTeams.includes(teamOf.get(item.key))) return false;
       if (smartMatches) {
         if (!smartMatches.has(item.key)) return false;
       } else if (selectedPositions.length > 0 && !matchesPositionFilter(item.key, index)) {
@@ -166,6 +171,8 @@
         empty.textContent = 'No players match your search.';
       } else if (smartMatches) {
         empty.textContent = 'No players match your Smart Search.';
+      } else if (selectedTeams.length > 0) {
+        empty.textContent = 'No players on the selected teams (a player\'s team comes from the Data List).';
       } else if (selectedPositions.length > 0) {
         empty.textContent = 'No players match the selected position filter.';
       } else {
@@ -325,6 +332,63 @@
       clearBtn.setAttribute('aria-label', 'Clear Smart Search');
       clearBtn.addEventListener('click', () => {
         smartSearchCriteria = null;
+        render();
+      });
+      wrap.appendChild(clearBtn);
+    }
+    return wrap;
+  }
+
+  // Normalized player key -> current team abbreviation, from the Data List
+  // (the only place a *current* team lives; Season Stats' team is last
+  // season's). Players with no Data List entry/team have none.
+  function teamByKey() {
+    const map = new Map();
+    App.state.dataList.players.forEach((p) => {
+      const team = (p.team || '').trim().toUpperCase();
+      if (team) map.set(NameMatch.normalize(p.name), team);
+    });
+    return map;
+  }
+
+  function openTeamFilter() {
+    const info = new Map();
+    teamByKey().forEach((team, key) => {
+      if (!info.has(team)) info.set(team, { team, drafted: 0 });
+      if (App.isDrafted(key)) info.get(team).drafted += 1;
+    });
+    const teams = Array.from(info.values()).sort((a, b) => a.team.localeCompare(b.team));
+    const stillExists = (t) => info.has(t);
+    TeamFilter.open(teams, selectedTeams.filter(stillExists), (picked) => {
+      selectedTeams = picked;
+      render();
+    });
+  }
+
+  // Looks and works like the Smart Search row: one full-width chip that
+  // opens a screen, and once something's applied turns blue (showing which
+  // teams) with a ✕ beside it that clears the filter.
+  function renderTeamFilterRow() {
+    const wrap = document.createElement('div');
+    wrap.className = 'source-toggles draft-actions-row';
+
+    const chip = document.createElement('button');
+    chip.type = 'button';
+    chip.className = 'toggle-label team-filter-chip' + (selectedTeams.length > 0 ? ' is-active' : '');
+    const label = document.createElement('span');
+    label.textContent = selectedTeams.length > 0 ? 'Teams: ' + selectedTeams.join(', ') : 'Team';
+    chip.appendChild(label);
+    chip.addEventListener('click', openTeamFilter);
+    wrap.appendChild(chip);
+
+    if (selectedTeams.length > 0) {
+      const clearBtn = document.createElement('button');
+      clearBtn.type = 'button';
+      clearBtn.className = 'tag-toggle is-active';
+      clearBtn.textContent = '✕';
+      clearBtn.setAttribute('aria-label', 'Clear team filter');
+      clearBtn.addEventListener('click', () => {
+        selectedTeams = [];
         render();
       });
       wrap.appendChild(clearBtn);
