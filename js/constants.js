@@ -1,6 +1,6 @@
 /* Shared config used across tabs. */
 (function (global) {
-  const MAX_SOURCES = 10;
+  const MAX_SOURCES = 12;
 
   // What the "Score" number in a pasted list means. Selected per-source in
   // the Sources tab (not embedded in the pasted text itself). 'adp' is a
