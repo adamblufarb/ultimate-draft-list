@@ -12,8 +12,9 @@
    (App.getImprovementEmoji/getDeclineEmoji), which needs a sustained
    2-year trend across all 3 seasons instead of just one (same categories
    and thresholds as there).
-   Under each season's title sits its average fantasy points per game,
-   under this league's scoring (FP_WEIGHTS).
+   Under each season's title sit its average fantasy points per game
+   (Avg) and total (Tot = Avg x games played) under this league's scoring
+   (FP_WEIGHTS), each with its rank among every player that season.
    Team is pushed to the very bottom of each block, after everything else.
    Purely a read-only view; render(key) just returns the element for
    Player Detail to append. */
@@ -78,6 +79,45 @@
     return total;
   }
 
+  // Fantasy points for one season row: { avg, tot } — avg per game, tot =
+  // avg x games played — or null if avg can't be computed or games is
+  // missing/unreadable.
+  function fantasyFor(columns, values) {
+    const avg = averageFantasyPoints(columns, values);
+    if (avg === null) return null;
+    const games = parseFloat(values.games);
+    if (Number.isNaN(games)) return null;
+    return { avg, tot: avg * games };
+  }
+
+  // 1 + how many other players beat this value that season (ties share a
+  // rank), among every player in that season's file who has a figure.
+  function rankIn(slot, field, value) {
+    let better = 0;
+    slot.players.forEach((p) => {
+      const f = fantasyFor(slot.columns, p.values);
+      if (f && f[field] > value) better += 1;
+    });
+    return better + 1;
+  }
+
+  // "Avg: 49.0 (#12)   Tot: 3234 (#8)" — the ranks are against every other
+  // player in the same season's file (by that figure, highest first).
+  // Computed fresh each time, never cached, so Fake Mode's in-place stat
+  // scrambling is always reflected. Null if nothing to show.
+  function fantasyLine(slot, playerEntry) {
+    const f = fantasyFor(slot.columns, playerEntry.values);
+    if (!f) return null;
+    const el = document.createElement('div');
+    el.className = 'season-stats-block-fp';
+    [['Avg', 'avg', f.avg.toFixed(1)], ['Tot', 'tot', String(Math.round(f.tot))]].forEach(([label, field, text]) => {
+      const part = document.createElement('span');
+      part.textContent = label + ': ' + text + ' (#' + rankIn(slot, field, f[field]) + ')';
+      el.appendChild(part);
+    });
+    return el;
+  }
+
   // Moves the main categories (plus each one's companion column, if any)
   // to right after MP, wherever they'd otherwise fall (Basketball-
   // Reference's own export puts most of them near the end, after every
@@ -127,13 +167,8 @@
       return block;
     }
 
-    const fp = averageFantasyPoints(slot.columns, playerEntry.values);
-    if (fp !== null) {
-      const fpEl = document.createElement('div');
-      fpEl.className = 'season-stats-block-fp';
-      fpEl.textContent = 'Avg FP: ' + fp.toFixed(1);
-      block.appendChild(fpEl);
-    }
+    const fp = fantasyLine(slot, playerEntry);
+    if (fp) block.appendChild(fp);
 
     const grid = document.createElement('div');
     grid.className = 'season-stats-grid';
