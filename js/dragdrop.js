@@ -27,13 +27,14 @@
     //   extra vertical space before the row they precede. Divider position
     //   is index-based, not item-based, so it never moves mid-drag — only
     //   the offset table (see _computeOffsets) needs to account for it.
+    // draggable: false leaves rows static (the Draft List's locked state).
     // markers (Map of row index -> label) / renderMarker(label): optional —
     //   extra dividers placed before the given rows (0 = above the first
     //   row), e.g. the blue "pick" markers. A marker takes the slot of
     //   (replaces) the numeric divider if both land on the same index.
     //   Needs renderDivider too, since it shares that divider's measured
     //   height.
-    constructor(container, { renderRow, onReorder, gap = 0, dividerEvery = 0, renderDivider, markers = null, renderMarker = null }) {
+    constructor(container, { renderRow, onReorder, gap = 0, dividerEvery = 0, renderDivider, markers = null, renderMarker = null, draggable = true }) {
       this.container = container;
       this.renderRow = renderRow;
       this.onReorder = onReorder;
@@ -41,6 +42,7 @@
       this.dividerEvery = dividerEvery;
       this.renderDivider = renderDivider || null;
       this.markers = markers || new Map();
+      this.draggable = draggable;
       this.renderMarker = renderMarker;
       this.items = [];
       this.rows = [];
@@ -153,6 +155,7 @@
     }
 
     _attachHandlers() {
+      if (!this.draggable) return;
       this.rows.forEach((row) => {
         const handle = row.querySelector('[data-drag-handle]') || row;
         handle.style.touchAction = 'none';

@@ -2,16 +2,17 @@
    Initialized from the combined average once, then persists independently
    of source edits. Changing the source filter automatically resyncs the
    list to the newly-filtered average (no Reset button).
-   Drafted players are hidden (unless "include drafted" is on) but keep
-   their place in the full order so un-drafting puts them back where they
-   were. Each position
+   Drafted players are hidden but keep their place in the full order so
+   un-drafting puts them back where they were. "Lock List" freezes the
+   order: filter changes still update every combined rank but no longer
+   reshuffle the list, and rows can't be dragged. Each position
    chip also shows how many of the next N undrafted picks hold that
    position (N chosen from the pool-size dropdown), flagging scarcity in
    orange/red as that count runs low relative to N. Smart Search (its own
    overlay, js/smartSearch.js) replaces the position filter's narrowing
    with a structured "metric A vs metric B, by at least N ranks" query
-   while active; touching any of the quick filters (source, position,
-   Include Drafted Players) clears it, but tagging a player or the plain
+   while active; touching any of the quick filters (source, position)
+   clears it, but tagging a player or the plain
    search box do not. Source chips can weight, not just toggle, a source
    (js/sourceWeights.js) — tapping a boostable "Average"-type source a 2nd
    time sets it to 1.5x, a 3rd time 2.5x (instead of the usual 1x), shown as a darker chip;
@@ -54,7 +55,6 @@
     sourceWeights = SourceWeights.defaultWeights(App.state.sources);
     App.on('sources-changed', onSourcesChanged);
     App.on('drafted-changed', () => { if (isVisible()) render(); });
-    App.on('include-drafted-changed', () => { if (isVisible()) render(); });
     // Tagging a player from the still-open player detail view fires this
     // repeatedly, and a full render() would reset scroll to the top each
     // time — update just that row's tags in place instead.
@@ -118,6 +118,14 @@
       .map((r) => ({ key: r.key, name: r.displayName }));
   }
 
+  // Called whenever the source filter changes: resyncs the order to the new
+  // combined average — unless the list is locked, in which case the order
+  // stays put (the combined ranks shown on each row still update).
+  function resyncOrder() {
+    if (App.state.listLocked) return;
+    App.state.draftOrder = buildResetOrder(sourceWeights);
+  }
+
   function show() {
     ensureInitialized();
     render();
@@ -140,7 +148,7 @@
     container.appendChild(renderSourceToggles());
     container.appendChild(renderPositionToggles());
     container.appendChild(renderTeamFilterRow());
-    container.appendChild(renderIncludeDraftedRow());
+    container.appendChild(renderActionsRow());
 
     listSection = document.createElement('div');
     container.appendChild(listSection);
@@ -155,12 +163,11 @@
 
     const index = Ranking.buildIndex(App.state.sources);
     const fullOrder = App.state.draftOrder || [];
-    const includeDrafted = App.getIncludeDrafted();
     const query = searchQuery.trim().toLowerCase();
     const smartMatches = smartSearchCriteria ? computeSmartSearchMatches(index, smartSearchCriteria) : null;
     const teamOf = selectedTeams.length > 0 ? teamByKey() : null;
     const visibleItems = fullOrder.filter((item) => {
-      if (!includeDrafted && App.isDrafted(item.key)) return false;
+      if (App.isDrafted(item.key)) return false;
       if (teamOf && !selectedTeams.includes(teamOf.get(item.key))) return false;
       if (smartMatches) {
         if (!smartMatches.has(item.key)) return false;
@@ -185,14 +192,14 @@
       } else if (selectedPositions.length > 0) {
         empty.textContent = 'No players match the selected position filter.';
       } else {
-        empty.textContent = 'All players have been drafted. Check "Include drafted players" to see them.';
+        empty.textContent = 'All players have been drafted.';
       }
       listSection.appendChild(empty);
       return;
     }
 
     const listEl = document.createElement('div');
-    listEl.className = 'draft-list';
+    listEl.className = 'draft-list' + (App.state.listLocked ? ' is-locked' : '');
     listSection.appendChild(listEl);
 
     const combined = Ranking.combineFromIndex(index, sourceWeights);
@@ -203,6 +210,7 @@
       renderRow: (item, i) => renderRow(item, i, avgByKey, index),
       dividerEvery: 10,
       renderDivider: (count) => renderListDivider(count),
+      draggable: !App.state.listLocked,
       markers: nextPickMarkers(fullOrder, visibleItems),
       renderMarker: (label) => renderListDivider(label, true),
       onReorder: (newVisibleOrder) => {
@@ -516,13 +524,14 @@
     return wrap;
   }
 
-  function renderIncludeDraftedRow() {
+  function renderActionsRow() {
     const wrap = document.createElement('div');
-    wrap.className = 'source-toggles include-drafted-toggle draft-actions-row';
-    const isActive = App.getIncludeDrafted();
-    wrap.appendChild(renderToggleChip('Include Drafted Players', isActive, () => {
-      smartSearchCriteria = null;
-      App.setIncludeDrafted(!isActive);
+    wrap.className = 'source-toggles draft-actions-row list-actions-row';
+    const locked = !!App.state.listLocked;
+    wrap.appendChild(renderToggleChip('Lock List', locked, () => {
+      App.state.listLocked = !locked;
+      App.persist();
+      render();
     }));
     const nextPickOn = !!App.state.showNextPick;
     const nextPickChip = renderToggleChip('Next Pick Indicator', nextPickOn, () => {
@@ -558,7 +567,7 @@
         // Filters drive the reset computation directly now (no Reset
         // button) — changing which sources feed the average immediately
         // resyncs the whole list.
-        App.state.draftOrder = buildResetOrder(sourceWeights);
+        resyncOrder();
         App.persist();
         render();
       };
@@ -584,7 +593,7 @@
       iso = newIso;
       // Same auto-resync as tapping a source chip: the filter just changed,
       // so the list resyncs to the newly-filtered average.
-      App.state.draftOrder = buildResetOrder(sourceWeights);
+      resyncOrder();
       App.persist();
       render();
     }, iso));

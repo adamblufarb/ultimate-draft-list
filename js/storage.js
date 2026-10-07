@@ -7,7 +7,7 @@
       sources: [],          // [{ id, name, url, rawText, scoreType, players: [{rank, name, positions, score}] }]
       selectedSourceIds: [], // ids included in Tab 1's combined average
       draftOrder: null,      // [{ key, name }] custom order, or null if never initialized
-      draftedKeys: [],       // normalized keys of players marked drafted (hidden unless "include drafted" is on)
+      draftedKeys: [],       // normalized keys of players marked drafted (always hidden from Draft List; kept in the full order)
       myTeamKeys: [],         // normalized keys of players drafted by the user, in pick order
       breakoutLevels: {},    // key -> 1 (⭐) or 2 (🌟); absent/0 means untagged
       sleeperLevels: {},     // key -> 1 (🥱) or 2 (😴); absent/0 means untagged
@@ -25,6 +25,7 @@
         { label: '', fileName: '', columns: [], players: [] }
       ],
       playerNotes: {}, // key -> free-text note, set from Player Detail
+      listLocked: false,     // Draft List's "Lock List" toggle — keeps the order fixed while filters change
       showNextPick: false,   // Draft List's "Next Pick Indicator" toggle
       pickSlot: 3,           // your slot in the first round (1 = picks first)
       leagueSize: 10,        // teams in the league (snake draft)

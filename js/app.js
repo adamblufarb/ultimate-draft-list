@@ -50,20 +50,6 @@
     emit('drafted-changed', { key, drafted });
   }
 
-  // Whether hidden (drafted) players should still be shown, dimmed, in the
-  // lists. A session-only preference — always starts hidden on a fresh load,
-  // matching Tab 1's "default view" behavior.
-  let includeDrafted = false;
-
-  function getIncludeDrafted() {
-    return includeDrafted;
-  }
-
-  function setIncludeDrafted(value) {
-    includeDrafted = value;
-    emit('include-drafted-changed', value);
-  }
-
   function isOnMyTeam(key) {
     return state.myTeamKeys.includes(key);
   }
@@ -423,7 +409,7 @@
 
   global.App = {
     state, on, emit, persist, genId,
-    isDrafted, setDrafted, getIncludeDrafted, setIncludeDrafted,
+    isDrafted, setDrafted,
     isOnMyTeam, draftedByMe, removeFromMyTeam,
     getBreakoutLevel, cycleBreakoutLevel,
     getSleeperLevel, cycleSleeperLevel,
