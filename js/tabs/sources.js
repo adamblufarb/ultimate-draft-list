@@ -11,7 +11,7 @@
    slots for uploading the last 3 seasons' per-game stats (as .xls files
    exported from Basketball-Reference, which are actually HTML tables under
    the hood — see Parser.parseSeasonStatsHtml), shown only via Player
-   Detail's "Show Data" button, never part of any ranking. */
+   Detail's scroll, never part of any ranking. */
 (function (global) {
   const MAX_SOURCES = Constants.MAX_SOURCES;
   let container;
@@ -619,7 +619,7 @@
     const desc = document.createElement('p');
     desc.className = 'source-view-meta';
     desc.textContent = 'Upload the last 3 seasons of per-game stats (.xls export from Basketball-Reference) ' +
-      'to show in Player Detail\'s "Show Data" view. Never used in any ranking.';
+      'to show at the bottom of Player Detail. Never used in any ranking.';
     wrap.appendChild(desc);
 
     App.state.seasonStats.forEach((slot, i) => {

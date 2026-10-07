@@ -162,9 +162,9 @@
   // minimum counts extra: 2x the minimum (or more) is worth 2 points, same
   // as a plain 1x is worth 1 — capped at 2 per category, so one huge swing
   // in a single stat can't singlehandedly clear the broad rule's bar; the
-  // ⬆️/⏫ (or ⬇️/⏬) shown per-stat in the Show Data overlay always matches
+  // ⬆️/⏫ (or ⬇️/⏬) shown per-stat in Player Detail's season stats always matches
   // exactly what was scored. Same categories and thresholds as there (js/
-  // seasonStatsOverlay.js). A player earns the badge either way:
+  // seasonStatsView.js). A player earns the badge either way:
   //  - the broad, single-year way: at least 5 points' worth moved the
   //    right way from last season (middle→most-recent) alone; or
   //  - the sustained way: each window totals at least 3 points, and at

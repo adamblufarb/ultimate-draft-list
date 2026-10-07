@@ -982,18 +982,15 @@ body {
   color: var(--text-dim);
 }
 
-.detail-show-data-btn {
-  width: 100%;
+.detail-season-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
 }
 
 .season-stats-block {
   border-top: 1px solid var(--border);
   padding-top: 12px;
-}
-
-.season-stats-block:first-of-type {
-  border-top: none;
-  padding-top: 0;
 }
 
 .season-stats-block-title {

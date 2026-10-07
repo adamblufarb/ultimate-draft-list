@@ -1,6 +1,6 @@
-/* Season Stats overlay: opened from Player Detail's "Show Data" button.
-   Shows every uploaded season (Sources tab's Season Stats slots, most
-   recent first) as its own block of label:value stat rows — whatever
+/* Season Stats view: the bottom section of Player Detail. Shows every
+   uploaded season (Sources tab's Season Stats slots, most recent first) as
+   its own block of label:value stat rows — whatever
    columns that season's file happened to have, in the file's own order,
    except the 6 main categories (PTS/AST/STL/BLK/TRB/FT) are pulled up to
    right after MP so they're not buried among the shooting splits; FTA
@@ -15,31 +15,9 @@
    Under each season's title sits its average fantasy points per game,
    under this league's scoring (FP_WEIGHTS).
    Team is pushed to the very bottom of each block, after everything else.
-   Same overlay chrome as Player Detail/Smart Search (backdrop, slide-up
-   sheet, close on backdrop tap/Escape/✕); purely a read-only view, so
-   closing it never has anything to report back. */
+   Purely a read-only view; render(key) just returns the element for
+   Player Detail to append. */
 (function (global) {
-  let overlayEl = null;
-  let closeHandler = hide;
-
-  function ensureOverlay() {
-    if (overlayEl) return overlayEl;
-    overlayEl = document.createElement('div');
-    overlayEl.className = 'detail-overlay';
-    overlayEl.addEventListener('click', (e) => {
-      if (e.target === overlayEl) closeHandler();
-    });
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') closeHandler();
-    });
-    document.body.appendChild(overlayEl);
-    return overlayEl;
-  }
-
-  function hide() {
-    if (overlayEl) overlayEl.classList.remove('open');
-  }
-
   // Age/Position are dropped — shown elsewhere already (Data List, the
   // position badge), not wanted a third time here. Team is kept, but
   // pushed to the bottom of the list (see reorderColumnsForDisplay).
@@ -201,27 +179,11 @@
     return block;
   }
 
-  function open(key, displayName) {
-    const overlay = ensureOverlay();
-    closeHandler = () => hide();
-
-    overlay.innerHTML = '';
-    const sheet = document.createElement('div');
-    sheet.className = 'detail-sheet season-stats-sheet';
-
-    const header = document.createElement('div');
-    header.className = 'detail-header';
-    const titleEl = document.createElement('h2');
-    titleEl.className = 'detail-name';
-    titleEl.textContent = displayName ? displayName + ' — Season Stats' : 'Season Stats';
-    const closeBtn = document.createElement('button');
-    closeBtn.className = 'btn-link detail-close';
-    closeBtn.textContent = '✕';
-    closeBtn.setAttribute('aria-label', 'Close');
-    closeBtn.addEventListener('click', () => closeHandler());
-    header.appendChild(titleEl);
-    header.appendChild(closeBtn);
-    sheet.appendChild(header);
+  // Returns a container with one block per uploaded season for this
+  // player (or a hint if nothing's been uploaded at all).
+  function render(key) {
+    const wrap = document.createElement('div');
+    wrap.className = 'detail-season-stats';
 
     // Fixed 3 slots, most-recent-first — index i+1 is always exactly one
     // year older than index i, by construction, even if that older slot
@@ -233,20 +195,18 @@
       const empty = document.createElement('p');
       empty.className = 'empty-hint';
       empty.textContent = 'No season stats uploaded yet — add them under Season Stats in the Sources tab.';
-      sheet.appendChild(empty);
-    } else {
-      allSlots.forEach((slot, i) => {
-        if (!slot.players || slot.players.length === 0) return;
-        const playerEntry = slot.players.find((p) => p.key === key) || null;
-        const olderSlot = allSlots[i + 1] || null;
-        const olderEntry = olderSlot ? (olderSlot.players.find((p) => p.key === key) || null) : null;
-        sheet.appendChild(seasonBlock(slot, playerEntry, olderEntry));
-      });
+      wrap.appendChild(empty);
+      return wrap;
     }
-
-    overlay.appendChild(sheet);
-    overlay.classList.add('open');
+    allSlots.forEach((slot, i) => {
+      if (!slot.players || slot.players.length === 0) return;
+      const playerEntry = slot.players.find((p) => p.key === key) || null;
+      const olderSlot = allSlots[i + 1] || null;
+      const olderEntry = olderSlot ? (olderSlot.players.find((p) => p.key === key) || null) : null;
+      wrap.appendChild(seasonBlock(slot, playerEntry, olderEntry));
+    });
+    return wrap;
   }
 
-  global.SeasonStatsOverlay = { open };
+  global.SeasonStatsView = { render };
 })(window);

@@ -160,7 +160,7 @@
   // number) and 'name_display' (used as the row key, not a stat) are
   // dropped from the returned columns, along with age/position (shown
   // elsewhere already — Data List, the position badge — not wanted here).
-  // Team is kept — the Show Data overlay pushes it to the bottom of the
+  // Team is kept — Player Detail's season stats push it to the bottom of the
   // list, and it also feeds Player Detail's 🔁 team-change indicator.
   // A player traded mid-season appears as multiple rows (one per team) plus
   // one combined-season row whose team is "2TM"/"3TM"/etc. — that combined

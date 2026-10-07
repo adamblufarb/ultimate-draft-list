@@ -1,4 +1,4 @@
-/* Tab 4 — My Team: the roster of players marked "Drafted by me", in pick
+/* Tab 4 — My Team: the roster of players marked "Drafted By Me", in pick
    order, with a quick position-count breakdown at the top. Player cards
    look like the other lists': combined rank average (default source
    weights), name, position badge, and tag emoji. */
@@ -70,7 +70,7 @@
     if (App.state.myTeamKeys.length === 0) {
       const empty = document.createElement('p');
       empty.className = 'empty-hint';
-      empty.textContent = 'No players yet. Open a player\'s detail view and hit "Drafted by me" to add them here.';
+      empty.textContent = 'No players yet. Open a player\'s detail view and hit "Drafted By Me" to add them here.';
       container.appendChild(empty);
       return;
     }

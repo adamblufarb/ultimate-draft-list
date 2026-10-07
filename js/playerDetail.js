@@ -22,8 +22,9 @@
    the backdrop, Escape, or an action button) is reported back to whichever
    tab opened it, via the optional onWeightsChange callback, so the tab's
    own filter and order pick up the change too. Below the source squares,
-   "Show Data" opens the Season Stats overlay (js/seasonStatsOverlay.js)
-   for this player. Opened by tapping a player row in Draft List, My Team,
+   the "Mark Drafted"/"Drafted By Me" buttons sit, and below those the
+   player's Season Stats (js/seasonStatsView.js) run straight down the
+   scroll — no button. Opened by tapping a player row in Draft List, My Team,
    or Draft Board. */
 (function (global) {
   let overlayEl = null;
@@ -379,12 +380,6 @@
     }
     sheet.appendChild(gridWrap);
 
-    const showDataBtn = document.createElement('button');
-    showDataBtn.className = 'btn btn-secondary detail-show-data-btn';
-    showDataBtn.textContent = 'Show Data';
-    showDataBtn.addEventListener('click', () => SeasonStatsOverlay.open(key, entry.displayName));
-    sheet.appendChild(showDataBtn);
-
     // Grouped in their own wrapper (its own tighter internal gap, matching
     // the source-squares grid's gap) so the outer sheet's wider gap only
     // applies above the group as a whole, not between these two buttons.
@@ -404,7 +399,7 @@
     const onMyTeam = App.isOnMyTeam(key);
     const myTeamBtn = document.createElement('button');
     myTeamBtn.className = 'detail-myteam-btn' + (onMyTeam ? ' is-on-team' : '');
-    myTeamBtn.textContent = onMyTeam ? 'Remove from My Team' : 'Drafted by me';
+    myTeamBtn.textContent = onMyTeam ? 'Remove From My Team' : 'Drafted By Me';
     myTeamBtn.addEventListener('click', () => {
       if (onMyTeam) App.removeFromMyTeam(key);
       else App.draftedByMe(key);
@@ -413,6 +408,9 @@
     draftActionsWrap.appendChild(myTeamBtn);
 
     sheet.appendChild(draftActionsWrap);
+
+    // Last seasons' stats, straight down the scroll — no button.
+    sheet.appendChild(SeasonStatsView.render(key));
 
     overlay.appendChild(sheet);
     overlay.classList.add('open');

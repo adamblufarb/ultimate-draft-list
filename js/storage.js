@@ -18,7 +18,7 @@
       // Fixed 3 slots (most-recent season first), each uploaded from an .xls
       // (HTML-format) per-game stats export. columns: [{ id, label }] in the
       // file's own order; players: [{ key, displayName, values: { [colId]: text } }].
-      // Never part of any ranking — shown only via Player Detail's "Show Data".
+      // Never part of any ranking — shown only at the bottom of Player Detail.
       seasonStats: [
         { label: '', fileName: '', columns: [], players: [] },
         { label: '', fileName: '', columns: [], players: [] },
