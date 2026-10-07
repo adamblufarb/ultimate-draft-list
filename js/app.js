@@ -279,6 +279,28 @@
     persist();
   }
 
+  // Notes tab: free-standing notes, newest first. upsertNote creates a new
+  // note (no id) or updates an existing one's text in place (id given); a
+  // brand-new note goes to the top, an edited one keeps its spot.
+  function upsertNote(text, id) {
+    const now = Date.now();
+    const existing = id && state.notes.find((n) => n.id === id);
+    if (existing) {
+      existing.text = text;
+      existing.updatedAt = now;
+    } else {
+      id = genId();
+      state.notes.unshift({ id, text, updatedAt: now });
+    }
+    persist();
+    return id;
+  }
+
+  function deleteNote(id) {
+    state.notes = state.notes.filter((n) => n.id !== id);
+    persist();
+  }
+
   // Fake Mode: a throwaway sandbox for practicing against scrambled data.
   // Entering takes a deep snapshot of the real state, then scrambles the
   // live state in place (so every tab's existing `App.state.x` reads just
@@ -410,6 +432,7 @@
     getHealthEmoji, getImprovementEmoji, getDeclineEmoji,
     getPlayerNote, setPlayerNote,
     upsertSavedSearch, deleteSavedSearch,
+    upsertNote, deleteNote,
     isFakeMode, enterFakeMode, exitFakeMode
   };
 })(window);

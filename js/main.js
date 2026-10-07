@@ -7,6 +7,7 @@
       draft: document.getElementById('panel-draft'),
       myteam: document.getElementById('panel-myteam'),
       drafted: document.getElementById('panel-drafted'),
+      notes: document.getElementById('panel-notes'),
       sources: document.getElementById('panel-sources')
     };
     const navButtons = document.querySelectorAll('.tab-btn');
@@ -16,6 +17,7 @@
     DraftTab.init(panels.draft);
     MyTeamTab.init(panels.myteam);
     DraftedPlayersTab.init(panels.drafted);
+    NotesTab.init(panels.notes);
     SourcesTab.init(panels.sources);
 
     // My Team, Draft Board, and Sources already stay in sync reactively

@@ -25,6 +25,7 @@
         { label: '', fileName: '', columns: [], players: [] }
       ],
       playerNotes: {}, // key -> free-text note, set from Player Detail
+      notes: [],        // [{ id, text, updatedAt }] — free-standing notes from the Notes tab, newest first
       savedSearches: [] // [{ id, title, fieldA, direction, fieldB, threshold }] — Smart Search's saved presets
     };
   }
