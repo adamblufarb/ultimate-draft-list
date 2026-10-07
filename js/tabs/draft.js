@@ -4,8 +4,8 @@
    list to the newly-filtered average (no Reset button).
    Drafted players are hidden but keep their place in the full order so
    un-drafting puts them back where they were. "Lock List" freezes the
-   order: filter changes still update every combined rank but no longer
-   reshuffle the list, and rows can't be dragged. Each position
+   order against filters: filter changes still update every combined rank
+   but no longer reshuffle the list (rows can still be dragged by hand). Each position
    chip also shows how many of the next N undrafted picks hold that
    position (N chosen from the pool-size dropdown), flagging scarcity in
    orange/red as that count runs low relative to N. Smart Search (its own
@@ -199,7 +199,7 @@
     }
 
     const listEl = document.createElement('div');
-    listEl.className = 'draft-list' + (App.state.listLocked ? ' is-locked' : '');
+    listEl.className = 'draft-list';
     listSection.appendChild(listEl);
 
     const combined = Ranking.combineFromIndex(index, sourceWeights);
@@ -210,7 +210,6 @@
       renderRow: (item, i) => renderRow(item, i, avgByKey, index),
       dividerEvery: 10,
       renderDivider: (count) => renderListDivider(count),
-      draggable: !App.state.listLocked,
       markers: nextPickMarkers(fullOrder, visibleItems),
       renderMarker: (label) => renderListDivider(label, true),
       onReorder: (newVisibleOrder) => {

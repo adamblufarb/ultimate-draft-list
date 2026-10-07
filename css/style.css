@@ -284,10 +284,6 @@ body {
   white-space: nowrap;
 }
 
-.draft-list.is-locked .drag-handle {
-  opacity: 0.3;
-}
-
 .team-filter-chip {
   min-width: 0;
 }
