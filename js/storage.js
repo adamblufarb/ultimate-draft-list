@@ -26,7 +26,7 @@
       ],
       playerNotes: {}, // key -> free-text note, set from Player Detail
       listLocked: false,     // Draft List's "Lock List" toggle — keeps the order fixed while filters change
-      showNextPick: false,   // Draft List's "Next Pick Indicator" toggle
+      showNextPick: false,   // Draft List's "Next Pick" toggle
       pickSlot: 3,           // your slot in the first round (1 = picks first)
       leagueSize: 10,        // teams in the league (snake draft)
       notes: [],        // [{ id, text, updatedAt }] — free-standing notes from the Notes tab, newest first

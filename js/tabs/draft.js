@@ -526,7 +526,7 @@
 
   function renderActionsRow() {
     const wrap = document.createElement('div');
-    wrap.className = 'source-toggles draft-actions-row list-actions-row';
+    wrap.className = 'source-toggles list-actions-row';
     const locked = !!App.state.listLocked;
     wrap.appendChild(renderToggleChip('Lock List', locked, () => {
       App.state.listLocked = !locked;
@@ -534,7 +534,7 @@
       render();
     }));
     const nextPickOn = !!App.state.showNextPick;
-    const nextPickChip = renderToggleChip('Next Pick Indicator', nextPickOn, () => {
+    const nextPickChip = renderToggleChip('Next Pick', nextPickOn, () => {
       App.state.showNextPick = !nextPickOn;
       App.persist();
       render();
