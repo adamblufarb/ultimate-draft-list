@@ -1246,6 +1246,12 @@ body {
   white-space: nowrap;
 }
 
+/* Blue "next pick" marker — same shape as the numeric dividers. */
+.list-divider-next-pick {
+  color: var(--accent);
+  font-weight: 700;
+}
+
 /* Desktop scale-up */
 
 @media (min-width: 720px) {

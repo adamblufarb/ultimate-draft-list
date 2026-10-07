@@ -25,6 +25,9 @@
         { label: '', fileName: '', columns: [], players: [] }
       ],
       playerNotes: {}, // key -> free-text note, set from Player Detail
+      showNextPick: false,   // Draft List's "Next Pick Indicator" toggle
+      pickSlot: 3,           // your slot in the first round (1 = picks first)
+      leagueSize: 10,        // teams in the league (snake draft)
       notes: [],        // [{ id, text, updatedAt }] — free-standing notes from the Notes tab, newest first
       savedSearches: [] // [{ id, title, fieldA, direction, fieldB, threshold }] — Smart Search's saved presets
     };

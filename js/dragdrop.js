@@ -27,13 +27,20 @@
     //   extra vertical space before the row they precede. Divider position
     //   is index-based, not item-based, so it never moves mid-drag — only
     //   the offset table (see _computeOffsets) needs to account for it.
-    constructor(container, { renderRow, onReorder, gap = 0, dividerEvery = 0, renderDivider }) {
+    // markerIndex / renderMarker(): optional — one extra divider placed
+    //   before row `markerIndex` (0 = above the first row), e.g. the blue
+    //   "next pick" marker. It takes the slot of (replaces) the numeric
+    //   divider if both land on the same index. Needs renderDivider too,
+    //   since it shares that divider's measured height.
+    constructor(container, { renderRow, onReorder, gap = 0, dividerEvery = 0, renderDivider, markerIndex = -1, renderMarker = null }) {
       this.container = container;
       this.renderRow = renderRow;
       this.onReorder = onReorder;
       this.gap = gap;
       this.dividerEvery = dividerEvery;
       this.renderDivider = renderDivider || null;
+      this.markerIndex = markerIndex;
+      this.renderMarker = renderMarker;
       this.items = [];
       this.rows = [];
       this.rowHeight = 0;
@@ -54,6 +61,12 @@
       return this.items.slice();
     }
 
+    _hasDividerAt(i) {
+      if (!this.renderDivider) return false;
+      if (this.renderMarker && i === this.markerIndex) return true;
+      return this.dividerEvery > 0 && i > 0 && i % this.dividerEvery === 0;
+    }
+
     // offsets[i] = top px for row i, accounting for any divider slots
     // inserted before it. Index-based and constant for the life of this
     // render pass — reordering which item sits at index i never changes
@@ -63,7 +76,7 @@
       const offsets = [];
       let cursor = 0;
       for (let i = 0; i < this.rows.length; i++) {
-        if (this.dividerEvery > 0 && i > 0 && i % this.dividerEvery === 0) {
+        if (this._hasDividerAt(i)) {
           cursor += this.dividerSlotHeight;
         }
         offsets[i] = cursor;
@@ -94,9 +107,9 @@
           this.slotHeight = this.rowHeight + this.gap;
         }
 
-        if (this.dividerEvery > 0 && this.renderDivider) {
+        if (this.renderDivider) {
           if (cachedDividerHeight === null) {
-            const probe = this.renderDivider(this.dividerEvery);
+            const probe = this.renderDivider(this.dividerEvery || 10);
             probe.style.position = 'absolute';
             probe.style.visibility = 'hidden';
             probe.style.left = '0';
@@ -116,10 +129,10 @@
           row.classList.toggle('row-alt', i % 2 === 1);
         });
 
-        if (this.dividerEvery > 0 && this.renderDivider) {
+        if (this.renderDivider) {
           for (let i = 0; i < this.rows.length; i++) {
-            if (i > 0 && i % this.dividerEvery === 0) {
-              const divider = this.renderDivider(i);
+            if (this._hasDividerAt(i)) {
+              const divider = (this.renderMarker && i === this.markerIndex) ? this.renderMarker() : this.renderDivider(i);
               divider.style.position = 'absolute';
               divider.style.left = '0';
               divider.style.right = '0';

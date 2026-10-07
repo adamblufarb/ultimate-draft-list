@@ -203,6 +203,8 @@
       renderRow: (item, i) => renderRow(item, i, avgByKey, index),
       dividerEvery: 10,
       renderDivider: (count) => renderListDivider(count),
+      markerIndex: nextPickMarkerIndex(fullOrder, visibleItems),
+      renderMarker: () => renderListDivider(nextPickNumber(), true),
       onReorder: (newVisibleOrder) => {
         App.state.draftOrder = mergeReorder(App.state.draftOrder, newVisibleOrder);
         App.persist();
@@ -211,11 +213,46 @@
     reorderable.setItems(visibleItems);
   }
 
-  function renderListDivider(count) {
+  function renderListDivider(count, isNextPick) {
     const el = document.createElement('div');
-    el.className = 'list-divider';
-    el.textContent = '— ' + count + ' —';
+    el.className = 'list-divider' + (isNextPick ? ' list-divider-next-pick' : '');
+    el.textContent = '— ' + (isNextPick ? 'Pick ' : '') + count + ' —';
     return el;
+  }
+
+  // Overall pick number of your next turn in a snake draft: odd rounds go
+  // slot 1..N, even rounds reverse. "Next" means the first of your picks
+  // that comes after however many players are already marked drafted.
+  function nextPickNumber() {
+    const size = App.state.leagueSize;
+    const slot = App.state.pickSlot;
+    const taken = (App.state.draftedKeys || []).length;
+    for (let round = 1; ; round++) {
+      const pos = round % 2 === 1 ? slot : size - slot + 1;
+      const pick = (round - 1) * size + pos;
+      if (pick > taken) return pick;
+    }
+  }
+
+  // Row index in the visible list the blue marker sits above, or -1 for
+  // none. The players still ahead of your pick are the next
+  // (pick - 1 - alreadyDrafted) undrafted ones in the full order, so the
+  // marker goes right after the last of those — even with filters on, it
+  // lands after however many of them are still showing. Nothing is shown
+  // when the toggle is off or when the marker would fall past the end.
+  function nextPickMarkerIndex(fullOrder, visibleItems) {
+    if (!App.state.showNextPick) return -1;
+    let ahead = nextPickNumber() - 1 - (App.state.draftedKeys || []).length;
+    let cutoff = 0; // number of fullOrder entries before the marker
+    while (cutoff < fullOrder.length && ahead > 0) {
+      if (!App.isDrafted(fullOrder[cutoff].key)) ahead -= 1;
+      cutoff += 1;
+    }
+    if (ahead > 0) return -1; // not enough players left to reach your pick
+    const before = new Set(fullOrder.slice(0, cutoff).map((item) => item.key));
+    let idx = 0;
+    while (idx < visibleItems.length && before.has(visibleItems[idx].key)) idx += 1;
+    return idx < visibleItems.length ? idx : -1;
   }
 
   function renderSearchBox() {
@@ -476,6 +513,14 @@
       smartSearchCriteria = null;
       App.setIncludeDrafted(!isActive);
     }));
+    const nextPickOn = !!App.state.showNextPick;
+    const nextPickChip = renderToggleChip('Next Pick Indicator', nextPickOn, () => {
+      App.state.showNextPick = !nextPickOn;
+      App.persist();
+      render();
+    });
+    nextPickChip.classList.add('toggle-next-pick');
+    wrap.appendChild(nextPickChip);
     return wrap;
   }
 
