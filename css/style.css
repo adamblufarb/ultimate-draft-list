@@ -1002,6 +1002,13 @@ body {
   margin-bottom: 8px;
 }
 
+.season-stats-block-fp {
+  margin: -4px 0 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--accent);
+}
+
 .season-stats-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;

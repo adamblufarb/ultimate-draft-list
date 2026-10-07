@@ -12,6 +12,8 @@
    (App.getImprovementEmoji/getDeclineEmoji), which needs a sustained
    2-year trend across all 3 seasons instead of just one (same categories
    and thresholds as there).
+   Under each season's title sits its average fantasy points per game,
+   under this league's scoring (FP_WEIGHTS).
    Team is pushed to the very bottom of each block, after everything else.
    Same overlay chrome as Player Detail/Smart Search (backdrop, slide-up
    sheet, close on backdrop tap/Escape/✕); purely a read-only view, so
@@ -63,6 +65,41 @@
   // than wherever the file's own order left it.
   const COMPANION_COLUMN_IDS = { ft_per_g: 'fta_per_g' };
 
+  // The league's fantasy-points scoring (per-game stat column id -> points
+  // per unit). Applied to a season's per-game averages, it gives the
+  // average fantasy points per game. Categories the league scores at 0 are
+  // left out; triple doubles (+3) aren't in Basketball-Reference's per-game
+  // export, so they can't be counted.
+  const FP_WEIGHTS = {
+    fg_per_g: 2,
+    fga_per_g: -1,
+    ft_per_g: 1,
+    fta_per_g: -0.5,
+    fg3_per_g: 0.5,
+    orb_per_g: 0.5,
+    trb_per_g: 1,
+    ast_per_g: 2,
+    stl_per_g: 4,
+    blk_per_g: 4,
+    tov_per_g: -2,
+    pts_per_g: 1
+  };
+
+  // Average fantasy points per game for one season row, or null when the
+  // file doesn't have every scored column (the number would be wrong, so
+  // show nothing rather than a misleading figure). A blank cell in a column
+  // the file does have counts as 0.
+  function averageFantasyPoints(columns, values) {
+    const ids = new Set(columns.map((c) => c.id));
+    let total = 0;
+    for (const id of Object.keys(FP_WEIGHTS)) {
+      if (!ids.has(id)) return null;
+      const n = parseFloat(values[id]);
+      if (!Number.isNaN(n)) total += n * FP_WEIGHTS[id];
+    }
+    return total;
+  }
+
   // Moves the main categories (plus each one's companion column, if any)
   // to right after MP, wherever they'd otherwise fall (Basketball-
   // Reference's own export puts most of them near the end, after every
@@ -110,6 +147,14 @@
       empty.textContent = 'No data';
       block.appendChild(empty);
       return block;
+    }
+
+    const fp = averageFantasyPoints(slot.columns, playerEntry.values);
+    if (fp !== null) {
+      const fpEl = document.createElement('div');
+      fpEl.className = 'season-stats-block-fp';
+      fpEl.textContent = 'Avg FP: ' + fp.toFixed(1);
+      block.appendChild(fpEl);
     }
 
     const grid = document.createElement('div');
