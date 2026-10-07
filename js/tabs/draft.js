@@ -203,8 +203,8 @@
       renderRow: (item, i) => renderRow(item, i, avgByKey, index),
       dividerEvery: 10,
       renderDivider: (count) => renderListDivider(count),
-      markerIndex: nextPickMarkerIndex(fullOrder, visibleItems),
-      renderMarker: () => renderListDivider(nextPickNumber(), true),
+      markers: nextPickMarkers(fullOrder, visibleItems),
+      renderMarker: (label) => renderListDivider(label, true),
       onReorder: (newVisibleOrder) => {
         App.state.draftOrder = mergeReorder(App.state.draftOrder, newVisibleOrder);
         App.persist();
@@ -220,39 +220,50 @@
     return el;
   }
 
-  // Overall pick number of your next turn in a snake draft: odd rounds go
-  // slot 1..N, even rounds reverse. "Next" means the first of your picks
-  // that comes after however many players are already marked drafted.
-  function nextPickNumber() {
+  // Overall pick numbers of your turns still to come in a snake draft: odd
+  // rounds go slot 1..N, even rounds reverse. "Still to come" means after
+  // however many players are already marked drafted. Stops once a pick
+  // is further out than there are players to draft.
+  function upcomingPicks(limit) {
     const size = App.state.leagueSize;
     const slot = App.state.pickSlot;
     const taken = (App.state.draftedKeys || []).length;
+    const picks = [];
     for (let round = 1; ; round++) {
       const pos = round % 2 === 1 ? slot : size - slot + 1;
       const pick = (round - 1) * size + pos;
-      if (pick > taken) return pick;
+      if (pick > limit) return picks;
+      if (pick > taken) picks.push(pick);
     }
   }
 
-  // Row index in the visible list the blue marker sits above, or -1 for
-  // none. The players still ahead of your pick are the next
-  // (pick - 1 - alreadyDrafted) undrafted ones in the full order, so the
+  // Map of visible-row index -> label for the blue pick markers, empty when
+  // the toggle is off. The players still ahead of a pick are the next
+  // (pick - 1 - alreadyDrafted) undrafted ones in the full order, so its
   // marker goes right after the last of those — even with filters on, it
-  // lands after however many of them are still showing. Nothing is shown
-  // when the toggle is off or when the marker would fall past the end.
-  function nextPickMarkerIndex(fullOrder, visibleItems) {
-    if (!App.state.showNextPick) return -1;
-    let ahead = nextPickNumber() - 1 - (App.state.draftedKeys || []).length;
-    let cutoff = 0; // number of fullOrder entries before the marker
-    while (cutoff < fullOrder.length && ahead > 0) {
-      if (!App.isDrafted(fullOrder[cutoff].key)) ahead -= 1;
-      cutoff += 1;
-    }
-    if (ahead > 0) return -1; // not enough players left to reach your pick
-    const before = new Set(fullOrder.slice(0, cutoff).map((item) => item.key));
-    let idx = 0;
-    while (idx < visibleItems.length && before.has(visibleItems[idx].key)) idx += 1;
-    return idx < visibleItems.length ? idx : -1;
+  // lands after however many of them are still showing. Picks that fall
+  // past the end of the list get no marker, and picks that land on the
+  // same row (only possible with filters) share one label: "Pick 18 · 23".
+  function nextPickMarkers(fullOrder, visibleItems) {
+    const markers = new Map();
+    if (!App.state.showNextPick) return markers;
+    const taken = (App.state.draftedKeys || []).length;
+    const picks = upcomingPicks(taken + fullOrder.length + 1);
+    let cutoff = 0;     // number of fullOrder entries before the marker
+    let undrafted = 0;  // undrafted players among those
+    let idx = 0;        // visible rows among those
+    picks.forEach((pick) => {
+      const ahead = pick - 1 - taken;
+      while (cutoff < fullOrder.length && undrafted < ahead) {
+        const item = fullOrder[cutoff];
+        if (!App.isDrafted(item.key)) undrafted += 1;
+        if (idx < visibleItems.length && visibleItems[idx].key === item.key) idx += 1;
+        cutoff += 1;
+      }
+      if (undrafted < ahead || idx >= visibleItems.length) return;
+      markers.set(idx, markers.has(idx) ? markers.get(idx) + ' · ' + pick : String(pick));
+    });
+    return markers;
   }
 
   function renderSearchBox() {

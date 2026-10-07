@@ -27,19 +27,20 @@
     //   extra vertical space before the row they precede. Divider position
     //   is index-based, not item-based, so it never moves mid-drag — only
     //   the offset table (see _computeOffsets) needs to account for it.
-    // markerIndex / renderMarker(): optional — one extra divider placed
-    //   before row `markerIndex` (0 = above the first row), e.g. the blue
-    //   "next pick" marker. It takes the slot of (replaces) the numeric
-    //   divider if both land on the same index. Needs renderDivider too,
-    //   since it shares that divider's measured height.
-    constructor(container, { renderRow, onReorder, gap = 0, dividerEvery = 0, renderDivider, markerIndex = -1, renderMarker = null }) {
+    // markers (Map of row index -> label) / renderMarker(label): optional —
+    //   extra dividers placed before the given rows (0 = above the first
+    //   row), e.g. the blue "pick" markers. A marker takes the slot of
+    //   (replaces) the numeric divider if both land on the same index.
+    //   Needs renderDivider too, since it shares that divider's measured
+    //   height.
+    constructor(container, { renderRow, onReorder, gap = 0, dividerEvery = 0, renderDivider, markers = null, renderMarker = null }) {
       this.container = container;
       this.renderRow = renderRow;
       this.onReorder = onReorder;
       this.gap = gap;
       this.dividerEvery = dividerEvery;
       this.renderDivider = renderDivider || null;
-      this.markerIndex = markerIndex;
+      this.markers = markers || new Map();
       this.renderMarker = renderMarker;
       this.items = [];
       this.rows = [];
@@ -63,7 +64,7 @@
 
     _hasDividerAt(i) {
       if (!this.renderDivider) return false;
-      if (this.renderMarker && i === this.markerIndex) return true;
+      if (this.renderMarker && this.markers.has(i)) return true;
       return this.dividerEvery > 0 && i > 0 && i % this.dividerEvery === 0;
     }
 
@@ -132,7 +133,7 @@
         if (this.renderDivider) {
           for (let i = 0; i < this.rows.length; i++) {
             if (this._hasDividerAt(i)) {
-              const divider = (this.renderMarker && i === this.markerIndex) ? this.renderMarker() : this.renderDivider(i);
+              const divider = (this.renderMarker && this.markers.has(i)) ? this.renderMarker(this.markers.get(i)) : this.renderDivider(i);
               divider.style.position = 'absolute';
               divider.style.left = '0';
               divider.style.right = '0';
