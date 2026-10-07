@@ -1207,41 +1207,7 @@ body {
   margin-top: 2px;
 }
 
-.my-team-list {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.my-team-row {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 10px 12px;
-  cursor: pointer;
-}
-
-.my-team-row.row-alt {
-  background: var(--row-alt);
-}
-
-.my-team-name {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 15px;
-  font-weight: 600;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.my-team-positions,
+/* Shared small position badge (Draft List, Draft Board, My Team). */
 .player-positions {
   flex-shrink: 0;
   font-size: 11px;
