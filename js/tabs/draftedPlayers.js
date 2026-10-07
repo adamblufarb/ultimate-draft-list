@@ -2,23 +2,16 @@
    "Mark Drafted" or "Drafted by me"), in the order they were drafted.
    That order is fixed — it's a record of what happened during the draft,
    not something you reorder — so this list has no drag handle, unlike
-   Draft List. It does carry the same "List filters" (source toggle chips,
-   with the same weighted-cycling behavior — see js/sourceWeights.js) as
-   the other lists, but here they only change which sources feed the
-   combined rank average shown next to each name; they never change the
-   order players appear in. */
+   Draft List, and no filters either: the combined rank next to each name
+   always uses the default source weights. Each entry shows its overall
+   pick number to the left of the card, picks you made yourself (My Team)
+   are blue, and a "Round N" divider (a round being one pick per team —
+   App.state.leagueSize picks) starts each round. */
 (function (global) {
   let container;
-  // { [sourceId]: 0 | 1 | 1.5 | 2.5 } — see js/sourceWeights.js.
-  let sourceWeights = {};
-  // Iso mode ({ ids, saved }), set by long-pressing chips — see
-  // js/sourceWeights.js.
-  let iso = null;
-
   function init(rootEl) {
     container = rootEl;
-    sourceWeights = SourceWeights.defaultWeights(App.state.sources);
-    App.on('sources-changed', onSourcesChanged);
+    App.on('sources-changed', render);
     App.on('drafted-changed', render);
     // Same reasoning as Draft List/Rankings: tagging a player from the
     // still-open player detail view fires this repeatedly in quick
@@ -28,14 +21,7 @@
       if (payload && payload.key) updateRowTags(payload.key);
       else render();
     });
-    App.on('remote-state-loaded', onSourcesChanged);
-    render();
-  }
-
-  function onSourcesChanged() {
-    const r = SourceWeights.reconcileIso(sourceWeights, iso, App.state.sources);
-    sourceWeights = r.weights;
-    iso = r.iso;
+    App.on('remote-state-loaded', render);
     render();
   }
 
@@ -51,40 +37,11 @@
       return;
     }
 
-    container.appendChild(renderSourceToggles());
-
     const index = Ranking.buildIndex(App.state.sources);
-    const combined = Ranking.combineFromIndex(index, sourceWeights);
+    const combined = Ranking.combineFromIndex(index, SourceWeights.defaultWeights(App.state.sources));
     const avgByKey = new Map(combined.map((row) => [row.key, row.avg]));
 
     container.appendChild(renderList(draftedKeys, avgByKey, index));
-  }
-
-  // Boostable ("Average"-type) sources cycle disabled -> 1x -> 1.5x -> 2.5x -> back
-  // to disabled on tap; everything else just toggles 0/1 like before.
-  function renderSourceToggles() {
-    const wrap = document.createElement('div');
-    wrap.className = 'source-toggles';
-    App.state.sources.forEach((source) => {
-      const weight = SourceWeights.getWeight(sourceWeights, source.id);
-      const isolated = SourceWeights.isIso(iso, source.id);
-      const btn = document.createElement('button');
-      btn.type = 'button';
-      btn.className = 'toggle-label' + (weight > 0 ? ' is-active' : '') + SourceWeights.boostClass(weight, 'is-boosted') + (isolated ? ' is-iso' : '');
-      btn.textContent = (source.name || 'Untitled source') + (isolated ? ' · iso' : SourceWeights.boostLabel(weight));
-      const apply = (next) => {
-        sourceWeights = next.weights;
-        iso = next.iso;
-        render();
-      };
-      SourceWeights.attachPress(
-        btn,
-        () => apply(SourceWeights.tap({ weights: sourceWeights, iso }, source)),
-        () => apply(SourceWeights.longPress({ weights: sourceWeights, iso }, source))
-      );
-      wrap.appendChild(btn);
-    });
-    return wrap;
   }
 
   function updateRowTags(key) {
@@ -114,10 +71,10 @@
     return el;
   }
 
-  function renderListDivider(count) {
+  function renderRoundDivider(round) {
     const el = document.createElement('div');
     el.className = 'list-divider';
-    el.textContent = '— ' + count + ' —';
+    el.textContent = '— Round ' + round + ' —';
     return el;
   }
 
@@ -125,18 +82,16 @@
     const wrap = document.createElement('div');
     wrap.className = 'rankings-list';
 
+    const roundSize = App.state.leagueSize;
     draftedKeys.forEach((key, i) => {
+      if (i % roundSize === 0) wrap.appendChild(renderRoundDivider(i / roundSize + 1));
       const entry = index.get(key);
       const avg = avgByKey.get(key);
 
       const item = document.createElement('div');
-      item.className = 'rank-row' + (i % 2 === 1 ? ' row-alt' : '');
+      item.className = 'rank-row' + (i % 2 === 1 ? ' row-alt' : '') + (App.isOnMyTeam(key) ? ' is-mine' : '');
       item.dataset.key = key;
-      item.addEventListener('click', () => PlayerDetail.open(key, sourceWeights, (newWeights, newIso) => {
-        sourceWeights = newWeights;
-        iso = newIso;
-        render();
-      }, iso));
+      item.addEventListener('click', () => PlayerDetail.open(key, SourceWeights.defaultWeights(App.state.sources), () => {}, null));
 
       const rankBadge = document.createElement('div');
       rankBadge.className = 'rank-badge';
@@ -159,12 +114,16 @@
       item.appendChild(nameEl);
       const tagsBadge = playerTagsBadge(key);
       if (tagsBadge) item.appendChild(tagsBadge);
-      wrap.appendChild(item);
 
-      const position = i + 1;
-      if (position % 10 === 0 && position < draftedKeys.length) {
-        wrap.appendChild(renderListDivider(position));
-      }
+      // Overall pick number sits to the left, outside the card.
+      const pickRow = document.createElement('div');
+      pickRow.className = 'board-entry';
+      const pickNum = document.createElement('div');
+      pickNum.className = 'board-pick-number';
+      pickNum.textContent = String(i + 1);
+      pickRow.appendChild(pickNum);
+      pickRow.appendChild(item);
+      wrap.appendChild(pickRow);
     });
 
     return wrap;
