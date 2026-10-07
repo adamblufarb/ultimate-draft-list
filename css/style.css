@@ -1001,8 +1001,8 @@ body {
 
 .season-stats-block-fp {
   display: flex;
-  flex-wrap: wrap;
-  gap: 2px 16px;
+  flex-direction: column;
+  gap: 2px;
   margin: -4px 0 8px;
   font-size: 13px;
   font-weight: 600;
