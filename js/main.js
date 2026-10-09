@@ -30,6 +30,7 @@
     // its list measures row height via getBoundingClientRect(), which reads
     // 0 while the panel is display:none.
     function showTab(name) {
+      UiState.set('tab', name);
       Object.entries(panels).forEach(([key, el]) => {
         el.classList.toggle('active', key === name);
       });
@@ -43,7 +44,8 @@
       btn.addEventListener('click', () => showTab(btn.dataset.tab));
     });
 
-    showTab('draft');
+    const savedTab = UiState.get('tab', 'draft');
+    showTab(panels[savedTab] ? savedTab : 'draft');
 
     // Hand GithubSync a way to read and replace the live state (in place —
     // every tab holds a reference to App.state), then, if this device has a

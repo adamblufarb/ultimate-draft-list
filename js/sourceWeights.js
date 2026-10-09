@@ -49,13 +49,16 @@
   }
 
   // Drops ids for sources that no longer exist, and adds any newly-added
-  // source at its default weight — same reconciliation every tab's
-  // onSourcesChanged already did inline when this was a plain id array.
+  // source (one with no entry at all) at its default weight. A source the
+  // user turned off keeps an explicit 0 entry — so it's never mistaken for
+  // a new source and quietly switched back on when this runs again (it runs
+  // every time sync finishes loading, which on a slow phone connection is
+  // seconds after the user has started setting filters).
   function reconcileWeights(weights, sources) {
     const next = {};
     const byId = new Map(sources.map((s) => [s.id, s]));
     Object.keys(weights).forEach((id) => {
-      if (byId.has(id) && weights[id]) next[id] = weights[id];
+      if (byId.has(id)) next[id] = weights[id] || 0;
     });
     sources.forEach((s) => {
       if (!(s.id in next) && !DEFAULT_OFF_SCORE_TYPES.has(s.scoreType)) {
@@ -78,7 +81,7 @@
     } else if (isBoostable(source) && current < BOOST_STEPS[BOOST_STEPS.length - 1]) {
       next[source.id] = BOOST_STEPS[BOOST_STEPS.indexOf(current) + 1];
     } else {
-      delete next[source.id];
+      next[source.id] = 0; // explicit off, not absent — see reconcileWeights
     }
     return next;
   }

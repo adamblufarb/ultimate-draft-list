@@ -50,9 +50,30 @@
   // { fieldA, direction, fieldB, threshold } from Smart Search, or null.
   let smartSearchCriteria = null;
 
+  // Filters live only in memory, but a phone browser can discard and reload
+  // the page whenever it's in the background — so they're mirrored into
+  // UiState (this device only, never synced) on every render and restored
+  // here. reconcileFilters() then drops anything that no longer exists.
+  function saveFilters() {
+    UiState.set('draftFilters', { sourceWeights, iso, selectedPositions, selectedTeams, poolSize, smartSearchCriteria });
+  }
+
+  function restoreFilters() {
+    const saved = UiState.get('draftFilters', null);
+    if (!saved) return;
+    if (saved.sourceWeights && typeof saved.sourceWeights === 'object') sourceWeights = saved.sourceWeights;
+    iso = saved.iso && Array.isArray(saved.iso.ids) && saved.iso.saved ? saved.iso : null;
+    if (Array.isArray(saved.selectedPositions)) selectedPositions = saved.selectedPositions.filter((p) => POSITIONS.includes(p));
+    if (Array.isArray(saved.selectedTeams)) selectedTeams = saved.selectedTeams.filter((t) => typeof t === 'string');
+    if (POOL_SIZE_OPTIONS.includes(saved.poolSize)) poolSize = saved.poolSize;
+    smartSearchCriteria = saved.smartSearchCriteria && typeof saved.smartSearchCriteria === 'object' ? saved.smartSearchCriteria : null;
+  }
+
   function init(rootEl) {
     container = rootEl;
     sourceWeights = SourceWeights.defaultWeights(App.state.sources);
+    restoreFilters();
+    reconcileFilters();
     App.on('sources-changed', onSourcesChanged);
     App.on('drafted-changed', () => { if (isVisible()) render(); });
     // Tagging a player from the still-open player detail view fires this
@@ -133,6 +154,7 @@
 
   function render() {
     clearTimeout(searchDebounceTimer);
+    saveFilters();
     container.innerHTML = '';
 
     if (App.state.sources.length === 0 && (!App.state.draftOrder || App.state.draftOrder.length === 0)) {
