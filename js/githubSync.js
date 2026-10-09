@@ -329,7 +329,7 @@
         merged[k] = localChanged ? l : r; // both changed: this device's edit wins
       }
     });
-    return merged;
+    return stripJunk(merged);
   }
 
   function countDraft(state) {
@@ -348,6 +348,12 @@
     const statsN = (o) => ((o && o.seasonStats) || []).reduce((t, x) => t + ((x && x.players) || []).length, 0);
     if (statsN(remote) > 0 && statsN(state) === 0) return true;
     return false;
+  }
+
+  // Removes GitHub's own response fields from a state object, in place.
+  function stripJunk(obj) {
+    Constants.GITHUB_RESPONSE_KEYS.forEach((k) => { delete obj[k]; });
+    return obj;
   }
 
   function snapshotBackup(reason) {
@@ -469,11 +475,25 @@
         return;
       }
 
+      let repairedOnce = false;
       for (let attempt = 0; attempt < MAX_PUSH_ATTEMPTS; attempt++) {
         if (adapter.isFake()) { setStatus('idle'); return; } // Fake Mode data never leaves the device
 
-        const state = adapter.getState();
+        const state = stripJunk(adapter.getState());
         if (lastRemoteState && wouldWipe(lastRemoteState, state)) {
+          // This device holds far less than GitHub. Don't just stop: pull
+          // GitHub's copy and merge it in (union, so nothing on either side
+          // is lost) — once. If it still looks like a wipe, give up loudly.
+          if (!repairedOnce) {
+            repairedOnce = true;
+            const remote = await pullRemote();
+            if (!remote || remote.missing) return;
+            snapshotBackup('before-repair');
+            adapter.replaceState(merge3(null, remote.state, state));
+            saveBase(remote.state, remote.sha);
+            setStatus('syncing');
+            continue;
+          }
           setStatus('error', 'Sync paused: saving now would erase your drafted / My Team players or other data on GitHub. Nothing was sent. Reload this page, or use "Recover Draft Data" in Sources.');
           return;
         }
@@ -586,6 +606,6 @@
   global.GithubSync = {
     on, getToken, setToken, isConnected, getStatus, setAdapter,
     syncOnLoad, scheduleSync, pushNow, isDirty, flushPending,
-    listHistory, fetchVersion, merge3, wouldWipe, buildBase, validateState
+    listHistory, fetchVersion, merge3, wouldWipe, buildBase, validateState, stripJunk
   };
 })(window);

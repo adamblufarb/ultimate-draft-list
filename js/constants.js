@@ -1,5 +1,9 @@
 /* Shared config used across tabs. */
 (function (global) {
+  // Field names GitHub's Contents API uses to describe a file. They are never
+  // part of the app's state — if they turn up in it, a metadata reply was once
+  // mistaken for the data (the 2026-10-09 incident) and they get stripped.
+  const GITHUB_RESPONSE_KEYS = ['_links', 'content', 'download_url', 'encoding', 'git_url', 'html_url', 'name', 'path', 'sha', 'size', 'type', 'url'];
   const MAX_SOURCES = 12;
   // Season Stats upload slots (most recent season first). Health/trend emoji
   // only ever look at the first HEALTH_TREND_SEASONS of them; older slots are
@@ -32,5 +36,5 @@
     return Number.isInteger(score) ? String(score) : score.toFixed(1);
   }
 
-  global.Constants = { MAX_SOURCES, SEASON_SLOTS, HEALTH_TREND_SEASONS, SCORE_TYPES, scoreTypeLabel, formatScore };
+  global.Constants = { GITHUB_RESPONSE_KEYS, MAX_SOURCES, SEASON_SLOTS, HEALTH_TREND_SEASONS, SCORE_TYPES, scoreTypeLabel, formatScore };
 })(window);

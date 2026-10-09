@@ -36,6 +36,7 @@
   // Run on everything that becomes the live state — local load and every
   // state pulled from or merged with GitHub.
   function normalize(state) {
+    Constants.GITHUB_RESPONSE_KEYS.forEach((k) => { delete state[k]; });
     if (!Array.isArray(state.seasonStats)) state.seasonStats = [];
     while (state.seasonStats.length < Constants.SEASON_SLOTS) {
       const label = state.seasonStats.length === 3 ? '22-23' : '';
