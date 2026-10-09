@@ -155,7 +155,8 @@
   // Parses an uploaded season-stats file — an HTML table (the format
   // Basketball-Reference's "Export as Excel" actually produces, despite the
   // .xls extension), keyed by each <th>/<td>'s data-stat attribute rather
-  // than column position, so it doesn't matter which stats a given export
+  // than column position (or, for the plain-header flavor older seasons'
+  // pages export, by header label — see readPlainTable), so it doesn't matter which stats a given export
   // includes or what order they're in. 'ranker' (the table's own row
   // number) and 'name_display' (used as the row key, not a stat) are
   // dropped from the returned columns, along with age/position (shown
@@ -166,6 +167,42 @@
   // one combined-season row whose team is "2TM"/"3TM"/etc. — that combined
   // row is preferred when present, since it's the player's real full-season
   // line.
+  // Some Basketball-Reference exports (older seasons' pages) have plain
+  // header cells — "Player", "G", "3P%" — and plain <td>s, with none of the
+  // data-stat attributes the newer pages carry. This maps those header
+  // labels onto the same column ids the newer exports use, so a season
+  // uploaded either way looks and behaves identically everywhere else (the
+  // Avg/Tot fantasy points, the health/trend emoji, the stat arrows...).
+  const HEADER_LABEL_IDS = {
+    'Rk': 'ranker', 'Player': 'name_display', 'Age': 'age', 'Team': 'team_name_abbr', 'Tm': 'team_name_abbr',
+    'Pos': 'pos', 'G': 'games', 'GS': 'games_started', 'MP': 'mp_per_g', 'FG': 'fg_per_g', 'FGA': 'fga_per_g',
+    'FG%': 'fg_pct', '3P': 'fg3_per_g', '3PA': 'fg3a_per_g', '3P%': 'fg3_pct', '2P': 'fg2_per_g',
+    '2PA': 'fg2a_per_g', '2P%': 'fg2_pct', 'eFG%': 'efg_pct', 'FT': 'ft_per_g', 'FTA': 'fta_per_g',
+    'FT%': 'ft_pct', 'ORB': 'orb_per_g', 'DRB': 'drb_per_g', 'TRB': 'trb_per_g', 'AST': 'ast_per_g',
+    'STL': 'stl_per_g', 'BLK': 'blk_per_g', 'TOV': 'tov_per_g', 'PF': 'pf_per_g', 'PTS': 'pts_per_g',
+    'Awards': 'awards'
+  };
+
+  // The plain-header flavor: returns { headers: [{ id, label }], rows: [{ [id]: text }] } or null if
+  // the table doesn't look like one (no recognisable Player column).
+  function readPlainTable(table) {
+    const headerCells = Array.from(table.querySelectorAll('thead th, thead td'));
+    const headers = headerCells.map((th) => {
+      const label = th.textContent.trim();
+      return { id: HEADER_LABEL_IDS[label] || ('col_' + label.toLowerCase().replace(/[^a-z0-9]+/g, '_')), label };
+    });
+    if (!headers.some((h) => h.id === 'name_display')) return null;
+    const rows = [];
+    Array.from(table.querySelectorAll('tbody tr')).forEach((tr) => {
+      const cells = Array.from(tr.querySelectorAll('td, th'));
+      const row = {};
+      headers.forEach((h, i) => { row[h.id] = cells[i] ? cells[i].textContent.trim() : ''; });
+      if (row.name_display === 'Player' || row.ranker === 'Rk') return; // repeated header row
+      rows.push(row);
+    });
+    return { headers, rows };
+  }
+
   function parseSeasonStatsHtml(rawHtml) {
     const warnings = [];
     let doc;
@@ -180,22 +217,44 @@
     }
 
     const SKIP_COLUMNS = new Set(['ranker', 'name_display', 'age', 'pos']);
-    const columns = Array.from(table.querySelectorAll('thead th[data-stat]'))
-      .filter((th) => !SKIP_COLUMNS.has(th.getAttribute('data-stat')))
-      .map((th) => ({
-        id: th.getAttribute('data-stat'),
-        label: th.getAttribute('aria-label') || th.textContent.trim()
-      }));
+    const hasDataStat = !!table.querySelector('thead th[data-stat]');
+    const plain = hasDataStat ? null : readPlainTable(table);
+    if (!hasDataStat && !plain) {
+      return { columns: [], players: [], warnings: ['No player rows found in this file.'] };
+    }
+
+    let columns;
+    let rowObjects;
+    if (plain) {
+      // An Awards column that's nothing but "x" (this export's placeholder)
+      // carries no information — drop it rather than show "Awards: x".
+      const awardsEmpty = plain.rows.every((r) => !r.awards || r.awards === 'x');
+      columns = plain.headers
+        .filter((h) => !SKIP_COLUMNS.has(h.id) && !(h.id === 'awards' && awardsEmpty))
+        .map((h) => ({ id: h.id, label: h.label }));
+      rowObjects = plain.rows;
+    } else {
+      columns = Array.from(table.querySelectorAll('thead th[data-stat]'))
+        .filter((th) => !SKIP_COLUMNS.has(th.getAttribute('data-stat')))
+        .map((th) => ({
+          id: th.getAttribute('data-stat'),
+          label: th.getAttribute('aria-label') || th.textContent.trim()
+        }));
+      rowObjects = [];
+      Array.from(table.querySelectorAll('tbody tr')).forEach((tr) => {
+        // Some exports repeat the header row every N rows for readability —
+        // never real player data.
+        if (tr.classList.contains('thead')) return;
+        const rowValues = {};
+        Array.from(tr.querySelectorAll('th[data-stat], td[data-stat]')).forEach((cell) => {
+          rowValues[cell.getAttribute('data-stat')] = cell.textContent.trim();
+        });
+        rowObjects.push(rowValues);
+      });
+    }
 
     const byName = new Map();
-    Array.from(table.querySelectorAll('tbody tr')).forEach((tr) => {
-      // Some exports repeat the header row every N rows for readability —
-      // never real player data.
-      if (tr.classList.contains('thead')) return;
-      const rowValues = {};
-      Array.from(tr.querySelectorAll('th[data-stat], td[data-stat]')).forEach((cell) => {
-        rowValues[cell.getAttribute('data-stat')] = cell.textContent.trim();
-      });
+    rowObjects.forEach((rowValues) => {
       const name = rowValues.name_display;
       if (!name) return;
       if (!byName.has(name)) byName.set(name, []);
@@ -206,7 +265,7 @@
     byName.forEach((rows, name) => {
       let chosen = rows[0];
       if (rows.length > 1) {
-        const combinedRow = rows.find((r) => /^\d+TM$/.test((r.team_name_abbr || '').trim()));
+        const combinedRow = rows.find((r) => /^(\d+TM|TOT)$/.test((r.team_name_abbr || '').trim()));
         if (combinedRow) chosen = combinedRow;
       }
       const values = {};
