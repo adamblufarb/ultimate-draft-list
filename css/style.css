@@ -982,6 +982,38 @@ body {
   color: var(--text-dim);
 }
 
+.recovery-heading {
+  margin-top: 8px;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.recovery-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.recovery-row-text {
+  flex: 1;
+  min-width: 0;
+  font-size: 13px;
+}
+
+.recovery-row .btn {
+  flex: 0 0 auto;
+  padding: 8px 14px;
+  min-height: 0;
+}
+
+.recovery-history {
+  max-height: 320px;
+  overflow-y: auto;
+}
+
 .detail-season-stats {
   display: flex;
   flex-direction: column;

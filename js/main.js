@@ -45,25 +45,25 @@
 
     showTab('draft');
 
-    // If this device has a GitHub sync token, pull the latest saved state
-    // in the background and patch it in once it arrives — renders local
-    // data immediately rather than blocking the first paint on a network
-    // round trip. But if the *previous* session ended before its own last
-    // change was confirmed pushed (GithubSync.isDirty() — e.g. a big
-    // upload followed by a hard refresh before the debounce+network round
-    // trip finished), never let this fetch overwrite it: push what's
-    // already loaded from localStorage first instead.
-    if (GithubSync.isConnected()) {
-      if (GithubSync.isDirty()) {
-        GithubSync.pushNow(App.state);
-      } else {
-        GithubSync.fetchRemote().then((remote) => {
-          if (!remote) return;
-          Object.assign(App.state, remote);
-          Storage.save(App.state);
-          App.emit('remote-state-loaded');
-        });
+    // Hand GithubSync a way to read and replace the live state (in place —
+    // every tab holds a reference to App.state), then, if this device has a
+    // GitHub sync token, pull the latest saved state in the background and
+    // merge it in once it arrives — local data renders immediately rather
+    // than blocking the first paint on a network round trip. Unsynced local
+    // changes are merged with it, never pushed over it, and nothing is
+    // pushed until this has run (see js/githubSync.js).
+    GithubSync.setAdapter({
+      getState: () => App.state,
+      isFake: () => App.isFakeMode(),
+      replaceState: (next) => {
+        const live = App.state;
+        const incoming = Object.assign(Storage.defaultState(), next);
+        Object.keys(live).forEach((k) => { delete live[k]; });
+        Object.assign(live, incoming);
+        Storage.save(live);
+        App.emit('remote-state-loaded');
       }
-    }
+    });
+    if (GithubSync.isConnected()) GithubSync.syncOnLoad();
   });
 })();

@@ -66,6 +66,7 @@
 
     container.appendChild(dataListEditing ? renderDataListEditCard() : renderDataListViewCard());
     container.appendChild(renderSeasonStatsSection());
+    container.appendChild(renderRecoveryCard());
     container.appendChild(renderFakeModeCard());
   }
 
@@ -159,22 +160,9 @@
         if (!token) return;
         GithubSync.setToken(token);
         render();
-        // Same guard as the app-load path in main.js: if a leftover dirty
-        // flag says the local state here was never confirmed pushed under
-        // a previous token, push it instead of risking overwriting it with
-        // whatever's already on GitHub.
-        if (GithubSync.isDirty()) {
-          await GithubSync.pushNow(App.state);
-        } else {
-          const remote = await GithubSync.fetchRemote();
-          if (remote) {
-            Object.assign(App.state, remote);
-            Storage.save(App.state);
-            App.emit('remote-state-loaded');
-          } else {
-            App.persist();
-          }
-        }
+        // Same safe path as app load (js/githubSync.js): pull first, merge
+        // anything unsynced on this device in, never overwrite.
+        await GithubSync.syncOnLoad();
         render();
       });
 
@@ -185,6 +173,138 @@
     }
 
     return card;
+  }
+
+  // Recover Draft Data: restore drafted / My Team / tags from a local backup
+  // (automatic snapshots kept on this device) or from any earlier version
+  // GitHub has saved. See js/backups.js and js/githubSync.js.
+  function describeDraftData(data) {
+    const list = (k) => (data[k] || []).length;
+    return `${list('draftedKeys')} drafted · ${list('myTeamKeys')} on My Team · ${list('targetKeys')} targets`;
+  }
+
+  function formatWhen(ms) {
+    return new Date(ms).toLocaleString([], { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+  }
+
+  function renderRecoveryCard() {
+    const card = document.createElement('div');
+    card.className = 'source-card recovery-card';
+
+    const title = document.createElement('div');
+    title.className = 'source-view-name';
+    title.textContent = 'Recover Draft Data';
+    card.appendChild(title);
+
+    const desc = document.createElement('p');
+    desc.className = 'source-view-meta';
+    desc.textContent = 'Brings back who was drafted, your My Team picks, and your tags (targets, breakout, sleeper, do not draft) from an earlier save. Nothing else changes, and what is there now is backed up first.';
+    card.appendChild(desc);
+
+    const restore = (data, label) => {
+      if (!confirm(`Restore ${describeDraftData(data)} from ${label}? This replaces your current drafted, My Team, and tag lists (they're backed up first).`)) return;
+      App.restoreDraftData(data);
+      render();
+    };
+
+    const localTitle = document.createElement('div');
+    localTitle.className = 'recovery-heading';
+    localTitle.textContent = 'Saved on this device';
+    card.appendChild(localTitle);
+
+    const backups = Backups.list();
+    if (backups.length === 0) {
+      const none = document.createElement('p');
+      none.className = 'source-view-meta';
+      none.textContent = 'No backups yet — they are taken automatically as you draft.';
+      card.appendChild(none);
+    }
+    backups.slice(0, 15).forEach((b) => {
+      const row = document.createElement('div');
+      row.className = 'recovery-row';
+      const text = document.createElement('div');
+      text.className = 'recovery-row-text';
+      text.textContent = `${formatWhen(b.t)} — ${describeDraftData(b.data)}`;
+      const btn = document.createElement('button');
+      btn.className = 'btn btn-secondary';
+      btn.textContent = 'Restore';
+      btn.addEventListener('click', () => restore(b.data, formatWhen(b.t)));
+      row.appendChild(text);
+      row.appendChild(btn);
+      card.appendChild(row);
+    });
+
+    if (GithubSync.isConnected()) {
+      const ghTitle = document.createElement('div');
+      ghTitle.className = 'recovery-heading';
+      ghTitle.textContent = 'From GitHub history';
+      card.appendChild(ghTitle);
+
+      const ghBox = document.createElement('div');
+      ghBox.className = 'recovery-github';
+      const loadBtn = document.createElement('button');
+      loadBtn.className = 'btn btn-secondary';
+      loadBtn.textContent = 'Browse earlier versions';
+      loadBtn.addEventListener('click', async () => {
+        loadBtn.disabled = true;
+        loadBtn.textContent = 'Loading…';
+        try {
+          const versions = await GithubSync.listHistory();
+          loadBtn.remove();
+          renderHistory(ghBox, versions, restore);
+        } catch (err) {
+          loadBtn.disabled = false;
+          loadBtn.textContent = 'Browse earlier versions';
+          alert('Could not load history: ' + (err.message || err));
+        }
+      });
+      ghBox.appendChild(loadBtn);
+      card.appendChild(ghBox);
+    }
+
+    return card;
+  }
+
+  // Every saved version of the state file, newest first. "Preview" downloads
+  // that one version (it's big, so not all up front) and shows what it holds.
+  function renderHistory(box, versions, restore) {
+    const hint = document.createElement('p');
+    hint.className = 'source-view-meta';
+    hint.textContent = `${versions.length} most recent saves. Tap Preview on one to see how many players it has drafted before restoring.`;
+    box.appendChild(hint);
+
+    const list = document.createElement('div');
+    list.className = 'recovery-history';
+    versions.forEach((v) => {
+      const row = document.createElement('div');
+      row.className = 'recovery-row';
+      const text = document.createElement('div');
+      text.className = 'recovery-row-text';
+      text.textContent = formatWhen(Date.parse(v.date));
+      const btn = document.createElement('button');
+      btn.className = 'btn btn-secondary';
+      btn.textContent = 'Preview';
+      btn.addEventListener('click', async () => {
+        btn.disabled = true;
+        btn.textContent = '…';
+        try {
+          const version = await GithubSync.fetchVersion(v.sha);
+          const data = Backups.pick(Object.assign(Storage.defaultState(), version));
+          text.textContent = `${formatWhen(Date.parse(v.date))} — ${describeDraftData(data)}`;
+          btn.disabled = false;
+          btn.textContent = 'Restore';
+          btn.onclick = () => restore(data, formatWhen(Date.parse(v.date)));
+        } catch (err) {
+          btn.disabled = false;
+          btn.textContent = 'Preview';
+          alert('Could not load that version: ' + (err.message || err));
+        }
+      });
+      row.appendChild(text);
+      row.appendChild(btn);
+      list.appendChild(row);
+    });
+    box.appendChild(list);
   }
 
   function renderViewCard(source) {

@@ -24,7 +24,7 @@
   function persist() {
     if (fakeSnapshot) return; // Fake Mode is a sandbox — nothing saves or syncs
     Storage.save(state);
-    GithubSync.scheduleSync(state);
+    GithubSync.scheduleSync();
   }
 
   function genId() {
@@ -287,6 +287,20 @@
     persist();
   }
 
+  // Recover Draft Data (Sources tab): puts the draft lists and tags from a
+  // snapshot — a local backup or an old GitHub version — back into the live
+  // state. Replaces drafted / My Team / targets / do-not-draft / breakout /
+  // sleeper; leaves sources, season stats, notes, and the rest alone. A
+  // snapshot of what's there now is taken first, so a restore can be undone
+  // from the same card.
+  function restoreDraftData(data) {
+    Backups.add(state, 'before-restore');
+    Backups.LIST_FIELDS.forEach((k) => { if (Array.isArray(data[k])) state[k] = data[k].slice(); });
+    Backups.MAP_FIELDS.forEach((k) => { if (data[k] && typeof data[k] === 'object') state[k] = Object.assign({}, data[k]); });
+    persist();
+    emit('remote-state-loaded');
+  }
+
   // Fake Mode: a throwaway sandbox for practicing against scrambled data.
   // Entering takes a deep snapshot of the real state, then scrambles the
   // live state in place (so every tab's existing `App.state.x` reads just
@@ -418,7 +432,7 @@
     getHealthEmoji, getImprovementEmoji, getDeclineEmoji,
     getPlayerNote, setPlayerNote,
     upsertSavedSearch, deleteSavedSearch,
-    upsertNote, deleteNote,
+    upsertNote, deleteNote, restoreDraftData,
     isFakeMode, enterFakeMode, exitFakeMode
   };
 })(window);

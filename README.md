@@ -11,7 +11,7 @@ By default, all data (sources, parsed rankings, drafted status, and your draft l
 **This means, unless you turn on GitHub Sync (below):**
 - Your data does not sync across devices or browsers.
 - Clearing your browser's site data/history for this page (or using a different browser/profile) will lose it.
-- There is no built-in backup — consider it "how-to-use-at-your-own-risk" for anything you'd be upset to lose.
+- Your drafted players, My Team, and tags are protected several ways (see "Protecting your draft data" below) — but keep GitHub Sync connected, it's the main safety net.
 
 ### GitHub Sync (optional)
 
@@ -24,7 +24,16 @@ Notes:
 - The token is stored **only in that browser's local storage** — it is never written into the code or the repo, so it isn't exposed by the fact that this site is public.
 - Because saves are real commits, active use (lots of dragging/reordering) will add a fair number of commits to this repo's history over time.
 - Saving requires a network connection and GitHub being reachable; without a token, the app works exactly as before (local-only).
-- If you reload right after a big change (e.g. uploading Season Stats) and the save hadn't finished reaching GitHub yet, the app notices and re-sends it instead of pulling the older version over it — so a hard refresh moments after saving won't lose that change.
+- If you reload right after a big change (e.g. uploading Season Stats) and the save hadn't finished reaching GitHub yet, the app notices and **merges** it with what's on GitHub (see below) instead of either side overwriting the other.
+
+#### Protecting your draft data
+
+The whole app state is one file, so a device with stale data could once overwrite a newer version (this actually happened: a stale copy wiped the drafted players and My Team). It can't any more:
+- **Pull before push.** Nothing is sent to GitHub until the app has loaded the current version first. Unsynced changes left on a device are *merged* with GitHub's copy, never pushed over it.
+- **Merge, don't overwrite.** The app remembers what GitHub held at the last sync. If this device and GitHub have both changed since, they're combined: a section only one side changed takes that side's version; drafted players, My Team, targets, do-not-draft, breakout/sleeper tags, notes, and saved searches are merged entry by entry (something only counts as removed if you removed it on this device). With no history to go on, those lists are simply unioned, so nothing is lost. If GitHub rejects a save as out of date, the app pulls what landed, merges it, and only then saves again.
+- **Wipe guard.** A save that would drop the drafted + My Team count to under half of what GitHub has (when that's 5 or more) is refused, with a "Sync paused" message in the Sources tab.
+- **Local backups.** Snapshots of the drafted / My Team / tag lists are kept on each device (the fullest one is never discarded), taken automatically before anything replaces local data and as you draft.
+- **Recover Draft Data** (Sources tab, above Fake Mode): restore the lists from one of those local backups, or — with sync connected — browse the last 100 saves GitHub has of the state file, preview how many players each holds, and restore. Restoring only replaces the drafted / My Team / target / do-not-draft / breakout / sleeper lists, backs up what was there first, and doesn't touch sources or stats. Every save is also an ordinary git commit, so `git log -- data/state.json` / `git show <commit>:data/state.json` in this repo is a last-resort copy of everything.
 
 ## How it works
 
