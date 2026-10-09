@@ -39,6 +39,7 @@
     const set = new Set(state.draftedKeys);
     if (drafted) set.add(key); else set.delete(key);
     state.draftedKeys = Array.from(set);
+    if (drafted && (state.pinnedKeys || []).includes(key)) state.pinnedKeys = state.pinnedKeys.filter((k) => k !== key); // drafting releases a pin
     // Undrafting (e.g. via the plain "Undraft" button, not "Remove from My
     // Team") puts the player back on the board — they can't simultaneously
     // be "available" and "on my roster", so drop them from My Team too.
@@ -287,6 +288,20 @@
     persist();
   }
 
+  // Draft List pins: long-pressing a row pins that player to their slot so
+  // filter changes can't move them (see resyncOrder in js/tabs/draft.js).
+  // Only another long press, or drafting them, unpins — Lock List doesn't.
+  function isPinned(key) {
+    return (state.pinnedKeys || []).includes(key);
+  }
+
+  function togglePinned(key) {
+    const pins = state.pinnedKeys || [];
+    state.pinnedKeys = pins.includes(key) ? pins.filter((k) => k !== key) : pins.concat(key);
+    persist();
+    emit('tags-changed', { key });
+  }
+
   // Recover Draft Data (Sources tab): puts the draft lists and tags from a
   // snapshot — a local backup or an old GitHub version — back into the live
   // state. Replaces drafted / My Team / targets / do-not-draft / breakout /
@@ -428,7 +443,7 @@
     getBreakoutLevel, cycleBreakoutLevel,
     getSleeperLevel, cycleSleeperLevel,
     isDoNotDraft, toggleDoNotDraft,
-    isTarget, toggleTarget,
+    isTarget, toggleTarget, isPinned, togglePinned,
     getHealthEmoji, getImprovementEmoji, getDeclineEmoji,
     getPlayerNote, setPlayerNote,
     upsertSavedSearch, deleteSavedSearch,

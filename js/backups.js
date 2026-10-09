@@ -15,7 +15,7 @@
 (function (global) {
   const KEY = 'udo_backups';
   const MAX = 40;
-  const LIST_FIELDS = ['draftedKeys', 'myTeamKeys', 'targetKeys', 'doNotDraftKeys'];
+  const LIST_FIELDS = ['draftedKeys', 'myTeamKeys', 'targetKeys', 'doNotDraftKeys', 'pinnedKeys'];
   const MAP_FIELDS = ['breakoutLevels', 'sleeperLevels'];
   const FIELDS = LIST_FIELDS.concat(MAP_FIELDS);
 

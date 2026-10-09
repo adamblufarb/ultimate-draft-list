@@ -22,6 +22,7 @@
       // at the bottom of Player Detail.
       seasonStats: Array.from({ length: Constants.SEASON_SLOTS }, () => ({ label: '', fileName: '', columns: [], players: [] })),
       playerNotes: {}, // key -> free-text note, set from Player Detail
+      pinnedKeys: [],        // players pinned in place on Draft List (long press); only unpinned by long-pressing again or drafting
       listLocked: false,     // Draft List's "Lock List" toggle — keeps the order fixed while filters change
       showNextPick: false,   // Draft List's "Next Pick" toggle
       pickSlot: 3,           // your slot in the first round (1 = picks first)

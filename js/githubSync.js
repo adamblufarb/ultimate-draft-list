@@ -70,7 +70,7 @@
 
   // Fields that can't be re-created from a paste, and so get the careful,
   // entry-by-entry merge.
-  const LIST_FIELDS = ['draftedKeys', 'myTeamKeys', 'targetKeys', 'doNotDraftKeys']; // arrays of keys
+  const LIST_FIELDS = ['draftedKeys', 'myTeamKeys', 'targetKeys', 'doNotDraftKeys', 'pinnedKeys']; // arrays of keys
   const MAP_FIELDS = ['breakoutLevels', 'sleeperLevels', 'playerNotes'];             // key -> value
   const ITEM_FIELDS = ['notes', 'savedSearches'];                                     // arrays of { id, ... }
   const PRECIOUS_FIELDS = LIST_FIELDS.concat(MAP_FIELDS, ITEM_FIELDS);

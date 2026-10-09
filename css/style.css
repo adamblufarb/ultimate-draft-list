@@ -431,6 +431,10 @@ body {
 }
 
 .rank-row.is-drafted,
+.draft-row.is-pinned {
+  box-shadow: inset 3px 0 0 var(--accent);
+}
+
 .draft-row.is-drafted {
   opacity: 0.5;
 }

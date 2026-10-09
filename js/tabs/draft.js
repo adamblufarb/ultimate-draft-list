@@ -98,6 +98,7 @@
     if (!container) return;
     const row = container.querySelector('.draft-row[data-key="' + CSS.escape(key) + '"]');
     if (!row) return;
+    row.classList.toggle('is-pinned', App.isPinned(key));
     const existingBadge = row.querySelector('.player-tags');
     if (existingBadge) existingBadge.remove();
     const newBadge = playerTagsBadge(key);
@@ -144,7 +145,15 @@
   // stays put (the combined ranks shown on each row still update).
   function resyncOrder() {
     if (App.state.listLocked) return;
-    App.state.draftOrder = buildResetOrder(sourceWeights);
+    // Pinned players keep the slot (index in the full order) they hold now;
+    // everyone else is re-sorted around them.
+    const pins = new Set(App.state.pinnedKeys || []);
+    const current = App.state.draftOrder || [];
+    const held = [];
+    current.forEach((item, i) => { if (pins.has(item.key)) held.push({ item, i }); });
+    const rest = buildResetOrder(sourceWeights).filter((item) => !pins.has(item.key));
+    held.forEach(({ item, i }) => { rest.splice(Math.min(i, rest.length), 0, item); });
+    App.state.draftOrder = rest;
   }
 
   function show() {
@@ -609,7 +618,7 @@
 
     const row = document.createElement('div');
     row.className = 'draft-row' + (drafted ? ' is-drafted' : '');
-    row.addEventListener('click', () => PlayerDetail.open(item.key, sourceWeights, (newWeights, newIso) => {
+    const openDetail = () => PlayerDetail.open(item.key, sourceWeights, (newWeights, newIso) => {
       sourceWeights = newWeights;
       iso = newIso;
       // Same auto-resync as tapping a source chip: the filter just changed,
@@ -617,7 +626,10 @@
       resyncOrder();
       App.persist();
       render();
-    }, iso));
+    }, iso);
+    // Tap opens the player; long press pins/unpins them in place (not from the drag handle).
+    SourceWeights.attachPress(row, openDetail, () => App.togglePinned(item.key), '[data-drag-handle]');
+    if (App.isPinned(item.key)) row.classList.add('is-pinned');
 
     const handle = document.createElement('div');
     handle.className = 'drag-handle';
@@ -670,6 +682,7 @@
     if (sleeperLevel >= 2) parts.push('😴'); else if (sleeperLevel === 1) parts.push('🥱');
     if (App.isTarget(key)) parts.push('🎯');
     if (App.isDoNotDraft(key)) parts.push('🚫');
+    if (App.isPinned(key)) parts.push('📌');
     if (parts.length === 0) return null;
     const el = document.createElement('span');
     el.className = 'player-tags';

@@ -165,13 +165,14 @@
   // Wires tap vs. long-press onto a chip/square. Moving more than a few px
   // (a scroll) or lifting early cancels the press; the context menu a long
   // press would otherwise pop up on touch is suppressed.
-  function attachPress(el, onTap, onLongPress) {
+  function attachPress(el, onTap, onLongPress, ignoreSelector) {
     let timer = null;
     let startX = 0;
     let startY = 0;
     const cancel = () => { clearTimeout(timer); timer = null; };
     el.addEventListener('pointerdown', (e) => {
       if (e.button > 0) return;
+      if (ignoreSelector && e.target.closest && e.target.closest(ignoreSelector)) return;
       startX = e.clientX;
       startY = e.clientY;
       cancel();
