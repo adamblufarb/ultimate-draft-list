@@ -58,6 +58,9 @@
       getState: () => App.state,
       isFake: () => App.isFakeMode(),
       replaceState: (next) => {
+        // Last line of defence: never swap the live state for something that
+        // doesn't look like app state (see GithubSync.validateState).
+        try { GithubSync.validateState(next); } catch (e) { console.error(e); return; }
         const live = App.state;
         const incoming = Storage.normalize(Object.assign(Storage.defaultState(), next));
         Object.keys(live).forEach((k) => { delete live[k]; });

@@ -24,6 +24,17 @@
    3. A last-resort guard: a push that would drop the combined drafted + My
       Team count to under half of what GitHub currently has (when that's 5
       or more) is refused and reported, instead of sent.
+   3b. Nothing GitHub sends back is trusted until it passes validateState():
+      it must actually look like app state. (On 2026-10-09 the state file
+      grew past 1 MB, GitHub started answering with file *metadata* instead of
+      the contents, that metadata was mistaken for the data, and it wiped
+      everything and was pushed back.) Large files are now read through the
+      Git Blobs API, every request bypasses the browser cache, and a push
+      that would shrink the file to under 40% of what GitHub holds, or empty
+      out sources / drafted / My Team, is refused.
+   3c. A device holding clearly more draft data than GitHub does (because
+      GitHub got wiped) never adopts the smaller remote: it merges instead,
+      which repairs GitHub from the good copy.
    4. Local snapshots (js/backups.js) are taken before local data is ever
       replaced, and GitHub's own commit history keeps every version — the
       Sources tab's "Recover Draft Data" card restores from either. */
@@ -47,10 +58,13 @@
   // running the old sync code (which could overwrite a newer remote with a
   // stale local copy) kept wiping the draft, and an already-open page can't
   // be forced to reload — so the new code simply uses a different file, and
-  // old pages can only ever write to the old one (LEGACY_FILE_PATH), which
+  // old pages can only ever write to the old ones (LEGACY_FILE_PATHS), which
   // nothing reads any more except Recover Draft Data's history browser.
-  const FILE_PATH = 'data/draft-state.json';
-  const LEGACY_FILE_PATH = 'data/state.json';
+  // Moved again on 2026-10-09 (see the incident note in the header): pages
+  // still open with the broken big-file code can only touch the earlier
+  // files, never this one.
+  const FILE_PATH = 'data/draft-v3.json';
+  const LEGACY_FILE_PATHS = ['data/draft-state.json', 'data/state.json'];
   const DEBOUNCE_MS = 2500;
   const MAX_PUSH_ATTEMPTS = 4;
 
@@ -90,6 +104,7 @@
   let hasPending = false;
   let changeCounter = 0;     // bumped on every local change, to tell if one landed mid-push
   let lastRemoteState = null; // the remote version most recently seen, for the wipe guard
+  let lastRemoteLength = 0;   // its size in characters, for the shrink guard
   let pushing = null;        // the in-flight push promise, so overlapping requests share it
 
   function getToken() {
@@ -138,10 +153,27 @@
   }
 
   function authHeaders(accept) {
-    return {
-      Authorization: `Bearer ${getToken()}`,
-      Accept: accept || 'application/vnd.github+json'
-    };
+    const headers = { Accept: accept || 'application/vnd.github+json' };
+    if (getToken()) headers.Authorization = `Bearer ${getToken()}`;
+    return headers;
+  }
+
+  // Every GitHub request: never served from (or stored in) the browser cache.
+  function ghFetch(url, options) {
+    return fetch(url, Object.assign({ cache: 'no-store' }, options || {}));
+  }
+
+  // Does this look like the app's state? (Not, say, GitHub's metadata about
+  // the file, an error body, or a half-empty object.) Throws if not.
+  function validateState(obj, fillMissing) {
+    const bad = (why) => { throw new Error('GitHub sent back something that is not your app data (' + why + '). Nothing was changed.'); };
+    if (!obj || typeof obj !== 'object' || Array.isArray(obj)) bad('not an object');
+    ['encoding', '_links', 'download_url', 'git_url', 'html_url'].forEach((k) => { if (k in obj) bad('it is file metadata'); });
+    // fillMissing is for browsing old history, where early versions of the
+    // file predate some fields; the live file is always written in full.
+    if (fillMissing && global.Storage) obj = Object.assign(global.Storage.defaultState(), obj);
+    ['sources', 'draftedKeys', 'myTeamKeys', 'targetKeys', 'seasonStats'].forEach((k) => { if (!Array.isArray(obj[k])) bad('missing ' + k); });
+    return obj;
   }
 
   // ---- fingerprints, base, merge -------------------------------------
@@ -307,7 +339,15 @@
   // The last-resort guard (rule 3).
   function wouldWipe(remote, state) {
     const had = countDraft(remote);
-    return had >= 5 && countDraft(state) < had / 2;
+    if (had >= 5 && countDraft(state) < had / 2) return true;
+    const n = (obj, k) => ((obj && obj[k]) || []).length;
+    // Whole sections emptied out: sources, the Data List, the uploaded stats.
+    if (n(remote, 'sources') > 0 && n(state, 'sources') === 0) return true;
+    const dlN = (o) => ((o && o.dataList && o.dataList.players) || []).length;
+    if (dlN(remote) > 0 && dlN(state) === 0) return true;
+    const statsN = (o) => ((o && o.seasonStats) || []).reduce((t, x) => t + ((x && x.players) || []).length, 0);
+    if (statsN(remote) > 0 && statsN(state) === 0) return true;
+    return false;
   }
 
   function snapshotBackup(reason) {
@@ -319,11 +359,13 @@
   // ---- talking to GitHub ---------------------------------------------
 
   // Fetches the file at `ref` (branch name or commit sha). Returns
-  // { text, sha } — handling the Contents API's habit of returning no inline
-  // content for files over 1 MB (then the raw media type is requested) — or
-  // null if the file doesn't exist there. Throws on any other failure.
+  // { text, sha } or null if the file doesn't exist there; throws on any
+  // other failure. The Contents API only includes the file's contents for
+  // files up to 1 MB — beyond that it answers with metadata and an empty
+  // `content` — so then the contents are read from the Git Blobs API by sha
+  // (a different address, always base64 JSON, good to 100 MB).
   async function fetchFile(ref, path) {
-    const res = await fetch(`${apiUrl(path)}?ref=${encodeURIComponent(ref)}`, { headers: authHeaders() });
+    const res = await ghFetch(`${apiUrl(path)}?ref=${encodeURIComponent(ref)}`, { headers: authHeaders() });
     if (res.status === 404) return null;
     if (!res.ok) {
       const body = await res.json().catch(() => ({}));
@@ -333,9 +375,12 @@
     if (body.content && body.encoding === 'base64') {
       return { text: base64ToUtf8(body.content), sha: body.sha };
     }
-    const raw = await fetch(`${apiUrl(path)}?ref=${encodeURIComponent(ref)}`, { headers: authHeaders('application/vnd.github.raw+json') });
-    if (!raw.ok) throw new Error(`GitHub API error (${raw.status})`);
-    return { text: await raw.text(), sha: body.sha };
+    if (!body.sha) throw new Error('GitHub sent back an unexpected response.');
+    const blobRes = await ghFetch(`https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/git/blobs/${body.sha}`, { headers: authHeaders() });
+    if (!blobRes.ok) throw new Error(`GitHub API error (${blobRes.status})`);
+    const blob = await blobRes.json();
+    if (blob.encoding !== 'base64' || !blob.content) throw new Error('GitHub sent back an unexpected response.');
+    return { text: base64ToUtf8(blob.content), sha: body.sha };
   }
 
   // Pulls the current remote. Returns { state, sha }, { missing: true } if
@@ -350,9 +395,10 @@
         setStatus('idle');
         return { missing: true };
       }
-      const state = JSON.parse(file.text);
+      const state = validateState(JSON.parse(file.text));
       sha = file.sha;
       lastRemoteState = state;
+      lastRemoteLength = file.text.length;
       setStatus('idle');
       return { state, sha: file.sha };
     } catch (err) {
@@ -376,7 +422,11 @@
     }
 
     const local = adapter.getState();
-    if (!isDirty()) {
+    // If this device clearly holds more draft data than GitHub does, GitHub
+    // is the one that's been wiped — don't adopt it, merge (which keeps this
+    // device's data) and push the repaired result.
+    const remoteLooksWiped = countDraft(local) >= 5 && countDraft(remote.state) < countDraft(local) / 2;
+    if (!isDirty() && !remoteLooksWiped) {
       snapshotBackup('before-pull');
       adapter.replaceState(remote.state);
       saveBase(remote.state, remote.sha);
@@ -424,16 +474,20 @@
 
         const state = adapter.getState();
         if (lastRemoteState && wouldWipe(lastRemoteState, state)) {
-          setStatus('error', 'Sync paused: saving now would erase most of your drafted / My Team players on GitHub. Nothing was sent. Reload this page, or use "Recover Draft Data" in Sources.');
+          setStatus('error', 'Sync paused: saving now would erase your drafted / My Team players or other data on GitHub. Nothing was sent. Reload this page, or use "Recover Draft Data" in Sources.');
           return;
         }
 
         const changeAtStringify = changeCounter;
         const json = JSON.stringify(state);
+        if (lastRemoteLength > 100000 && json.length < lastRemoteLength * 0.4) {
+          setStatus('error', 'Sync paused: this save would shrink your data on GitHub by more than half. Nothing was sent. Reload this page, or use "Recover Draft Data" in Sources.');
+          return;
+        }
         const body = { message: 'Update draft data', content: utf8ToBase64(json), branch: BRANCH };
         if (sha) body.sha = sha;
 
-        const res = await fetch(apiUrl(), {
+        const res = await ghFetch(apiUrl(), {
           method: 'PUT',
           headers: Object.assign({ 'Content-Type': 'application/json' }, authHeaders()),
           body: JSON.stringify(body)
@@ -444,6 +498,7 @@
           sha = result.content.sha;
           const pushed = JSON.parse(json);
           lastRemoteState = pushed;
+          lastRemoteLength = json.length;
           saveBase(pushed, sha);
           if (changeCounter === changeAtStringify) clearDirty();
           if (global.Backups) global.Backups.add(pushed, 'synced');
@@ -509,7 +564,7 @@
   async function listHistory() {
     const one = async (path) => {
       const url = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/commits?path=${encodeURIComponent(path)}&sha=${BRANCH}&per_page=100`;
-      const res = await fetch(url, { headers: authHeaders() });
+      const res = await ghFetch(url, { headers: authHeaders() });
       if (!res.ok) {
         const body = await res.json().catch(() => ({}));
         throw new Error(body.message || `GitHub API error (${res.status})`);
@@ -517,20 +572,20 @@
       const commits = await res.json();
       return commits.map((c) => ({ sha: c.sha, date: c.commit.author.date, path }));
     };
-    const all = (await Promise.all([one(FILE_PATH), one(LEGACY_FILE_PATH)])).flat();
-    return all.sort((a, b) => Date.parse(b.date) - Date.parse(a.date)).slice(0, 150);
+    const all = (await Promise.all([FILE_PATH].concat(LEGACY_FILE_PATHS).map(one))).flat();
+    return all.sort((a, b) => Date.parse(b.date) - Date.parse(a.date)).slice(0, 200);
   }
 
   // The full state as it was at a given commit, from the given file path.
   async function fetchVersion(commitSha, path) {
     const file = await fetchFile(commitSha, path || FILE_PATH);
     if (!file) throw new Error('That version no longer exists.');
-    return JSON.parse(file.text);
+    return validateState(JSON.parse(file.text), true);
   }
 
   global.GithubSync = {
     on, getToken, setToken, isConnected, getStatus, setAdapter,
     syncOnLoad, scheduleSync, pushNow, isDirty, flushPending,
-    listHistory, fetchVersion, merge3, wouldWipe, buildBase
+    listHistory, fetchVersion, merge3, wouldWipe, buildBase, validateState
   };
 })(window);
