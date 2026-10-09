@@ -43,7 +43,14 @@
   const REPO_OWNER = 'adamblufarb';
   const REPO_NAME = 'ultimate-draft-list';
   const BRANCH = 'main';
-  const FILE_PATH = 'data/state.json';
+  // The state file. Moved from data/state.json on 2026-10-09: pages still
+  // running the old sync code (which could overwrite a newer remote with a
+  // stale local copy) kept wiping the draft, and an already-open page can't
+  // be forced to reload — so the new code simply uses a different file, and
+  // old pages can only ever write to the old one (LEGACY_FILE_PATH), which
+  // nothing reads any more except Recover Draft Data's history browser.
+  const FILE_PATH = 'data/draft-state.json';
+  const LEGACY_FILE_PATH = 'data/state.json';
   const DEBOUNCE_MS = 2500;
   const MAX_PUSH_ATTEMPTS = 4;
 
@@ -126,8 +133,8 @@
     return new TextDecoder().decode(bytes);
   }
 
-  function apiUrl() {
-    return `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${FILE_PATH}`;
+  function apiUrl(path) {
+    return `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${path || FILE_PATH}`;
   }
 
   function authHeaders(accept) {
@@ -302,8 +309,8 @@
   // { text, sha } — handling the Contents API's habit of returning no inline
   // content for files over 1 MB (then the raw media type is requested) — or
   // null if the file doesn't exist there. Throws on any other failure.
-  async function fetchFile(ref) {
-    const res = await fetch(`${apiUrl()}?ref=${encodeURIComponent(ref)}`, { headers: authHeaders() });
+  async function fetchFile(ref, path) {
+    const res = await fetch(`${apiUrl(path)}?ref=${encodeURIComponent(ref)}`, { headers: authHeaders() });
     if (res.status === 404) return null;
     if (!res.ok) {
       const body = await res.json().catch(() => ({}));
@@ -313,7 +320,7 @@
     if (body.content && body.encoding === 'base64') {
       return { text: base64ToUtf8(body.content), sha: body.sha };
     }
-    const raw = await fetch(`${apiUrl()}?ref=${encodeURIComponent(ref)}`, { headers: authHeaders('application/vnd.github.raw+json') });
+    const raw = await fetch(`${apiUrl(path)}?ref=${encodeURIComponent(ref)}`, { headers: authHeaders('application/vnd.github.raw+json') });
     if (!raw.ok) throw new Error(`GitHub API error (${raw.status})`);
     return { text: await raw.text(), sha: body.sha };
   }
@@ -484,22 +491,26 @@
 
   // ---- history, for the Recover Draft Data card ----------------------
 
-  // Most recent commits that touched the state file, newest first:
-  // [{ sha, date }] (up to 100).
+  // Most recent saves of the state file — the current file and the legacy
+  // one it replaced — newest first: [{ sha, date, path }] (up to 100 each).
   async function listHistory() {
-    const url = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/commits?path=${encodeURIComponent(FILE_PATH)}&sha=${BRANCH}&per_page=100`;
-    const res = await fetch(url, { headers: authHeaders() });
-    if (!res.ok) {
-      const body = await res.json().catch(() => ({}));
-      throw new Error(body.message || `GitHub API error (${res.status})`);
-    }
-    const commits = await res.json();
-    return commits.map((c) => ({ sha: c.sha, date: c.commit.author.date }));
+    const one = async (path) => {
+      const url = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/commits?path=${encodeURIComponent(path)}&sha=${BRANCH}&per_page=100`;
+      const res = await fetch(url, { headers: authHeaders() });
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error(body.message || `GitHub API error (${res.status})`);
+      }
+      const commits = await res.json();
+      return commits.map((c) => ({ sha: c.sha, date: c.commit.author.date, path }));
+    };
+    const all = (await Promise.all([one(FILE_PATH), one(LEGACY_FILE_PATH)])).flat();
+    return all.sort((a, b) => Date.parse(b.date) - Date.parse(a.date)).slice(0, 150);
   }
 
-  // The full state as it was at a given commit.
-  async function fetchVersion(commitSha) {
-    const file = await fetchFile(commitSha);
+  // The full state as it was at a given commit, from the given file path.
+  async function fetchVersion(commitSha, path) {
+    const file = await fetchFile(commitSha, path || FILE_PATH);
     if (!file) throw new Error('That version no longer exists.');
     return JSON.parse(file.text);
   }

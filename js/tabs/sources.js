@@ -270,7 +270,7 @@
   function renderHistory(box, versions, restore) {
     const hint = document.createElement('p');
     hint.className = 'source-view-meta';
-    hint.textContent = `${versions.length} most recent saves. Tap Preview on one to see how many players it has drafted before restoring.`;
+    hint.textContent = `${versions.length} most recent saves (including the older file used before Oct 9). Tap Preview on one to see how many players it has drafted before restoring.`;
     box.appendChild(hint);
 
     const list = document.createElement('div');
@@ -288,7 +288,7 @@
         btn.disabled = true;
         btn.textContent = '…';
         try {
-          const version = await GithubSync.fetchVersion(v.sha);
+          const version = await GithubSync.fetchVersion(v.sha, v.path);
           const data = Backups.pick(Object.assign(Storage.defaultState(), version));
           text.textContent = `${formatWhen(Date.parse(v.date))} — ${describeDraftData(data)}`;
           btn.disabled = false;

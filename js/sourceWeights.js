@@ -23,9 +23,9 @@
    is just that source's own rank. Long-pressing more sources while in iso
    adds them (as many as you like; long-pressing a member again drops it,
    and dropping the last one ends iso). The weights from before are kept
-   (iso = { ids, saved }); a plain tap on any isolated source puts them
-   back, and a plain tap on a non-isolated one exits iso first and then
-   taps that source normally. tap()/longPress() are pure state-in/state-out
+   (iso = { ids, saved }); a plain tap on any chip while in iso — isolated
+   or not — cancels it and puts them back exactly as they were, and that tap
+   does nothing else. tap()/longPress() are pure state-in/state-out
    helpers — { weights, iso } — and attachPress() does the long-press
    detection, so Draft List, Draft Board, and Player Detail all behave
    identically. */
@@ -124,10 +124,9 @@
   }
 
   function tap(state, source) {
-    if (state.iso) {
-      const restored = state.iso.saved;
-      return { weights: isIso(state.iso, source.id) ? restored : cycleWeight(restored, source), iso: null };
-    }
+    // Any tap while in iso mode just cancels it, putting back exactly the
+    // filters that were on before — the tap itself does nothing else.
+    if (state.iso) return { weights: state.iso.saved, iso: null };
     return { weights: cycleWeight(state.weights, source), iso: null };
   }
 
