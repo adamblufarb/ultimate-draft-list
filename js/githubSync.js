@@ -161,8 +161,21 @@
     return (4294967296 * (2097151 & h2) + (h1 >>> 0)).toString(36);
   }
 
-  function fieldHash(value) {
-    return hashString(JSON.stringify(value === undefined ? null : value));
+  // Season Stats slots that are completely empty don't count as content:
+  // an older version of the app had fewer slots, so "this device added a
+  // blank slot" must not look like "this device changed Season Stats".
+  function canonical(name, value) {
+    if (name === 'seasonStats' && Array.isArray(value)) {
+      const slots = value.slice();
+      while (slots.length && !slots[slots.length - 1].fileName && !(slots[slots.length - 1].players || []).length) slots.pop();
+      return slots;
+    }
+    return value;
+  }
+
+  function fieldHash(value, name) {
+    const v = canonical(name, value);
+    return hashString(JSON.stringify(v === undefined ? null : v));
   }
 
   function clone(value) {
@@ -171,7 +184,7 @@
 
   function buildBase(state, remoteSha) {
     const hashes = {};
-    Object.keys(state).forEach((k) => { hashes[k] = fieldHash(state[k]); });
+    Object.keys(state).forEach((k) => { hashes[k] = fieldHash(state[k], k); });
     const precious = {};
     PRECIOUS_FIELDS.forEach((k) => { if (state[k] !== undefined) precious[k] = clone(state[k]); });
     return { sha: remoteSha, hashes, precious };
@@ -280,7 +293,7 @@
       } else if (!(k in local) || !base || !(k in base.hashes)) {
         merged[k] = r; // no history to say local changed it — trust the remote
       } else {
-        const localChanged = fieldHash(l) !== base.hashes[k];
+        const localChanged = fieldHash(l, k) !== base.hashes[k];
         merged[k] = localChanged ? l : r; // both changed: this device's edit wins
       }
     });

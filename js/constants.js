@@ -1,6 +1,11 @@
 /* Shared config used across tabs. */
 (function (global) {
   const MAX_SOURCES = 12;
+  // Season Stats upload slots (most recent season first). Health/trend emoji
+  // only ever look at the first HEALTH_TREND_SEASONS of them; older slots are
+  // for viewing in Player Detail.
+  const SEASON_SLOTS = 4;
+  const HEALTH_TREND_SEASONS = 3;
 
   // What the "Score" number in a pasted list means. Selected per-source in
   // the Sources tab (not embedded in the pasted text itself). 'adp' is a
@@ -27,5 +32,5 @@
     return Number.isInteger(score) ? String(score) : score.toFixed(1);
   }
 
-  global.Constants = { MAX_SOURCES, SCORE_TYPES, scoreTypeLabel, formatScore };
+  global.Constants = { MAX_SOURCES, SEASON_SLOTS, HEALTH_TREND_SEASONS, SCORE_TYPES, scoreTypeLabel, formatScore };
 })(window);

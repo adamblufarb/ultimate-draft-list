@@ -59,7 +59,7 @@
       isFake: () => App.isFakeMode(),
       replaceState: (next) => {
         const live = App.state;
-        const incoming = Object.assign(Storage.defaultState(), next);
+        const incoming = Storage.normalize(Object.assign(Storage.defaultState(), next));
         Object.keys(live).forEach((k) => { delete live[k]; });
         Object.assign(live, incoming);
         Storage.save(live);

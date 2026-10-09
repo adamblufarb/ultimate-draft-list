@@ -7,8 +7,8 @@
    correlate with its score).
    Also hosts the Data List — a single, separate paste-in list (name, age,
    optionally team and height) that never feeds any ranking; it's just
-   extra info shown in the player detail view. And Season Stats — 3 fixed
-   slots for uploading the last 3 seasons' per-game stats (as .xls files
+   extra info shown in the player detail view. And Season Stats — 4 fixed
+   slots for uploading the last 4 seasons' per-game stats (as .xls files
    exported from Basketball-Reference, which are actually HTML tables under
    the hood — see Parser.parseSeasonStatsHtml), shown only via Player
    Detail's scroll, never part of any ranking. */
@@ -722,7 +722,7 @@
     return card;
   }
 
-  // Season Stats: 3 fixed upload slots (unlike Sources, count is fixed and
+  // Season Stats: Constants.SEASON_SLOTS fixed upload slots (unlike Sources, count is fixed and
   // there's no add/reorder), most-recent season first. Each slot is always
   // shown editable in place — there's no separate view/edit toggle, since
   // there's no large paste text to hide; the file input plus a compact
@@ -738,7 +738,7 @@
 
     const desc = document.createElement('p');
     desc.className = 'source-view-meta';
-    desc.textContent = 'Upload the last 3 seasons of per-game stats (.xls export from Basketball-Reference) ' +
+    desc.textContent = 'Upload the last ' + Constants.SEASON_SLOTS + ' seasons of per-game stats (.xls export from Basketball-Reference) ' +
       'to show at the bottom of Player Detail. Never used in any ranking.';
     wrap.appendChild(desc);
 

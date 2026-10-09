@@ -129,7 +129,7 @@
 
   // Health emoji, derived from Season Stats (Sources tab) — not a user
   // toggle like the tags above, just computed from games played. 💪 needs
-  // all 3 season slots to have data for this player and every one to be
+  // all 3 most recent season slots to have data for this player and every one to be
   // 65+ games (missing a season means it can't be confirmed, so no badge);
   // 🚑 needs 54-or-fewer games in at least 2 of however many seasons do
   // have data for them. Shared by Draft List (on every row) and Player
@@ -138,7 +138,7 @@
   const HEALTH_INJURY_GAMES = 54;
 
   function getHealthEmoji(key) {
-    const gamesPerSeason = state.seasonStats.map((slot) => {
+    const gamesPerSeason = state.seasonStats.slice(0, Constants.HEALTH_TREND_SEASONS).map((slot) => {
       const entry = slot.players.find((p) => p.key === key);
       if (!entry) return null;
       const games = parseInt(entry.values.games, 10);
@@ -193,7 +193,7 @@
     let pointsMidToNew = 0;
     TREND_CATEGORIES.forEach((statId) => {
       const minChange = TREND_MIN_CHANGE[statId];
-      const values = state.seasonStats.map((slot) => {
+      const values = state.seasonStats.slice(0, Constants.HEALTH_TREND_SEASONS).map((slot) => {
         const entry = slot.players.find((p) => p.key === key);
         if (!entry) return null;
         const value = parseFloat(entry.values[statId]);
