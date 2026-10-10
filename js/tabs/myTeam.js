@@ -81,12 +81,13 @@
       row.dataset.key = key;
       row.addEventListener('click', () => PlayerDetail.open(key, weights, () => {}, null));
 
-      // Overall pick number (its place in Draft Board's order), in a blue
-      // circle to the left of the combined rank.
+      // Round the player was drafted in (their place in Draft Board's order,
+      // one round per leagueSize picks), in a blue circle to the left of the
+      // combined rank.
       const pickIdx = (App.state.draftedKeys || []).indexOf(key);
       const pick = document.createElement('div');
       pick.className = 'rank-badge pick-badge';
-      pick.textContent = pickIdx === -1 ? '—' : String(pickIdx + 1);
+      pick.textContent = pickIdx === -1 ? '—' : String(Math.floor(pickIdx / App.state.leagueSize) + 1);
 
       const badge = document.createElement('div');
       badge.className = 'rank-badge';
