@@ -116,12 +116,18 @@
       } else {
         const empty = document.createElement('div');
         empty.className = 'rank-row lineup-empty';
-        // Hidden badge so the empty slot is exactly as tall as a player card.
+        // Hidden badge keeps the empty slot exactly as tall as a player card.
         const ghost = document.createElement('div');
         ghost.className = 'rank-badge';
         ghost.style.visibility = 'hidden';
+        ghost.style.width = '0';
+        ghost.style.minWidth = '0';
+        ghost.style.padding = '0';
         ghost.textContent = '0.0';
+        const openText = document.createElement('span');
+        openText.textContent = 'Open';
         empty.appendChild(ghost);
+        empty.appendChild(openText);
         entry.appendChild(empty);
       }
       return entry;
@@ -135,10 +141,8 @@
 
     const list = document.createElement('div');
     list.className = 'rankings-list';
-    list.appendChild(heading('Starters'));
     lineup.starters.forEach(({ slot, key }) => list.appendChild(slotRow(slot.label, key)));
-    list.appendChild(heading('Bench'));
-    lineup.bench.forEach((key) => list.appendChild(slotRow('BN', key)));
+    lineup.bench.forEach((key) => list.appendChild(slotRow('BNCH', key)));
     if (lineup.over.length) {
       list.appendChild(heading('Over the 16-player limit'));
       lineup.over.forEach((key) => list.appendChild(slotRow('—', key)));
