@@ -283,6 +283,19 @@
     return id;
   }
 
+  // Draft Board "Edit Draft": replace the pick order (same players, new
+  // order). Everything that numbers picks (Draft Board, My Team rounds, the
+  // Draft List's pick markers) derives from this one list, so they follow.
+  function reorderDrafted(keys) {
+    const cur = state.draftedKeys;
+    if (keys.length !== cur.length || !keys.every((k) => cur.includes(k))) return false;
+    state.draftedKeys = keys.slice();
+    persist();
+    emit('drafted-changed', { reordered: true });
+    emit('my-team-changed', {});
+    return true;
+  }
+
   // Notes tab drag-reorder: `ids` is the new top-to-bottom order.
   function reorderNotes(ids) {
     const byId = new Map(state.notes.map((n) => [n.id, n]));
@@ -456,7 +469,7 @@
     getHealthEmoji, getImprovementEmoji, getDeclineEmoji,
     getPlayerNote, setPlayerNote,
     upsertSavedSearch, deleteSavedSearch,
-    upsertNote, deleteNote, reorderNotes, restoreDraftData,
+    upsertNote, deleteNote, reorderNotes, reorderDrafted, restoreDraftData,
     isFakeMode, enterFakeMode, exitFakeMode
   };
 })(window);

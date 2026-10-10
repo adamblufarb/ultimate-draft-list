@@ -256,6 +256,12 @@
         have.add(k);
       }
     });
+    // Same members, remote order untouched since the base, but this device
+    // reordered (Draft Board "Edit Draft"): keep this device's order.
+    if (base && base.length === remote.length && base.every((k, i) => k === remote[i])) {
+      const at = new Map(local.map((k, i) => [k, i]));
+      out.sort((a, b) => (at.has(a) ? at.get(a) : 1e9) - (at.has(b) ? at.get(b) : 1e9));
+    }
     return out;
   }
 

@@ -38,6 +38,8 @@
         btn.classList.toggle('active', btn.dataset.tab === name);
       });
       if (name === 'draft') DraftTab.show();
+      // Draft Board opens at the bottom, where the latest picks are.
+      if (name === 'drafted') setTimeout(() => { panels.drafted.scrollTop = panels.drafted.scrollHeight; }, 0);
     }
 
     navButtons.forEach((btn) => {

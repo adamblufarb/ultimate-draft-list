@@ -444,6 +444,20 @@ body {
   box-shadow: inset 0 0 0 1px var(--accent);
 }
 
+.draft-row.is-mine {
+  background: var(--accent-dim);
+  border-color: var(--accent);
+}
+
+.board-edit-btn {
+  width: 100%;
+  margin-top: 14px;
+}
+
+.board-edit-actions {
+  margin-top: 14px;
+}
+
 .draft-row.is-drafted {
   opacity: 0.5;
 }
