@@ -38,7 +38,7 @@ The whole app state is one file, so a device with stale data could once overwrit
 
 ## How it works
 
-The bottom tab bar runs Draft List · Notes · **My Team (center)** · Draft Board · Sources.
+The bottom tab bar runs Draft List · Draft Board · **My Team (center)** · Notes · Sources.
 
 - **Draft List tab** — your own editable, drag-to-reorder list, shown the same way (combined rank average, name, position badge, tag emoji, every-10th divider, alternating row shades). It's seeded from the combined average the first time you use it, then persists independently — editing sources never silently overwrites it.
   - A search box filters the list to players matching what you type (tap the ✕ to clear it).
