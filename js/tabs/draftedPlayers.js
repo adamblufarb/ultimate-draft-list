@@ -52,8 +52,9 @@
       renderEditMode(draftedKeys, avgByKey, index);
       return;
     }
-    container.appendChild(renderList(draftedKeys, avgByKey, index));
-    container.appendChild(renderOnTheClock(draftedKeys.length + 1));
+    const list = renderList(draftedKeys, avgByKey, index);
+    list.appendChild(renderOnTheClock(draftedKeys.length + 1)); // inside the list, so it gets the same gap as the other picks
+    container.appendChild(list);
     const editBtn = document.createElement('button');
     editBtn.type = 'button';
     editBtn.className = 'btn btn-secondary board-edit-btn';
@@ -61,9 +62,29 @@
     editBtn.addEventListener('click', () => {
       editing = true;
       pending = draftedKeys.slice();
-      render();
+      renderKeepingScroll();
     });
     container.appendChild(editBtn);
+  }
+
+  // Switching between the normal board and Edit Draft rebuilds everything,
+  // which would jump the scroll. Remember which player was at the top of the
+  // view (and how far down), then put that same player back in the same spot.
+  function renderKeepingScroll() {
+    const top = container.getBoundingClientRect().top;
+    const rows = Array.from(container.querySelectorAll('[data-key]'));
+    const anchor = rows.find((r) => r.getBoundingClientRect().bottom > top + 4);
+    const key = anchor && anchor.dataset.key;
+    const offset = anchor ? anchor.getBoundingClientRect().top - top : 0;
+    const saved = container.scrollTop;
+    render();
+    const restore = () => {
+      const el = key && Array.from(container.querySelectorAll('[data-key]')).find((r) => r.dataset.key === key);
+      if (el) container.scrollTop += el.getBoundingClientRect().top - container.getBoundingClientRect().top - offset;
+      else container.scrollTop = saved;
+    };
+    restore();                       // right away for the normal list…
+    setTimeout(restore, 60);         // …and again once Edit Draft's rows have been laid out
   }
 
   // The pick that is up next, as a dotted placeholder under the last pick —
@@ -132,7 +153,7 @@
       App.reorderDrafted(pending);
       editing = false;
       pending = null;
-      render();
+      renderKeepingScroll();
     });
     const cancel = document.createElement('button');
     cancel.type = 'button';
@@ -141,7 +162,7 @@
     cancel.addEventListener('click', () => {
       editing = false;
       pending = null;
-      render();
+      renderKeepingScroll();
     });
     actions.appendChild(save);
     actions.appendChild(cancel);
@@ -153,6 +174,7 @@
     const avg = avgByKey.get(item.key);
     const row = document.createElement('div');
     row.className = 'draft-row' + (App.isOnMyTeam(item.key) ? ' is-mine' : '');
+    row.dataset.key = item.key;
 
     const handle = document.createElement('div');
     handle.className = 'drag-handle';
