@@ -281,28 +281,45 @@
     return out;
   }
 
-  // Arrays of { id, ... } (notes, saved searches), matched by id.
+  // Arrays of { id, ... } (notes, saved searches), matched by id. Order:
+  // items this device added since the base go to the FRONT (notes are
+  // newest-first, so a new note must stay on top); if this device reordered
+  // the list and the remote didn't, this device's order is kept; otherwise
+  // the remote's order wins.
   function mergeItems(base, remote, local) {
     const byId = (arr) => new Map((arr || []).map((item) => [item.id, item]));
     const baseById = base ? byId(base) : null;
     const localById = byId(local);
-    const out = [];
+    const kept = [];
     const seen = new Set();
     remote.forEach((r) => {
       const l = localById.get(r.id);
       seen.add(r.id);
       if (baseById && baseById.has(r.id) && !l) return; // removed on this device
-      if (l && baseById && !same(l, baseById.get(r.id))) out.push(l);
-      else out.push(r);
+      if (l && baseById && !same(l, baseById.get(r.id))) kept.push(l);
+      else kept.push(r);
     });
+    const added = [];
     local.forEach((l) => {
       if (seen.has(l.id)) return;
       // In the base but not the remote: removed over there — unless this
       // device edited it since, in which case keep the edit.
       if (baseById && baseById.has(l.id) && same(l, baseById.get(l.id))) return;
-      out.push(l);
+      added.push(l);
     });
-    return out;
+    let ordered = kept;
+    if (base) {
+      const ids = (arr) => arr.map((x) => x.id).join('|');
+      const baseIds = base.map((x) => x.id);
+      const remoteIds = remote.map((x) => x.id);
+      const sameMembers = baseIds.length === remoteIds.length && baseIds.every((id) => remoteIds.indexOf(id) !== -1);
+      if (sameMembers && ids(base) === ids(remote)) {
+        // Remote order untouched since the base: this device's order (if it changed) wins.
+        const localOrder = new Map(local.map((x, i) => [x.id, i]));
+        ordered = kept.slice().sort((x, y) => (localOrder.has(x.id) ? localOrder.get(x.id) : 1e9) - (localOrder.has(y.id) ? localOrder.get(y.id) : 1e9));
+      }
+    }
+    return added.concat(ordered);
   }
 
   // Three-way merge of the remote state and the local state, given what the
