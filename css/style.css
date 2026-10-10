@@ -471,9 +471,6 @@ body {
 .lineup-empty {
   flex: 1;
   min-width: 0;
-  justify-content: center;
-  color: var(--text-dim);
-  font-size: 13px;
   background: transparent;
   border-style: dashed;
   cursor: default;

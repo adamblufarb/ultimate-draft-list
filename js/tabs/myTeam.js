@@ -116,7 +116,12 @@
       } else {
         const empty = document.createElement('div');
         empty.className = 'rank-row lineup-empty';
-        empty.textContent = 'Open';
+        // Hidden badge so the empty slot is exactly as tall as a player card.
+        const ghost = document.createElement('div');
+        ghost.className = 'rank-badge';
+        ghost.style.visibility = 'hidden';
+        ghost.textContent = '0.0';
+        empty.appendChild(ghost);
         entry.appendChild(empty);
       }
       return entry;
