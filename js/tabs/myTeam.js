@@ -1,7 +1,8 @@
 /* Tab 4 — My Team: the roster of players marked "Drafted By Me", in pick
    order, with a quick position-count breakdown at the top. Player cards
    look like the other lists': combined rank average (default source
-   weights), name, position badge, and tag emoji. */
+   weights), name, position badge, and tag emoji. They sit in lineup slots
+   (starters + bench, see js/lineup.js) that fill as you draft. */
 (function (global) {
   const POSITIONS = ['PG', 'SG', 'SF', 'PF', 'C'];
   let container;
@@ -67,24 +68,16 @@
     });
     container.appendChild(countersWrap);
 
-    if (App.state.myTeamKeys.length === 0) {
-      const empty = document.createElement('p');
-      empty.className = 'empty-hint';
-      empty.textContent = 'No players yet. Open a player\'s detail view and hit "Drafted By Me" to add them here.';
-      container.appendChild(empty);
-      return;
-    }
-
     const weights = SourceWeights.defaultWeights(App.state.sources);
     const avgByKey = new Map(Ranking.combineFromIndex(index, weights).map((r) => [r.key, r.avg]));
 
-    const list = document.createElement('div');
-    list.className = 'rankings-list';
-    App.state.myTeamKeys.forEach((key, i) => {
+    const lineup = Lineup.assign(App.state.myTeamKeys, (key) => { const e = index.get(key); return e ? e.positions : ''; });
+
+    const card = (key) => {
       const entry = index.get(key);
       const avg = avgByKey.get(key);
       const row = document.createElement('div');
-      row.className = 'rank-row' + (i % 2 === 1 ? ' row-alt' : '');
+      row.className = 'rank-row';
       row.dataset.key = key;
       row.addEventListener('click', () => PlayerDetail.open(key, weights, () => {}, null));
 
@@ -109,8 +102,42 @@
       row.appendChild(name);
       const tags = playerTagsBadge(key);
       if (tags) row.appendChild(tags);
-      list.appendChild(row);
-    });
+      return row;
+    };
+    const slotRow = (label, key) => {
+      const entry = document.createElement('div');
+      entry.className = 'board-entry lineup-entry';
+      const lab = document.createElement('div');
+      lab.className = 'lineup-slot-label';
+      lab.textContent = label;
+      entry.appendChild(lab);
+      if (key) {
+        entry.appendChild(card(key));
+      } else {
+        const empty = document.createElement('div');
+        empty.className = 'rank-row lineup-empty';
+        empty.textContent = 'Open';
+        entry.appendChild(empty);
+      }
+      return entry;
+    };
+    const heading = (text) => {
+      const h = document.createElement('div');
+      h.className = 'list-divider';
+      h.textContent = '— ' + text + ' —';
+      return h;
+    };
+
+    const list = document.createElement('div');
+    list.className = 'rankings-list';
+    list.appendChild(heading('Starters'));
+    lineup.starters.forEach(({ slot, key }) => list.appendChild(slotRow(slot.label, key)));
+    list.appendChild(heading('Bench'));
+    lineup.bench.forEach((key) => list.appendChild(slotRow('BN', key)));
+    if (lineup.over.length) {
+      list.appendChild(heading('Over the 16-player limit'));
+      lineup.over.forEach((key) => list.appendChild(slotRow('—', key)));
+    }
     container.appendChild(list);
   }
 

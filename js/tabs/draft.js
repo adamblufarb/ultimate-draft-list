@@ -355,20 +355,22 @@
   // counters. Deliberately re-ranks from the live filter rather than
   // reading the user's dragged draft order, so it always reflects whichever
   // sources are currently checked, independent of manual reordering.
+  // For the next `size` undrafted players: how many have each position as
+  // their MAIN position (the first one listed, "PF, SF" = PF), and how many
+  // have it at all, duals included — shown as "PG 8 (14)".
   function computeAvailablePositionCounts(index, size) {
     const combined = Ranking.combineFromIndex(index, sourceWeights);
     const available = combined.filter((row) => !App.isDrafted(row.key));
     const pool = available.slice(0, size);
-    const counts = {};
-    POSITIONS.forEach((p) => { counts[p] = 0; });
+    const main = {};
+    const any = {};
+    POSITIONS.forEach((p) => { main[p] = 0; any[p] = 0; });
     pool.forEach((row) => {
-      if (!row.positions) return;
-      const playerPositions = row.positions.split(',').map((p) => p.trim().toUpperCase());
-      POSITIONS.forEach((p) => {
-        if (playerPositions.includes(p)) counts[p] += 1;
-      });
+      const playerPositions = Lineup.parsePositions(row.positions);
+      if (playerPositions.length && POSITIONS.includes(playerPositions[0])) main[playerPositions[0]] += 1;
+      POSITIONS.forEach((p) => { if (playerPositions.includes(p)) any[p] += 1; });
     });
-    return counts;
+    return { main, any };
   }
 
   // Resolves one player's "rank" for a given Smart Search metric id:
@@ -509,7 +511,8 @@
 
     POSITIONS.forEach((pos) => {
       const isActive = selectedPositions.includes(pos);
-      const count = counts[pos];
+      const count = counts.main[pos];
+      // Scarcity is judged on main-position players only (they sum to the pool size).
       const pct = poolSize > 0 ? (count / poolSize) * 100 : 0;
       const scarcityClass = pct <= 17 ? 'scarcity-danger' : (pct <= 25 ? 'scarcity-warn' : '');
 
@@ -520,7 +523,7 @@
       posEl.textContent = pos;
       const countEl = document.createElement('span');
       countEl.className = 'position-chip-count';
-      countEl.textContent = String(count);
+      countEl.textContent = count + ' (' + counts.any[pos] + ')';
       btn.appendChild(posEl);
       btn.appendChild(countEl);
       btn.addEventListener('click', () => {

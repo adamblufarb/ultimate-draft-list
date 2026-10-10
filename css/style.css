@@ -188,8 +188,10 @@ body {
 
 .position-toggles .toggle-label {
   flex: 1 1 0%;
-  padding: 5px 6px;
-  gap: 3px;
+  min-width: 0;
+  padding: 5px 3px;
+  gap: 2px;
+  white-space: nowrap;
   font-size: 12px;
   justify-content: center;
 }
@@ -222,7 +224,8 @@ body {
 }
 
 .position-chip-count {
-  font-size: 9px;
+  white-space: nowrap;
+  font-size: 8.5px;
   font-weight: 700;
   opacity: 0.75;
 }
@@ -455,6 +458,25 @@ body {
 .board-entry .rank-row {
   flex: 1;
   min-width: 0;
+}
+
+.lineup-slot-label {
+  flex: 0 0 44px;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-dim);
+}
+
+.lineup-empty {
+  flex: 1;
+  min-width: 0;
+  justify-content: center;
+  color: var(--text-dim);
+  font-size: 13px;
+  background: transparent;
+  border-style: dashed;
+  cursor: default;
 }
 
 .board-pick-number {
