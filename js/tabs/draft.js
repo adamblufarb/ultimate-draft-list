@@ -176,9 +176,9 @@
 
     container.appendChild(renderSearchBox());
     container.appendChild(renderSmartSearchRow());
+    container.appendChild(renderTeamFilterRow());
     container.appendChild(renderSourceToggles());
     container.appendChild(renderPositionToggles());
-    container.appendChild(renderTeamFilterRow());
     container.appendChild(renderActionsRow());
 
     listSection = document.createElement('div');

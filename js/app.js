@@ -283,6 +283,15 @@
     return id;
   }
 
+  // Notes tab drag-reorder: `ids` is the new top-to-bottom order.
+  function reorderNotes(ids) {
+    const byId = new Map(state.notes.map((n) => [n.id, n]));
+    const ordered = ids.map((id) => byId.get(id)).filter(Boolean);
+    state.notes.forEach((n) => { if (!ordered.includes(n)) ordered.push(n); });
+    state.notes = ordered;
+    persist();
+  }
+
   function deleteNote(id) {
     state.notes = state.notes.filter((n) => n.id !== id);
     persist();
@@ -447,7 +456,7 @@
     getHealthEmoji, getImprovementEmoji, getDeclineEmoji,
     getPlayerNote, setPlayerNote,
     upsertSavedSearch, deleteSavedSearch,
-    upsertNote, deleteNote, restoreDraftData,
+    upsertNote, deleteNote, reorderNotes, restoreDraftData,
     isFakeMode, enterFakeMode, exitFakeMode
   };
 })(window);

@@ -400,6 +400,11 @@ body {
   cursor: pointer;
 }
 
+.rank-badge.pick-badge {
+  background: var(--accent);
+  color: #fff;
+}
+
 .rank-badge {
   flex-shrink: 0;
   min-width: 32px;

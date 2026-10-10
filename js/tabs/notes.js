@@ -1,6 +1,7 @@
 /* Tab — Notes: free-standing notes (separate from the per-player notes box
    in Player Detail). Add a note, edit it, delete it. Newest first; an
-   edited note keeps its place. Cards follow the Sources tab's look: a
+   edited note keeps its place; drag a note's grip bar to reorder (CardReorder,
+   same as Sources). Cards follow the Sources tab's look: a
    read-only view with Edit/Delete, switching to a textarea with Save/Cancel
    while editing. Several notes can be open for editing at once; unsaved
    text survives a re-render and tab switches (the panel stays in the DOM),
@@ -45,6 +46,16 @@
     });
     container.appendChild(list);
 
+    // Drag a note by its grip bar to reorder, same as the Sources list.
+    const reorderCtl = CardReorder.attach(list, {
+      gap: 14,
+      onReorder: () => App.reorderNotes(Array.from(list.children).map((el) => el.dataset.noteId))
+    });
+    Array.from(list.children).forEach((card) => {
+      const handle = card.querySelector('[data-drag-handle]');
+      if (handle) reorderCtl.attachHandle(handle, card);
+    });
+
     if (App.state.notes.length === 0 && !composing) {
       const empty = document.createElement('p');
       empty.className = 'empty-hint';
@@ -53,10 +64,19 @@
     }
   }
 
+  function createDragHandle() {
+    const handle = document.createElement('div');
+    handle.className = 'card-drag-handle';
+    handle.setAttribute('data-drag-handle', '');
+    handle.textContent = '☰';
+    return handle;
+  }
+
   function renderViewCard(note) {
     const card = document.createElement('div');
     card.className = 'source-card note-card';
     card.dataset.noteId = note.id;
+    card.appendChild(createDragHandle());
 
     const text = document.createElement('div');
     text.className = 'note-text';
@@ -98,7 +118,10 @@
     const draftKey = note ? note.id : 'new';
     const card = document.createElement('div');
     card.className = 'source-card note-card';
-    if (note) card.dataset.noteId = note.id;
+    if (note) {
+      card.dataset.noteId = note.id;
+      card.appendChild(createDragHandle());
+    }
 
     const ta = document.createElement('textarea');
     ta.className = 'note-input';

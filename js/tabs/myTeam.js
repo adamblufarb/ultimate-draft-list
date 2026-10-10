@@ -81,6 +81,13 @@
       row.dataset.key = key;
       row.addEventListener('click', () => PlayerDetail.open(key, weights, () => {}, null));
 
+      // Overall pick number (its place in Draft Board's order), in a blue
+      // circle to the left of the combined rank.
+      const pickIdx = (App.state.draftedKeys || []).indexOf(key);
+      const pick = document.createElement('div');
+      pick.className = 'rank-badge pick-badge';
+      pick.textContent = pickIdx === -1 ? '—' : String(pickIdx + 1);
+
       const badge = document.createElement('div');
       badge.className = 'rank-badge';
       badge.textContent = avg !== undefined ? avg.toFixed(1) : '—';
@@ -98,6 +105,7 @@
         name.appendChild(posEl);
       }
 
+      row.appendChild(pick);
       row.appendChild(badge);
       row.appendChild(name);
       const tags = playerTagsBadge(key);
