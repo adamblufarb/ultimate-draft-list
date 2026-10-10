@@ -521,9 +521,9 @@
       const count = counts.main[pos];
       const effective = counts.effective[pos];
       // Scarcity is judged on the effective count (main + half of the bracket
-      // number, calculated behind the scenes) as a share of the pool: 25%+ fine, 20-25% orange, under 20% red.
+      // number, calculated behind the scenes) as a share of the pool: 17% or less red, up to 25% orange, above that fine.
       const pct = poolSize > 0 ? (effective / poolSize) * 100 : 0;
-      const scarcityClass = pct >= 25 ? '' : (pct >= 20 ? 'scarcity-warn' : 'scarcity-danger');
+      const scarcityClass = pct <= 17 ? 'scarcity-danger' : (pct <= 25 ? 'scarcity-warn' : '');
 
       const btn = document.createElement('button');
       btn.type = 'button';
