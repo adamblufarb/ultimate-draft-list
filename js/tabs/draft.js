@@ -356,27 +356,28 @@
   // reading the user's dragged draft order, so it always reflects whichever
   // sources are currently checked, independent of manual reordering.
   // For the next `size` undrafted players, per position: `main` = players
-  // whose FIRST listed position it is ("PF, SF" = PF), and `effective` =
-  // main + half of the players who have it as a secondary position (a dual
-  // can only fill one slot, so he counts half at each of his positions
-  // beyond the first). Shown as "PG 6 (7)": 6 main, 7 effective.
+  // whose FIRST listed position it is ("PF, SF" = PF), `any` = players with
+  // it listed anywhere (duals included). Shown as "PG 8 (15)". For the
+  // scarcity colors the app works with `effective` = main + any / 2 (so
+  // 8 (15) is judged as 8 + 7.5 = 15.5) — that number is never displayed.
   function computeAvailablePositionCounts(index, size) {
     const combined = Ranking.combineFromIndex(index, sourceWeights);
     const available = combined.filter((row) => !App.isDrafted(row.key));
     const pool = available.slice(0, size);
     const main = {};
-    const secondary = {};
-    POSITIONS.forEach((p) => { main[p] = 0; secondary[p] = 0; });
+    const any = {};
+    POSITIONS.forEach((p) => { main[p] = 0; any[p] = 0; });
     pool.forEach((row) => {
       const playerPositions = Lineup.parsePositions(row.positions);
       playerPositions.forEach((p, i) => {
         if (!POSITIONS.includes(p)) return;
-        if (i === 0) main[p] += 1; else secondary[p] += 1;
+        any[p] += 1;
+        if (i === 0) main[p] += 1;
       });
     });
     const effective = {};
-    POSITIONS.forEach((p) => { effective[p] = main[p] + secondary[p] / 2; });
-    return { main, effective };
+    POSITIONS.forEach((p) => { effective[p] = main[p] + any[p] / 2; });
+    return { main, any, effective };
   }
 
   // Resolves one player's "rank" for a given Smart Search metric id:
@@ -519,8 +520,8 @@
       const isActive = selectedPositions.includes(pos);
       const count = counts.main[pos];
       const effective = counts.effective[pos];
-      // Scarcity is judged on the effective count (main + half the duals) as a
-      // share of the pool: 25%+ fine, 20-25% orange, under 20% red.
+      // Scarcity is judged on the effective count (main + half of the bracket
+      // number, calculated behind the scenes) as a share of the pool: 25%+ fine, 20-25% orange, under 20% red.
       const pct = poolSize > 0 ? (effective / poolSize) * 100 : 0;
       const scarcityClass = pct >= 25 ? '' : (pct >= 20 ? 'scarcity-warn' : 'scarcity-danger');
 
@@ -531,7 +532,7 @@
       posEl.textContent = pos;
       const countEl = document.createElement('span');
       countEl.className = 'position-chip-count';
-      countEl.textContent = count + ' (' + (Math.round(effective * 10) / 10) + ')';
+      countEl.textContent = count + ' (' + counts.any[pos] + ')';
       btn.appendChild(posEl);
       btn.appendChild(countEl);
       btn.addEventListener('click', () => {
