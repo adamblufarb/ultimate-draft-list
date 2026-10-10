@@ -477,9 +477,9 @@ body {
 }
 
 .board-pick-number {
-  flex: 0 0 34px;
+  flex: 0 0 44px;
   text-align: center;
-  font-size: 17px;
+  font-size: 13px;
   font-weight: 700;
   color: var(--text-dim);
 }
