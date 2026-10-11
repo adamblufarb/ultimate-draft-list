@@ -80,7 +80,7 @@
         roundedRect(x0, top - ROW_H, CARD_W, ROW_H, 7), 'B');
       const baseline = top - ROW_H / 2 - 4;
       text(String(pick.number), left, baseline, 12, 'F2', COLORS.dim);
-      text(pick.name, x0 + 12, baseline, 13, 'F2', COLORS.text);
+      text(pick.name, x0 + 12, baseline, 13, 'F1', COLORS.text);   // regular weight
       text(pick.positions || '', x0 + CARD_W - 64, baseline, 11, 'F1', COLORS.dim);
       y -= ROW_H + GAP;
     });
