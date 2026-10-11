@@ -163,8 +163,8 @@
   }
 
   // Long press: pin/unpin, float the pinned player to the top — but leave the
-  // scroll position alone and let rows slide to their new places in a slow,
-  // smooth animation (each row starts where it was on screen and glides to where it
+  // scroll position alone and let rows slide to their new places: the player moving up glides slowly
+  // (and stays on top of the others), rows moving down slide quickly (each row starts where it was on screen and glides to where it
   // now is: FLIP). Rows are absolutely positioned and only get their final
   // place after the list's layout pass, so the animation starts after that.
   function togglePinSliding(key) {
@@ -186,9 +186,13 @@
         r.style.transition = 'none';
         r.style.transform = 'translateY(' + delta + 'px)';
         r.getBoundingClientRect();                       // commit the starting position
-        r.style.transition = 'transform 1100ms ease-in-out';
+        // The player moving UP (the one just pinned) glides slowly and rides
+        // above the rest; rows making room for them slide down quickly.
+        const up = delta > 0;
+        if (up) r.style.zIndex = '5';
+        r.style.transition = up ? 'transform 1100ms ease-in-out' : 'transform 280ms ease-out';
         r.style.transform = '';
-        setTimeout(() => { r.style.transition = ''; }, 1150);
+        setTimeout(() => { r.style.transition = ''; r.style.zIndex = ''; }, up ? 1150 : 320);
       });
     };
     requestAnimationFrame(() => requestAnimationFrame(slide));
