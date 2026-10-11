@@ -1,5 +1,5 @@
-/* Draft Board "Export Draft": builds a PDF of every pick, in the app's dark
-   design on a black page, and downloads it. Only what a printed draft board needs: the pick
+/* Draft Board "Export Draft": builds a PDF of every pick, in the app's design
+   with a light palette (white page), and downloads it. Only what a printed draft board needs: the pick
    number (outside the card, like the Draft Board), the player's name and
    positions, and a round indicator at the start of each round — no tags, no
    combined rank, no blue highlight for your own picks.
@@ -18,9 +18,11 @@
   const DIVIDER_H = 26;
   const NUM_W = 34;        // pick-number column, left of the cards
   const CARD_W = 290;      // card width (the earlier full-width cards were ~484)
-  const COLORS = {         // the app's dark design, on a pure black page
-    bg: '#000000', surface: '#1a1d24', rowAlt: '#242932', border: '#2e333d',
-    text: '#eef0f4', dim: '#9aa1ac'
+  const COLORS = {         // the app's design in a light palette (white page). A black page was
+                           // tried and dropped: the phone's PDF viewer draws a thin page outline
+                           // that shows against it and can't be turned off from inside the file.
+    bg: '#ffffff', surface: '#f4f5f8', rowAlt: '#e9ecf1', border: '#d3d8e0',
+    text: '#14171c', dim: '#6b7380'
   };
 
   const rgb = (hex) => [1, 3, 5].map((i) => (parseInt(hex.slice(i, i + 2), 16) / 255).toFixed(3)).join(' ');
