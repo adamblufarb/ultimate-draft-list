@@ -175,8 +175,17 @@
     App.togglePinned(key);
     applyPinsToSavedOrder();
     render();
+    // render() empties the page and the list only regains its height after
+    // its layout pass, so for a moment there is nothing to scroll and the
+    // browser clamps the position to the top — a visible jump to the top on
+    // a phone. A temporary spacer keeps the page tall enough to hold the
+    // scroll position until the list is laid out again.
+    const spacer = document.createElement('div');
+    spacer.style.height = (scroll + scroller.clientHeight) + 'px';
+    container.appendChild(spacer);
     scroller.scrollTop = scroll;
     const slide = () => {
+      spacer.remove();
       scroller.scrollTop = scroll;
       container.querySelectorAll('.draft-row[data-key]').forEach((r) => {
         const old = before.get(r.dataset.key);
