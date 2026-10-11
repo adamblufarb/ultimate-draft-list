@@ -57,6 +57,18 @@
 
   // Marks a player drafted (if not already) and appends them to My Team, in
   // pick order. Idempotent.
+  // Is the pick on the clock right now one of mine? The next overall pick is
+  // (players drafted + 1); in a snake draft odd rounds run slot 1..N and even
+  // rounds run N..1, and pickSlot is my slot in round 1.
+  function isMyPickOnTheClock() {
+    const size = state.leagueSize;
+    const pick = state.draftedKeys.length + 1;
+    const round = Math.floor((pick - 1) / size) + 1;
+    const position = pick - (round - 1) * size;
+    const mine = round % 2 === 1 ? state.pickSlot : size - state.pickSlot + 1;
+    return position === mine;
+  }
+
   function draftedByMe(key) {
     if (!state.draftedKeys.includes(key)) {
       state.draftedKeys = state.draftedKeys.concat(key);
@@ -460,7 +472,7 @@
 
   global.App = {
     state, on, emit, persist, genId,
-    isDrafted, setDrafted,
+    isDrafted, setDrafted, isMyPickOnTheClock,
     isOnMyTeam, draftedByMe, removeFromMyTeam,
     getBreakoutLevel, cycleBreakoutLevel,
     getSleeperLevel, cycleSleeperLevel,

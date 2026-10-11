@@ -525,6 +525,12 @@ body {
   min-height: 44px;
 }
 
+.btn-draft.is-my-pick {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
 .btn-draft.is-drafted {
   background: transparent;
   color: var(--accent);

@@ -22,7 +22,7 @@
    the backdrop, Escape, or an action button) is reported back to whichever
    tab opened it, via the optional onWeightsChange callback, so the tab's
    own filter and order pick up the change too. Below the source squares,
-   the "Mark Drafted"/"Drafted By Me" buttons sit, and below those the
+   the "Mark Drafted" button (blue and "Drafted By Me" when it's my pick) sit, and below those the
    player's Season Stats (js/seasonStatsView.js) run straight down the
    scroll — no button. Opened by tapping a player row in Draft List, My Team,
    or Draft Board. */
@@ -380,32 +380,24 @@
     }
     sheet.appendChild(gridWrap);
 
-    // Grouped in their own wrapper (its own tighter internal gap, matching
-    // the source-squares grid's gap) so the outer sheet's wider gap only
-    // applies above the group as a whole, not between these two buttons.
+    // One button. Normally "Mark Drafted" (someone else took them) / "Undraft".
+    // When it's my pick on the clock it turns blue and reads "Drafted By Me":
+    // marks them drafted AND puts them on my team. (Undrafting someone also
+    // takes them off my team.)
     const draftActionsWrap = document.createElement('div');
     draftActionsWrap.className = 'detail-draft-actions';
 
     const drafted = App.isDrafted(key);
+    const myPick = !drafted && App.isMyPickOnTheClock();
     const draftBtn = document.createElement('button');
-    draftBtn.className = 'btn-draft detail-draft-btn' + (drafted ? ' is-drafted' : '');
-    draftBtn.textContent = drafted ? 'Undraft' : 'Mark Drafted';
+    draftBtn.className = 'btn-draft detail-draft-btn' + (drafted ? ' is-drafted' : '') + (myPick ? ' is-my-pick' : '');
+    draftBtn.textContent = drafted ? 'Undraft' : (myPick ? 'Drafted By Me' : 'Mark Drafted');
     draftBtn.addEventListener('click', () => {
-      App.setDrafted(key, !drafted);
+      if (myPick) App.draftedByMe(key);
+      else App.setDrafted(key, !drafted);
       closeHandler();
     });
     draftActionsWrap.appendChild(draftBtn);
-
-    const onMyTeam = App.isOnMyTeam(key);
-    const myTeamBtn = document.createElement('button');
-    myTeamBtn.className = 'detail-myteam-btn' + (onMyTeam ? ' is-on-team' : '');
-    myTeamBtn.textContent = onMyTeam ? 'Remove From My Team' : 'Drafted By Me';
-    myTeamBtn.addEventListener('click', () => {
-      if (onMyTeam) App.removeFromMyTeam(key);
-      else App.draftedByMe(key);
-      closeHandler();
-    });
-    draftActionsWrap.appendChild(myTeamBtn);
 
     sheet.appendChild(draftActionsWrap);
 
