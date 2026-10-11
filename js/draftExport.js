@@ -6,7 +6,8 @@
 
    The PDF is written by hand (no libraries, works offline): one content
    stream per page using the built-in Helvetica fonts, so names are reduced to
-   plain Latin letters (Dončić -> Doncic). */
+   plain Latin letters (Dončić -> Doncic). The pick cards are 60% of the full
+   page width (a narrow, centered column). */
 (function (global) {
   const PAGE_W = 612;      // US Letter, in points
   const PAGE_H = 792;
@@ -15,6 +16,7 @@
   const GAP = 6;
   const DIVIDER_H = 26;
   const NUM_W = 34;        // pick-number column, left of the cards
+  const CARD_W = 290;      // card width (the earlier full-width cards were ~484)
   const COLORS = {         // the app's dark theme
     bg: '#0f1115', surface: '#1a1d24', rowAlt: '#242932', border: '#2e333d',
     text: '#eef0f4', dim: '#9aa1ac'
@@ -54,29 +56,31 @@
       ops.push('BT', `/${font} ${size} Tf`, `${rgb(color)} rg`, `${x.toFixed(2)} ${baseline.toFixed(2)} Td`, `(${clean(str)}) Tj`, 'ET');
     };
     newPage();
+    // The number column + card form one block, centered on the page.
+    const blockW = NUM_W + 8 + CARD_W;
+    const left = (PAGE_W - blockW) / 2;
+    const x0 = left + NUM_W + 8;           // card's left edge
     picks.forEach((pick, i) => {
       const startsRound = i % roundSize === 0;
       const need = (startsRound ? DIVIDER_H + GAP : 0) + ROW_H;
       if (y - need < MARGIN) newPage();
       if (startsRound) {
         const label = 'Round ' + (i / roundSize + 1);
-        const mid = PAGE_W / 2;
+        const mid = x0 + CARD_W / 2;
         const half = label.length * 3.4;                    // ~half the label's width at 11pt bold
         const baseline = y - DIVIDER_H + 8;
-        ops.push(`${rgb(COLORS.border)} RG`, '0.8 w', `${MARGIN + NUM_W} ${baseline + 4} m ${mid - half - 10} ${baseline + 4} l S`,
-          `${mid + half + 10} ${baseline + 4} m ${PAGE_W - MARGIN} ${baseline + 4} l S`);
+        ops.push(`${rgb(COLORS.border)} RG`, '0.8 w', `${x0} ${baseline + 4} m ${mid - half - 10} ${baseline + 4} l S`,
+          `${mid + half + 10} ${baseline + 4} m ${x0 + CARD_W} ${baseline + 4} l S`);
         text(label, mid - half, baseline, 11, 'F2', COLORS.dim);
         y -= DIVIDER_H + GAP;
       }
       const top = y;
-      const x0 = MARGIN + NUM_W + 8;
-      const w = PAGE_W - MARGIN - x0;
       ops.push(`${rgb(i % 2 === 1 ? COLORS.rowAlt : COLORS.surface)} rg`, `${rgb(COLORS.border)} RG`, '0.6 w',
-        roundedRect(x0, top - ROW_H, w, ROW_H, 7), 'B');
+        roundedRect(x0, top - ROW_H, CARD_W, ROW_H, 7), 'B');
       const baseline = top - ROW_H / 2 - 4;
-      text(String(pick.number), MARGIN, baseline, 12, 'F2', COLORS.dim);
+      text(String(pick.number), left, baseline, 12, 'F2', COLORS.dim);
       text(pick.name, x0 + 12, baseline, 13, 'F2', COLORS.text);
-      text(pick.positions || '', x0 + 270, baseline, 11, 'F1', COLORS.dim);
+      text(pick.positions || '', x0 + CARD_W - 64, baseline, 11, 'F1', COLORS.dim);
       y -= ROW_H + GAP;
     });
 

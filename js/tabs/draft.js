@@ -162,6 +162,38 @@
     return top.concat(order.filter((item) => !topKeys.has(item.key)));
   }
 
+  // Long press: pin/unpin, float the pinned player to the top — but leave the
+  // scroll position alone and let rows slide to their new places in a quick
+  // animation (each row starts where it was on screen and glides to where it
+  // now is: FLIP). Rows are absolutely positioned and only get their final
+  // place after the list's layout pass, so the animation starts after that.
+  function togglePinSliding(key) {
+    const scroller = container;
+    const scroll = scroller.scrollTop;
+    const before = new Map();
+    container.querySelectorAll('.draft-row[data-key]').forEach((r) => before.set(r.dataset.key, r.getBoundingClientRect().top));
+    App.togglePinned(key);
+    applyPinsToSavedOrder();
+    render();
+    scroller.scrollTop = scroll;
+    const slide = () => {
+      scroller.scrollTop = scroll;
+      container.querySelectorAll('.draft-row[data-key]').forEach((r) => {
+        const old = before.get(r.dataset.key);
+        if (old === undefined) return;
+        const delta = old - r.getBoundingClientRect().top;
+        if (Math.abs(delta) < 2) return;
+        r.style.transition = 'none';
+        r.style.transform = 'translateY(' + delta + 'px)';
+        r.getBoundingClientRect();                       // commit the starting position
+        r.style.transition = 'transform 280ms ease-out';
+        r.style.transform = '';
+        setTimeout(() => { r.style.transition = ''; }, 320);
+      });
+    };
+    requestAnimationFrame(() => requestAnimationFrame(slide));
+  }
+
   // Re-applies pins to the saved order; true if it changed anything.
   function applyPinsToSavedOrder() {
     const cur = App.state.draftOrder || [];
@@ -670,11 +702,7 @@
       render();
     }, iso);
     // Tap opens the player; long press pins/unpins them in place (not from the drag handle).
-    SourceWeights.attachPress(row, openDetail, () => {
-      App.togglePinned(item.key);
-      applyPinsToSavedOrder(); // pinned players float to the top (bottom of the pinned block)
-      render();
-    }, '[data-drag-handle]');
+    SourceWeights.attachPress(row, openDetail, () => togglePinSliding(item.key), '[data-drag-handle]');
     if (App.isPinned(item.key)) row.classList.add('is-pinned');
 
     const handle = document.createElement('div');
