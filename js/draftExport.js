@@ -6,10 +6,11 @@
 
    The PDF is written by hand (no libraries, works offline): one content
    stream per page using the built-in Helvetica fonts, so names are reduced to
-   plain Latin letters (Dončić -> Doncic). The pick cards are 60% of the full
-   page width (a narrow, centered column). */
+   plain Latin letters (Dončić -> Doncic). The page itself is 40% narrower than
+   US Letter (367pt wide, same 792pt height), cropped around the narrow card
+   column. */
 (function (global) {
-  const PAGE_W = 612;      // US Letter, in points
+  const PAGE_W = 367;      // 60% of US Letter's 612pt width: the page is cropped to the card column
   const PAGE_H = 792;
   const MARGIN = 36;
   const ROW_H = 28;
