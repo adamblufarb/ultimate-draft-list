@@ -65,6 +65,18 @@
       renderKeepingScroll();
     });
     container.appendChild(editBtn);
+
+    const exportBtn = document.createElement('button');
+    exportBtn.type = 'button';
+    exportBtn.className = 'btn btn-secondary board-edit-btn';
+    exportBtn.textContent = 'Export Draft';
+    exportBtn.addEventListener('click', () => {
+      DraftExport.download(draftedKeys.map((key, i) => {
+        const entry = index.get(key);
+        return { number: i + 1, name: entry ? entry.displayName : key, positions: entry ? entry.positions : '' };
+      }), App.state.leagueSize);
+    });
+    container.appendChild(exportBtn);
   }
 
   // Switching between the normal board and Edit Draft rebuilds everything,

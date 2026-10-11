@@ -145,15 +145,33 @@
   // stays put (the combined ranks shown on each row still update).
   function resyncOrder() {
     if (App.state.listLocked) return;
-    // Pinned players keep the slot (index in the full order) they hold now;
-    // everyone else is re-sorted around them.
-    const pins = new Set(App.state.pinnedKeys || []);
-    const current = App.state.draftOrder || [];
-    const held = [];
-    current.forEach((item, i) => { if (pins.has(item.key)) held.push({ item, i }); });
-    const rest = buildResetOrder(sourceWeights).filter((item) => !pins.has(item.key));
-    held.forEach(({ item, i }) => { rest.splice(Math.min(i, rest.length), 0, item); });
-    App.state.draftOrder = rest;
+    // Pinned players stay at the very top (in pin order); everyone else is
+    // re-sorted below them.
+    App.state.draftOrder = withPinsFirst(buildResetOrder(sourceWeights));
+  }
+
+  // Pinned players always sit at the top of the list, in the order of
+  // App.state.pinnedKeys (a newly pinned player goes last in that block; the
+  // order inside it changes by dragging). Everyone else keeps their order.
+  function withPinsFirst(order) {
+    const pins = App.state.pinnedKeys || [];
+    if (pins.length === 0) return order;
+    const byKey = new Map(order.map((item) => [item.key, item]));
+    const top = pins.filter((k) => byKey.has(k)).map((k) => byKey.get(k));
+    const topKeys = new Set(top.map((item) => item.key));
+    return top.concat(order.filter((item) => !topKeys.has(item.key)));
+  }
+
+  // Re-applies pins to the saved order; true if it changed anything.
+  function applyPinsToSavedOrder() {
+    const cur = App.state.draftOrder || [];
+    const next = withPinsFirst(cur);
+    const changed = next.some((item, i) => item !== cur[i]);
+    if (changed) {
+      App.state.draftOrder = next;
+      App.persist();
+    }
+    return changed;
   }
 
   function show() {
@@ -193,6 +211,7 @@
     listSection.innerHTML = '';
 
     const index = Ranking.buildIndex(App.state.sources);
+    applyPinsToSavedOrder();
     const fullOrder = App.state.draftOrder || [];
     const query = searchQuery.trim().toLowerCase();
     const smartMatches = smartSearchCriteria ? computeSmartSearchMatches(index, smartSearchCriteria) : null;
@@ -244,8 +263,19 @@
       markers: nextPickMarkers(fullOrder, visibleItems),
       renderMarker: (label) => renderListDivider(label, true),
       onReorder: (newVisibleOrder) => {
-        App.state.draftOrder = mergeReorder(App.state.draftOrder, newVisibleOrder);
-        App.persist();
+        const dropped = mergeReorder(App.state.draftOrder, newVisibleOrder);
+        // The order the pinned players ended up in is their new pin order
+        // (pinned players hidden by a filter keep their place at the end).
+        const pins = new Set(App.state.pinnedKeys || []);
+        const seen = dropped.filter((item) => pins.has(item.key)).map((item) => item.key);
+        App.state.pinnedKeys = seen.concat((App.state.pinnedKeys || []).filter((k) => !seen.includes(k)));
+        App.state.draftOrder = dropped;
+        // Pinned players stay on top: if the drop broke that (an unpinned
+        // player dropped above them, or one of them dragged below), put it
+        // right and redraw.
+        const fixed = applyPinsToSavedOrder();
+        if (!fixed) App.persist();
+        else render();
       }
     });
     reorderable.setItems(visibleItems);
@@ -640,7 +670,11 @@
       render();
     }, iso);
     // Tap opens the player; long press pins/unpins them in place (not from the drag handle).
-    SourceWeights.attachPress(row, openDetail, () => App.togglePinned(item.key), '[data-drag-handle]');
+    SourceWeights.attachPress(row, openDetail, () => {
+      App.togglePinned(item.key);
+      applyPinsToSavedOrder(); // pinned players float to the top (bottom of the pinned block)
+      render();
+    }, '[data-drag-handle]');
     if (App.isPinned(item.key)) row.classList.add('is-pinned');
 
     const handle = document.createElement('div');
