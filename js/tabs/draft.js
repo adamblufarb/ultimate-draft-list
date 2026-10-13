@@ -136,8 +136,24 @@
 
   // Recomputes the whole order from the combined average over `weights`.
   function buildResetOrder(weights) {
-    return Ranking.computeCombined(App.state.sources, weights)
+    const ranked = Ranking.computeCombined(App.state.sources, weights)
       .map((r) => ({ key: r.key, name: r.displayName }));
+    return completeOrder(ranked, Ranking.buildIndex(App.state.sources));
+  }
+
+  // Every player on any source's list belongs in the Draft List, even one the
+  // current filter leaves without a combined rank (all their sources are
+  // switched off). Those go at the bottom, best first by their average across
+  // ALL sources, and show "—" instead of a combined rank. Pinned players still
+  // sit above everyone (withPinsFirst).
+  function completeOrder(order, index) {
+    const present = new Set(order.map((item) => item.key));
+    const allOn = {};
+    App.state.sources.forEach((s) => { allOn[s.id] = 1; });
+    const missing = Ranking.combineFromIndex(index, allOn)
+      .filter((row) => !present.has(row.key))
+      .map((row) => ({ key: row.key, name: row.displayName }));
+    return missing.length ? order.concat(missing) : order;
   }
 
   // Called whenever the source filter changes: resyncs the order to the new
@@ -256,6 +272,15 @@
     listSection.innerHTML = '';
 
     const index = Ranking.buildIndex(App.state.sources);
+    // Add any player the saved order doesn't have yet (see completeOrder).
+    const saved = App.state.draftOrder || [];
+    if (saved.length > 0) {
+      const completed = completeOrder(saved, index);
+      if (completed !== saved) {
+        App.state.draftOrder = completed;
+        App.persist();
+      }
+    }
     applyPinsToSavedOrder();
     const fullOrder = App.state.draftOrder || [];
     const query = searchQuery.trim().toLowerCase();
