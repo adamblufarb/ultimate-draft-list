@@ -51,6 +51,8 @@
   // The full local state as it was just before a merge that had no base to
   // go on (first run of this version on a device). Pure insurance.
   const PRIOR_LOCAL_KEY = 'udo_prior_local';
+  // When this device last confirmed it matches GitHub (shown on the Sources card).
+  const LAST_SYNCED_KEY = 'udo_last_synced';
   const REPO_OWNER = 'adamblufarb';
   const REPO_NAME = 'ultimate-draft-list';
   const BRANCH = 'main';
@@ -128,6 +130,16 @@
     status = next;
     statusMessage = message || '';
     emit('status-changed', { status, message: statusMessage });
+  }
+
+  function markSynced() {
+    try { localStorage.setItem(LAST_SYNCED_KEY, String(Date.now())); } catch (e) { /* ignore */ }
+    emit('status-changed', { status, message: statusMessage });
+  }
+
+  // ms timestamp of the last time this device matched GitHub, or 0.
+  function getLastSynced() {
+    try { return parseInt(localStorage.getItem(LAST_SYNCED_KEY) || '0', 10) || 0; } catch (e) { return 0; }
   }
 
   function getStatus() {
@@ -472,6 +484,7 @@
       adapter.replaceState(remote.state);
       saveBase(remote.state, remote.sha);
       ready = true;
+      markSynced();
       return true;
     }
 
@@ -484,8 +497,35 @@
     saveBase(remote.state, remote.sha);
     ready = true;
     if (JSON.stringify(merged) !== JSON.stringify(remote.state)) await pushNow();   // only if GitHub is actually missing something
-    else clearDirty();
+    else { clearDirty(); markSynced(); }
     return true;
+  }
+
+  // "Sync Now": pull, merge anything unsaved on this device, push if GitHub is
+  // missing something. Safe to press any time.
+  async function syncNow() {
+    if (!isConnected() || !adapter) return false;
+    if (hasPending) { clearTimeout(debounceTimer); hasPending = false; }
+    ready = false;
+    return syncOnLoad();
+  }
+
+  // Cheap check (one tiny request) used when you switch back to the app and
+  // every so often while it's open: has anyone saved to GitHub since this
+  // device last looked? If so, pull it in (merging if this device has unsaved
+  // changes). Does nothing while a save is in flight or pending, in Fake Mode,
+  // or before the first load has finished.
+  async function refreshIfChanged() {
+    if (!isConnected() || !adapter || !ready || pushing || hasPending || adapter.isFake()) return false;
+    try {
+      const res = await ghFetch(`${apiUrl()}?ref=${BRANCH}`, { headers: authHeaders() });
+      if (!res.ok) return false;
+      const body = await res.json();
+      if (body.sha && body.sha === sha && !isDirty()) { markSynced(); return false; }
+    } catch (e) {
+      return false;
+    }
+    return syncOnLoad();
   }
 
   async function ensureSynced() {
@@ -555,7 +595,7 @@
           lastRemoteState = pushed;
           lastRemoteLength = json.length;
           saveBase(pushed, sha);
-          if (changeCounter === changeAtStringify) clearDirty();
+          if (changeCounter === changeAtStringify) { clearDirty(); markSynced(); }
           if (global.Backups) global.Backups.add(pushed, 'synced');
           setStatus('idle');
           return;
@@ -640,7 +680,7 @@
 
   global.GithubSync = {
     on, getToken, setToken, isConnected, getStatus, setAdapter,
-    syncOnLoad, scheduleSync, pushNow, isDirty, flushPending,
+    syncOnLoad, syncNow, refreshIfChanged, getLastSynced, scheduleSync, pushNow, isDirty, flushPending,
     listHistory, fetchVersion, merge3, wouldWipe, buildBase, validateState, stripJunk
   };
 })(window);

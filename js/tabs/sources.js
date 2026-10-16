@@ -128,6 +128,27 @@
       desc.textContent = 'Changes on this device save to the repo automatically and load on any device connected with a token.';
       card.appendChild(desc);
 
+      const last = GithubSync.getLastSynced();
+      const lastEl = document.createElement('p');
+      lastEl.className = 'source-view-meta sync-last';
+      const when = last ? new Date(last) : null;
+      const sameDay = when && when.toDateString() === new Date().toDateString();
+      lastEl.textContent = 'Last synced: ' + (when
+        ? (sameDay ? when.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }) : when.toLocaleString([], { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }))
+        : 'not yet on this device');
+      card.appendChild(lastEl);
+
+      const syncBtn = document.createElement('button');
+      syncBtn.className = 'btn btn-primary';
+      syncBtn.textContent = 'Sync Now';
+      syncBtn.addEventListener('click', async () => {
+        syncBtn.disabled = true;
+        syncBtn.textContent = 'Syncing…';
+        await GithubSync.syncNow();
+        render();
+      });
+      card.appendChild(syncBtn);
+
       const disconnectBtn = document.createElement('button');
       disconnectBtn.className = 'btn btn-danger';
       disconnectBtn.textContent = 'Disconnect';

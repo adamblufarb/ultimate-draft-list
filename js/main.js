@@ -73,5 +73,14 @@
       }
     });
     if (GithubSync.isConnected()) GithubSync.syncOnLoad();
+
+    // A screen that stays open used to keep showing whatever it loaded with.
+    // Now it checks GitHub whenever you switch back to it, when the phone comes
+    // back online, and every 90 seconds while it's showing.
+    const refresh = () => { if (document.visibilityState === 'visible') GithubSync.refreshIfChanged(); };
+    document.addEventListener('visibilitychange', refresh);
+    window.addEventListener('online', refresh);
+    window.addEventListener('focus', refresh);
+    setInterval(refresh, 90000);
   });
 })();
