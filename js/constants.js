@@ -4,6 +4,16 @@
   // part of the app's state — if they turn up in it, a metadata reply was once
   // mistaken for the data (the 2026-10-09 incident) and they get stripped.
   const GITHUB_RESPONSE_KEYS = ['_links', 'content', 'download_url', 'encoding', 'git_url', 'html_url', 'name', 'path', 'sha', 'size', 'type', 'url'];
+  // The Data List and the Basketball-Reference stat files spell three teams
+  // differently (Data List: BKN, PHX, CHA — stats: BRK, PHO, CHO). Compared as
+  // written they looked like players who changed teams. canonTeam() maps every
+  // spelling to one code so teams can be compared safely.
+  const TEAM_ALIASES = { BKN: 'BRK', PHX: 'PHO', CHA: 'CHO' };
+  function canonTeam(code) {
+    const t = String(code || '').trim().toUpperCase();
+    return TEAM_ALIASES[t] || t;
+  }
+
   const MAX_SOURCES = 12;
   // Season Stats upload slots (most recent season first). Health/trend emoji
   // only ever look at the first HEALTH_TREND_SEASONS of them; older slots are
@@ -36,5 +46,5 @@
     return Number.isInteger(score) ? String(score) : score.toFixed(1);
   }
 
-  global.Constants = { GITHUB_RESPONSE_KEYS, MAX_SOURCES, SEASON_SLOTS, HEALTH_TREND_SEASONS, SCORE_TYPES, scoreTypeLabel, formatScore };
+  global.Constants = { canonTeam, TEAM_ALIASES, GITHUB_RESPONSE_KEYS, MAX_SOURCES, SEASON_SLOTS, HEALTH_TREND_SEASONS, SCORE_TYPES, scoreTypeLabel, formatScore };
 })(window);

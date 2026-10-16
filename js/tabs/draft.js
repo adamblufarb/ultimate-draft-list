@@ -56,6 +56,7 @@
   // here. reconcileFilters() then drops anything that no longer exists.
   function saveFilters() {
     UiState.set('draftFilters', { sourceWeights, iso, selectedPositions, selectedTeams, poolSize, smartSearchCriteria });
+    App.setActiveFilter(sourceWeights, iso);   // Draft Board / My Team follow these filters too
   }
 
   function restoreFilters() {
@@ -74,6 +75,7 @@
     sourceWeights = SourceWeights.defaultWeights(App.state.sources);
     restoreFilters();
     reconcileFilters();
+    App.setActiveFilter(sourceWeights, iso);
     App.on('sources-changed', onSourcesChanged);
     App.on('drafted-changed', () => { if (isVisible()) render(); });
     // Tagging a player from the still-open player detail view fires this
@@ -113,6 +115,7 @@
 
   function onSourcesChanged() {
     reconcileFilters();
+    App.setActiveFilter(sourceWeights, iso);
     if (isVisible()) render();
   }
 
@@ -287,7 +290,9 @@
     const smartMatches = smartSearchCriteria ? computeSmartSearchMatches(index, smartSearchCriteria) : null;
     const teamOf = selectedTeams.length > 0 ? teamByKey() : null;
     const visibleItems = fullOrder.filter((item) => {
-      if (App.isDrafted(item.key)) return false;
+      // Drafted players are hidden from the list, except that a search finds
+      // them (marked "Drafted") so you can look anyone up.
+      if (App.isDrafted(item.key) && !query) return false;
       if (teamOf && !selectedTeams.includes(teamOf.get(item.key))) return false;
       if (smartMatches) {
         if (!smartMatches.has(item.key)) return false;
@@ -740,7 +745,7 @@
       render();
     }, iso);
     // Tap opens the player; long press pins/unpins them in place (not from the drag handle).
-    SourceWeights.attachPress(row, openDetail, () => togglePinSliding(item.key), '[data-drag-handle]');
+    SourceWeights.attachPress(row, openDetail, () => { if (!App.isDrafted(item.key)) togglePinSliding(item.key); }, '[data-drag-handle]');
     if (App.isPinned(item.key)) row.classList.add('is-pinned');
 
     const handle = document.createElement('div');
@@ -773,6 +778,13 @@
     row.appendChild(name);
     const tagsBadge = playerTagsBadge(item.key);
     if (tagsBadge) row.appendChild(tagsBadge);
+    if (drafted) {
+      const mark = document.createElement('span');
+      mark.className = 'drafted-badge';
+      const pick = (App.state.draftedKeys || []).indexOf(item.key) + 1;
+      mark.textContent = 'Drafted' + (pick > 0 ? ' · ' + pick : '');
+      row.appendChild(mark);
+    }
     return row;
   }
 

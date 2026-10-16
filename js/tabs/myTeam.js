@@ -6,11 +6,15 @@
 (function (global) {
   const POSITIONS = ['PG', 'SG', 'SF', 'PF', 'C'];
   let container;
+  // Position counters double as filters; several can be on at once. Cleared
+  // whenever you leave the tab (resetFilters, called from main.js).
+  const activeFilters = new Set();
 
   function init(rootEl) {
     container = rootEl;
     App.on('my-team-changed', render);
     App.on('sources-changed', render);
+    App.on('filters-changed', render);   // combined ranks follow the Draft List's filters
     App.on('remote-state-loaded', render);
     App.on('tags-changed', render);
     render();
@@ -54,8 +58,9 @@
     const countersWrap = document.createElement('div');
     countersWrap.className = 'position-counters';
     POSITIONS.forEach((pos) => {
-      const box = document.createElement('div');
-      box.className = 'position-counter';
+      const box = document.createElement('button');
+      box.type = 'button';
+      box.className = 'position-counter' + (activeFilters.has(pos) ? ' is-active' : '');
       const label = document.createElement('div');
       label.className = 'position-counter-label';
       label.textContent = pos;
@@ -64,11 +69,15 @@
       value.textContent = counts[pos];
       box.appendChild(label);
       box.appendChild(value);
+      box.addEventListener('click', () => {
+        if (activeFilters.has(pos)) activeFilters.delete(pos); else activeFilters.add(pos);
+        render();
+      });
       countersWrap.appendChild(box);
     });
     container.appendChild(countersWrap);
 
-    const weights = SourceWeights.defaultWeights(App.state.sources);
+    const weights = App.getActiveWeights();
     const avgByKey = new Map(Ranking.combineFromIndex(index, weights).map((r) => [r.key, r.avg]));
 
     const lineup = Lineup.assign(App.state.myTeamKeys, (key) => { const e = index.get(key); return e ? e.positions : ''; });
@@ -79,7 +88,7 @@
       const row = document.createElement('div');
       row.className = 'rank-row';
       row.dataset.key = key;
-      row.addEventListener('click', () => PlayerDetail.open(key, weights, () => {}, null));
+      row.addEventListener('click', () => PlayerDetail.open(key, weights, () => {}, App.getActiveIso()));
 
       // Round the player was drafted in (their place in Draft Board's order,
       // one round per leagueSize picks), in a blue circle to the left of the
@@ -148,16 +157,45 @@
       return h;
     };
 
+    // With position filters on, only players who have one of those positions
+    // (as any of their listed positions) are shown, in their lineup slots;
+    // open slots and everyone else are hidden.
+    const filtering = activeFilters.size > 0;
+    const passes = (key) => {
+      if (!filtering) return true;
+      const entry = key && index.get(key);
+      return !!entry && Lineup.parsePositions(entry.positions).some((p) => activeFilters.has(p));
+    };
     const list = document.createElement('div');
     list.className = 'rankings-list';
-    lineup.starters.forEach(({ slot, key }) => list.appendChild(slotRow(slot.label, key)));
-    lineup.bench.forEach((key) => list.appendChild(slotRow('BNCH', key)));
-    if (lineup.over.length) {
+    let shown = 0;
+    const add = (label, key) => {
+      if (filtering && !passes(key)) return;
+      list.appendChild(slotRow(label, key));
+      shown += 1;
+    };
+    lineup.starters.forEach(({ slot, key }) => add(slot.label, key));
+    lineup.bench.forEach((key) => add('BNCH', key));
+    const overShown = lineup.over.filter(passes);
+    if (overShown.length) {
       list.appendChild(heading('Over the 16-player limit'));
-      lineup.over.forEach((key) => list.appendChild(slotRow('—', key)));
+      overShown.forEach((key) => { list.appendChild(slotRow('—', key)); shown += 1; });
+    }
+    if (filtering && shown === 0) {
+      const none = document.createElement('p');
+      none.className = 'empty-hint';
+      none.textContent = 'No one on your team has ' + Array.from(activeFilters).join(' / ') + '.';
+      list.appendChild(none);
     }
     container.appendChild(list);
   }
 
-  global.MyTeamTab = { init, render };
+  // Back to "no filter" — called whenever you leave the My Team tab.
+  function resetFilters() {
+    if (activeFilters.size === 0) return;
+    activeFilters.clear();
+    render();
+  }
+
+  global.MyTeamTab = { init, render, resetFilters };
 })(window);

@@ -140,6 +140,22 @@
     emit('tags-changed', { key });
   }
 
+  // A season slot's row for a player, by key. Looking this up with
+  // slot.players.find() for every row, every emoji, every redraw made the
+  // Draft List slow on a phone, so each slot's players array gets a
+  // key -> row Map, built once per array (WeakMap: a re-uploaded season is a
+  // new array and gets a fresh Map automatically).
+  const seasonRowMaps = new WeakMap();
+  function seasonRow(slot, key) {
+    let map = seasonRowMaps.get(slot.players);
+    if (!map) {
+      map = new Map();
+      slot.players.forEach((p) => map.set(p.key, p));
+      seasonRowMaps.set(slot.players, map);
+    }
+    return map.get(key) || null;
+  }
+
   // Health emoji, derived from Season Stats (Sources tab) — not a user
   // toggle like the tags above, just computed from games played. 💪 needs
   // all 3 most recent season slots to have data for this player and every one to be
@@ -150,9 +166,9 @@
   const HEALTH_DURABLE_GAMES = 65;
   const HEALTH_INJURY_GAMES = 54;
 
-  function getHealthEmoji(key) {
+  function computeHealthEmoji(key) {
     const gamesPerSeason = state.seasonStats.slice(0, Constants.HEALTH_TREND_SEASONS).map((slot) => {
-      const entry = slot.players.find((p) => p.key === key);
+      const entry = seasonRow(slot, key);
       if (!entry) return null;
       const games = parseInt(entry.values.games, 10);
       return Number.isNaN(games) ? null : games;
@@ -207,7 +223,7 @@
     TREND_CATEGORIES.forEach((statId) => {
       const minChange = TREND_MIN_CHANGE[statId];
       const values = state.seasonStats.slice(0, Constants.HEALTH_TREND_SEASONS).map((slot) => {
-        const entry = slot.players.find((p) => p.key === key);
+        const entry = seasonRow(slot, key);
         if (!entry) return null;
         const value = parseFloat(entry.values[statId]);
         return Number.isNaN(value) ? null : value;
@@ -241,13 +257,48 @@
     return overlap >= TREND_MIN_OVERLAP ? emoji : null;
   }
 
-  function getImprovementEmoji(key) {
+  function computeImprovementEmoji(key) {
     return getTrendEmoji(key, 1, '⬆️');
   }
 
-  function getDeclineEmoji(key) {
+  function computeDeclineEmoji(key) {
     return getTrendEmoji(key, -1, '⬇️');
   }
+
+  // The three emojis only depend on the Season Stats rows, yet every redraw
+  // of the Draft List (every search keystroke) recomputed them for every row.
+  // Results are remembered per player and thrown away whenever the season
+  // data is replaced (a new upload is a new players array, tracked by
+  // signature) or edited in place (Fake Mode scrambles the stats, so entering
+  // and leaving it clears the memo).
+  const arrayIds = new WeakMap();
+  let nextArrayId = 1;
+  const emojiMemo = { sig: '', health: new Map(), up: new Map(), down: new Map() };
+  function emojiMemoFor(kind) {
+    const sig = state.seasonStats.slice(0, Constants.HEALTH_TREND_SEASONS).map((slot) => {
+      let id = arrayIds.get(slot.players);
+      if (!id) { id = nextArrayId++; arrayIds.set(slot.players, id); }
+      return id;
+    }).join('-');
+    if (sig !== emojiMemo.sig) {
+      emojiMemo.sig = sig;
+      emojiMemo.health.clear(); emojiMemo.up.clear(); emojiMemo.down.clear();
+    }
+    return emojiMemo[kind];
+  }
+  function memoized(kind, compute) {
+    return (key) => {
+      const memo = emojiMemoFor(kind);
+      if (memo.has(key)) return memo.get(key);
+      const value = compute(key);
+      memo.set(key, value);
+      return value;
+    };
+  }
+  const getHealthEmoji = memoized('health', computeHealthEmoji);
+  const getImprovementEmoji = memoized('up', computeImprovementEmoji);
+  const getDeclineEmoji = memoized('down', computeDeclineEmoji);
+  function clearEmojiMemo() { emojiMemo.sig = ''; }
 
   // Free-text note per player, set only from Player Detail's notes box.
   function getPlayerNote(key) {
@@ -320,6 +371,22 @@
   function deleteNote(id) {
     state.notes = state.notes.filter((n) => n.id !== id);
     persist();
+  }
+
+  // The Draft List's current source filter (which sources count, 1.5x/2.5x,
+  // iso mode) is what the combined rank means everywhere, so it's published
+  // here and Draft Board / My Team use it instead of their own defaults.
+  let activeFilter = null;
+  function setActiveFilter(weights, iso) {
+    const changed = !activeFilter || !SourceWeights.sameFilter(activeFilter.weights, activeFilter.iso, weights, iso);
+    activeFilter = { weights: Object.assign({}, weights), iso: iso ? { ids: iso.ids.slice(), saved: Object.assign({}, iso.saved) } : null };
+    if (changed) emit('filters-changed');
+  }
+  function getActiveWeights() {
+    return activeFilter ? activeFilter.weights : SourceWeights.defaultWeights(state.sources);
+  }
+  function getActiveIso() {
+    return activeFilter ? activeFilter.iso : null;
   }
 
   // Draft List pins: long-pressing a row pins that player to their slot so
@@ -433,6 +500,7 @@
   }
 
   function enterFakeMode() {
+    clearEmojiMemo();
     if (fakeSnapshot) return;
     fakeSnapshot = JSON.parse(JSON.stringify(state));
     // Anything still waiting out the sync debounce is the real data — get it
@@ -459,6 +527,7 @@
   }
 
   function exitFakeMode() {
+    clearEmojiMemo();
     if (!fakeSnapshot) return;
     const real = fakeSnapshot;
     fakeSnapshot = null;
@@ -478,6 +547,7 @@
     getSleeperLevel, cycleSleeperLevel,
     isDoNotDraft, toggleDoNotDraft,
     isTarget, toggleTarget, isPinned, togglePinned,
+    setActiveFilter, getActiveWeights, getActiveIso,
     getHealthEmoji, getImprovementEmoji, getDeclineEmoji,
     getPlayerNote, setPlayerNote,
     upsertSavedSearch, deleteSavedSearch,

@@ -73,7 +73,7 @@
     if (!lastTeam) return null;
     const midSeasonTrade = /^\d+TM$/.test(lastTeam.trim());
     const currentTeam = dataEntry && dataEntry.team;
-    const startedSomewhereNew = currentTeam && currentTeam.trim().toUpperCase() !== lastTeam.trim().toUpperCase();
+    const startedSomewhereNew = currentTeam && Constants.canonTeam(currentTeam) !== Constants.canonTeam(lastTeam);   // BKN/BRK, PHX/PHO, CHA/CHO are the same team
     return (midSeasonTrade || startedSomewhereNew) ? { lastTeam } : null;
   }
 

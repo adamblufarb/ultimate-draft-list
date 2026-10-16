@@ -1283,6 +1283,11 @@ body {
 }
 
 .position-counter {
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
   flex: 1;
   background: var(--surface);
   border: 1px solid var(--border);
@@ -1360,4 +1365,58 @@ body {
   .tab-panel {
     padding: 20px 24px 28px;
   }
+}
+
+
+/* My Team: the position counters are filters. */
+.position-counter.is-active {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+.position-counter.is-active .position-counter-label,
+.position-counter.is-active .position-counter-value {
+  color: #fff;
+}
+
+/* Draft Board: when the pick on the clock is mine, the dotted outline turns
+   solid blue ("On the clock" in white). */
+.lineup-empty.is-my-turn {
+  background: var(--accent);
+  border: 1px solid var(--accent);
+  color: #fff;
+  font-weight: 600;
+}
+
+/* Search results include drafted players, marked. */
+.drafted-badge {
+  flex-shrink: 0;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-dim);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 1px 6px;
+  white-space: nowrap;
+}
+
+/* Phone browsers: typing in a field must not zoom the page (iOS zooms any
+   input under 16px), and long-pressing a row must not highlight its text
+   (it's how pinning works). Fields, notes and text you might copy stay
+   selectable. */
+@media (pointer: coarse) {
+  input, textarea, select {
+    font-size: 16px !important;
+  }
+}
+
+body {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+
+input, textarea, select, .note-text, .detail-notes {
+  -webkit-user-select: text;
+  user-select: text;
 }

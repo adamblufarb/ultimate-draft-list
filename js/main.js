@@ -29,8 +29,11 @@
     // see whatever sources exist *now* (not just at page load), and because
     // its list measures row height via getBoundingClientRect(), which reads
     // 0 while the panel is display:none.
+    let currentTab = null;
     function showTab(name) {
       UiState.set('tab', name);
+      if (currentTab === 'myteam' && name !== 'myteam') MyTeamTab.resetFilters();   // position filters don't survive leaving
+      currentTab = name;
       Object.entries(panels).forEach(([key, el]) => {
         el.classList.toggle('active', key === name);
       });

@@ -17,6 +17,7 @@
   function init(rootEl) {
     container = rootEl;
     App.on('sources-changed', render);
+    App.on('filters-changed', render);   // combined ranks follow the Draft List's filters
     App.on('drafted-changed', render);
     // Same reasoning as Draft List/Rankings: tagging a player from the
     // still-open player detail view fires this repeatedly in quick
@@ -45,7 +46,7 @@
     }
 
     const index = Ranking.buildIndex(App.state.sources);
-    const combined = Ranking.combineFromIndex(index, SourceWeights.defaultWeights(App.state.sources));
+    const combined = Ranking.combineFromIndex(index, App.getActiveWeights());
     const avgByKey = new Map(combined.map((row) => [row.key, row.avg]));
 
     if (editing) {
@@ -108,7 +109,8 @@
     num.className = 'board-pick-number';
     num.textContent = String(pickNumber);
     const card = document.createElement('div');
-    card.className = 'rank-row lineup-empty';
+    // When the pick on the clock is mine, the dotted outline turns solid blue.
+    card.className = 'rank-row lineup-empty' + (App.isMyPickOnTheClock() ? ' is-my-turn' : '');
     const ghost = document.createElement('div');
     ghost.className = 'rank-badge';
     ghost.style.visibility = 'hidden';
@@ -262,7 +264,7 @@
       const item = document.createElement('div');
       item.className = 'rank-row' + (i % 2 === 1 ? ' row-alt' : '') + (App.isOnMyTeam(key) ? ' is-mine' : '');
       item.dataset.key = key;
-      item.addEventListener('click', () => PlayerDetail.open(key, SourceWeights.defaultWeights(App.state.sources), () => {}, null));
+      item.addEventListener('click', () => PlayerDetail.open(key, App.getActiveWeights(), () => {}, App.getActiveIso()));
 
       const rankBadge = document.createElement('div');
       rankBadge.className = 'rank-badge';
