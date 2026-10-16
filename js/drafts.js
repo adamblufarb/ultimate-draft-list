@@ -7,7 +7,7 @@
    so drafts for the same season share them) and loads the target's.
    Ranking lists and the Data List belong to the season. Shared by every draft: Season Stats, tags, player notes, notes. */
 (function (global) {
-  const DRAFT_FIELDS = ['draftedKeys', 'myTeamKeys', 'pinnedKeys', 'draftOrder', 'pickSlot', 'leagueSize', 'listLocked', 'showNextPick', 'teamStructure', 'notes'];
+  const DRAFT_FIELDS = ['draftedKeys', 'myTeamKeys', 'pinnedKeys', 'draftOrder', 'pickSlot', 'leagueSize', 'listLocked', 'showNextPick', 'teamStructure', 'notes', 'playerNotes', 'breakoutLevels', 'sleeperLevels', 'targetKeys', 'doNotDraftKeys'];
 
   function st() { return App.state; }
   function active() { return st().drafts.find((d) => d.id === st().activeDraftId); }
