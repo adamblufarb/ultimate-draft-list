@@ -1418,4 +1418,5 @@ input, textarea, select, .note-text, .detail-notes {
 .draft-grid .stat-card { min-height: 84px; display: flex; align-items: center; justify-content: center; }
 .draft-new-tile { text-align: center; }
 .draft-grid .smart-search-saved-title { text-align: center; }
-.btn-add-source { margin-bottom: 20px; }
+.btn-add-source { margin-top: 14px; margin-bottom: 14px; }
+.sync-card + .source-list { margin-top: 14px; }
