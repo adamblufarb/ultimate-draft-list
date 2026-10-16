@@ -80,7 +80,7 @@
     const weights = App.getActiveWeights();
     const avgByKey = new Map(Ranking.combineFromIndex(index, weights).map((r) => [r.key, r.avg]));
 
-    const lineup = Lineup.assign(App.state.myTeamKeys, (key) => { const e = index.get(key); return e ? e.positions : ''; });
+    const lineup = Lineup.assign(App.state.myTeamKeys, (key) => { const e = index.get(key); return e ? e.positions : ''; }, App.state.teamStructure);
 
     const card = (key) => {
       const entry = index.get(key);
@@ -178,7 +178,7 @@
     lineup.bench.forEach((key) => add('BNCH', key));
     const overShown = lineup.over.filter(passes);
     if (overShown.length) {
-      list.appendChild(heading('Over the 16-player limit'));
+      list.appendChild(heading('Over the ' + (lineup.starters.length + lineup.bench.length) + '-player limit'));
       overShown.forEach((key) => { list.appendChild(slotRow('—', key)); shown += 1; });
     }
     if (filtering && shown === 0) {

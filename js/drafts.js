@@ -7,7 +7,7 @@
    so drafts for the same season share them) and loads the target's.
    Ranking lists and the Data List belong to the season. Shared by every draft: Season Stats, tags, player notes, notes. */
 (function (global) {
-  const DRAFT_FIELDS = ['draftedKeys', 'myTeamKeys', 'pinnedKeys', 'draftOrder', 'pickSlot', 'leagueSize', 'listLocked', 'showNextPick'];
+  const DRAFT_FIELDS = ['draftedKeys', 'myTeamKeys', 'pinnedKeys', 'draftOrder', 'pickSlot', 'leagueSize', 'listLocked', 'showNextPick', 'teamStructure'];
 
   function st() { return App.state; }
   function active() { return st().drafts.find((d) => d.id === st().activeDraftId); }
@@ -45,27 +45,27 @@
     reload();
   }
 
-  function create(name, season, pickSlot, leagueSize) {
+  function create(name, season, pickSlot, leagueSize, structure) {
     const s = st();
     Backups.add(s, 'before-new-draft');
     stash();
-    const d = { id: 'draft_' + Date.now().toString(36), name, season, createdAt: Date.now(), data: { pickSlot, leagueSize } };
+    const d = { id: 'draft_' + Date.now().toString(36), name, season, createdAt: Date.now(), data: { pickSlot, leagueSize, teamStructure: Lineup.normalizeStructure(structure) } };
     s.drafts.push(d);
     load(d);
     reload();
   }
 
-  function edit(id, name, season, pickSlot, leagueSize) {
+  function edit(id, name, season, pickSlot, leagueSize, structure) {
     const s = st(); const d = s.drafts.find((x) => x.id === id); if (!d) return;
     const isActive = id === s.activeDraftId;
     if (isActive) {
       stash();
       d.name = name;
-      d.data.pickSlot = pickSlot; d.data.leagueSize = leagueSize;
-      if (season !== d.season) { d.season = season; load(d); } else { s.pickSlot = pickSlot; s.leagueSize = leagueSize; }
+      d.data.pickSlot = pickSlot; d.data.leagueSize = leagueSize; d.data.teamStructure = Lineup.normalizeStructure(structure);
+      if (season !== d.season) { d.season = season; load(d); } else { s.pickSlot = pickSlot; s.leagueSize = leagueSize; s.teamStructure = d.data.teamStructure; }
     } else {
       d.name = name; d.season = season; d.data = d.data || {};
-      d.data.pickSlot = pickSlot; d.data.leagueSize = leagueSize;
+      d.data.pickSlot = pickSlot; d.data.leagueSize = leagueSize; d.data.teamStructure = Lineup.normalizeStructure(structure);
     }
     reload();
   }
@@ -164,16 +164,58 @@
     return { row, inp };
   }
 
-  function showForm(d) {
+  function showStructure(structure, back) {
+    const work = { slots: structure.slots.slice(), bench: structure.bench };
+    const sheet = sheetWithHeader('Team Structure', () => back(work));
+    sheet.appendChild(el('div', 'draft-tile-sub', 'Starting slots and bench spots on your team. G = PG/SG, F = SF/PF, PF/C = PF or C, UTIL = anyone.'));
+    const listEl = el('div', 'structure-list');
+    sheet.appendChild(listEl);
+    const addRow = el('div', 'structure-add');
+    const sel = el('select', 'smart-search-select');
+    Lineup.SLOT_ORDER.forEach((p) => { const o = el('option', null, p); o.value = p; sel.appendChild(o); });
+    const addBtn = el('button', 'btn btn-secondary', '+ Add Slot');
+    addBtn.addEventListener('click', () => { work.slots.push(sel.value); draw(); });
+    addRow.appendChild(sel); addRow.appendChild(addBtn);
+    sheet.appendChild(addRow);
+    const bench = numberRow('Bench spots', work.bench);
+    bench.inp.min = '0';
+    bench.inp.addEventListener('input', () => { const n = parseInt(bench.inp.value, 10); work.bench = n >= 0 ? n : 0; draw(true); });
+    sheet.appendChild(bench.row);
+    const total = el('div', 'draft-tile-sub');
+    sheet.appendChild(total);
+    const done = el('button', 'btn btn-primary smart-search-submit', 'Done');
+    done.addEventListener('click', () => back(work));
+    sheet.appendChild(done);
+    function draw(totalOnly) {
+      total.textContent = work.slots.length + ' starters + ' + work.bench + ' bench = ' + (work.slots.length + work.bench) + ' players';
+      if (totalOnly) return;
+      listEl.innerHTML = '';
+      work.slots.forEach((label, i) => {
+        const row = el('div', 'structure-row');
+        row.appendChild(el('span', 'structure-label', label));
+        const rm = el('button', 'btn btn-danger structure-remove', 'Remove');
+        rm.addEventListener('click', () => { work.slots.splice(i, 1); draw(); });
+        row.appendChild(rm);
+        listEl.appendChild(row);
+      });
+    }
+    draw();
+    show(sheet);
+  }
+
+  let formDraft = null; // unsaved form values while the Team Structure screen is open
+
+  function showForm(d, keep) {
+    if (!keep) formDraft = null;
     const sheet = sheetWithHeader(d ? 'Edit Draft' : 'New Draft', showList);
     const fields = el('div', 'smart-search-fields');
     const name = el('input', 'smart-search-title-input');
-    name.type = 'text'; name.placeholder = 'Name this draft'; name.value = d ? d.name : '';
+    name.type = 'text'; name.placeholder = 'Name this draft'; name.value = formDraft ? formDraft.name : d ? d.name : '';
     fields.appendChild(name);
 
     fields.appendChild(el('div', 'smart-search-label', 'Season'));
     const sel = el('select', 'smart-search-select');
-    const cur = d ? d.season : seasonFor();
+    const cur = formDraft ? formDraft.season : d ? d.season : seasonFor();
     seasonOptions(cur).forEach((o) => {
       const opt = el('option', null, o); opt.value = o; if (o === cur) opt.selected = true; sel.appendChild(opt);
     });
@@ -181,9 +223,16 @@
     if (d) fields.appendChild(el('div', 'draft-tile-sub', 'Changing the season switches this draft to that season’s ranking lists.'));
 
     const data = d ? (d.id === st().activeDraftId ? st() : (d.data || {})) : {};
-    const pick = numberRow('I pick number', data.pickSlot || 1);
-    const teams = numberRow('Teams in the draft', data.leagueSize || 10);
+    const pick = numberRow('I pick number', formDraft ? formDraft.pick : data.pickSlot || 1);
+    const teams = numberRow('Teams in the draft', formDraft ? formDraft.teams : data.leagueSize || 10);
     fields.appendChild(pick.row); fields.appendChild(teams.row);
+    let structure = formDraft ? formDraft.structure : Lineup.normalizeStructure(data.teamStructure);
+    const stBtn = el('button', 'btn btn-secondary', 'Team Structure');
+    stBtn.addEventListener('click', () => {
+      formDraft = { name: name.value, season: sel.value, pick: pick.inp.value, teams: teams.inp.value, structure };
+      showStructure(structure, (next) => { formDraft.structure = next; showForm(d, true); });
+    });
+    fields.appendChild(stBtn);
     sheet.appendChild(fields);
 
     const err = el('div', 'draft-tile-sub');
@@ -193,7 +242,8 @@
       const n = name.value.trim(); const p = parseInt(pick.inp.value, 10); const t = parseInt(teams.inp.value, 10);
       if (!n) { err.textContent = 'Give the draft a name.'; return; }
       if (!(t >= 2 && t <= 30) || !(p >= 1 && p <= t)) { err.textContent = 'Pick number must be between 1 and the number of teams.'; return; }
-      if (d) edit(d.id, n, sel.value, p, t); else create(n, sel.value, p, t);
+      if (d) edit(d.id, n, sel.value, p, t, structure); else create(n, sel.value, p, t, structure);
+      formDraft = null;
       showList();
     });
     sheet.appendChild(save);

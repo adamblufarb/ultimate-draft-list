@@ -1420,3 +1420,11 @@ input, textarea, select, .note-text, .detail-notes {
 .draft-grid .smart-search-saved-title { text-align: center; }
 .btn-add-source { margin-top: 14px; margin-bottom: 14px; }
 .sync-card + .source-list { margin-top: 14px; }
+
+.season-stats-section + * { margin-top: 14px; }
+.structure-list { display: flex; flex-direction: column; gap: 8px; }
+.structure-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 8px 12px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface-2); }
+.structure-label { font-size: 17px; font-weight: 700; }
+.structure-remove { min-height: 36px; padding: 6px 14px; }
+.structure-add { display: flex; gap: 8px; align-items: center; }
+.structure-add .smart-search-select { flex: 1; }

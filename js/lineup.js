@@ -1,6 +1,6 @@
-/* Lineup slots for My Team. The league's roster is 9 starter slots —
-   PG, SG, SF, PF, C, C, G (PG or SG), F (SF or PF), Util (anyone) — plus 7
-   bench spots, 16 players in all. Players you've drafted ("Drafted By Me",
+/* Lineup slots for My Team. The roster comes from the draft's team structure
+   (default: PG, SG, SF, PF, C, C, G (PG or SG), F (SF or PF), Util (anyone) plus
+   7 bench spots, 16 players); PF/C slots take a PF or C. Players you've drafted ("Drafted By Me",
    in pick order) fill those slots automatically.
 
    A player's first listed position is their main one ("PF, SF" = PF first),
@@ -11,21 +11,23 @@
    lets everyone fit (a maximum matching), so a later dual-position pick
    never costs you a starter spot you could have kept. Otherwise nobody
    already placed is moved. Whoever can't be
-   placed in a starter slot goes to the bench, and anyone past 16 is shown as
+   placed in a starter slot goes to the bench, and anyone past the roster size is shown as
    over the roster limit. */
 (function (global) {
-  const STARTERS = [
-    { label: 'PG', eligible: ['PG'] },
-    { label: 'SG', eligible: ['SG'] },
-    { label: 'SF', eligible: ['SF'] },
-    { label: 'PF', eligible: ['PF'] },
-    { label: 'C', eligible: ['C'] },
-    { label: 'C', eligible: ['C'] },
-    { label: 'G', eligible: ['PG', 'SG'] },
-    { label: 'F', eligible: ['SF', 'PF'] },   // assumed: forward flex = SF or PF
-    { label: 'UTIL', eligible: null }          // null = any position
-  ];
-  const BENCH_SPOTS = 7;
+  // Slot types a team structure can use; eligible = positions that fit (null = anyone).
+  const SLOT_TYPES = {
+    PG: ['PG'], SG: ['SG'], SF: ['SF'], PF: ['PF'], C: ['C'],
+    G: ['PG', 'SG'], F: ['SF', 'PF'],   // F assumed: forward flex = SF or PF
+    'PF/C': ['PF', 'C'], UTIL: null
+  };
+  const SLOT_ORDER = ['PG', 'SG', 'SF', 'PF', 'C', 'G', 'F', 'PF/C', 'UTIL'];
+  const DEFAULT_STRUCTURE = { slots: ['PG', 'SG', 'SF', 'PF', 'C', 'C', 'G', 'F', 'UTIL'], bench: 7 };
+
+  function normalizeStructure(st) {
+    const slots = st && Array.isArray(st.slots) ? st.slots.filter((x) => x in SLOT_TYPES) : DEFAULT_STRUCTURE.slots.slice();
+    const bench = st && Number.isInteger(st.bench) && st.bench >= 0 ? st.bench : DEFAULT_STRUCTURE.bench;
+    return { slots, bench };
+  }
 
   function parsePositions(text) {
     return (text || '').split(',').map((p) => p.trim().toUpperCase()).filter(Boolean);
@@ -44,7 +46,10 @@
 
   // keys: players in pick order. positionsOf(key) -> "PF, SF" style text.
   // Returns { starters: [{slot, key|null}], bench: [key|null x7], over: [key] }.
-  function assign(keys, positionsOf) {
+  function assign(keys, positionsOf, structure) {
+    const st = normalizeStructure(structure);
+    const STARTERS = st.slots.map((label) => ({ label, eligible: SLOT_TYPES[label] }));
+    const BENCH_SPOTS = st.bench;
     const prefs = keys.map((k) => {
       const pos = parsePositions(positionsOf(k));
       return STARTERS.map((s, i) => ({ i, r: slotRank(s, pos) })).filter((x) => x.r >= 0)
@@ -74,5 +79,5 @@
     };
   }
 
-  global.Lineup = { STARTERS, BENCH_SPOTS, assign, parsePositions };
+  global.Lineup = { SLOT_ORDER, DEFAULT_STRUCTURE, normalizeStructure, assign, parsePositions };
 })(window);
