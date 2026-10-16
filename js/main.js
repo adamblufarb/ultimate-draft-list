@@ -11,8 +11,6 @@
       sources: document.getElementById('panel-sources')
     };
     const navButtons = document.querySelectorAll('.tab-btn');
-    const fakeBanner = document.getElementById('fake-banner');
-    App.on('fake-mode-changed', ({ on }) => { fakeBanner.hidden = !on; });
 
     document.getElementById('settings-btn').addEventListener('click', () => Drafts.open());
     DraftTab.init(panels.draft);
@@ -62,7 +60,6 @@
     // pushed until this has run (see js/githubSync.js).
     GithubSync.setAdapter({
       getState: () => App.state,
-      isFake: () => App.isFakeMode(),
       replaceState: (next) => {
         // Last line of defence: never swap the live state for something that
         // doesn't look like app state (see GithubSync.validateState).

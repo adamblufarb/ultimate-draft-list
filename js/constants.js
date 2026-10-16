@@ -54,17 +54,6 @@
     return Number.isInteger(score) ? String(score) : score.toFixed(1);
   }
 
-  // Data List ages were entered for the 2026 season; everyone is a year older
-  // after each September 1st since (Sep 2027 → +1, Sep 2028 → +2, …).
-  function ageBump(date) {
-    const d = date || new Date();
-    return Math.max(0, d.getFullYear() - 2026 - (d.getMonth() < 8 ? 1 : 0));
-  }
-  function currentAge(age) {
-    const n = Number(age);
-    return isFinite(n) && String(age).trim() !== '' ? n + ageBump() : age;
-  }
-
   global.Constants = {
-    ageBump, currentAge, displayTeam, canonTeam, TEAM_ALIASES, GITHUB_RESPONSE_KEYS, MAX_SOURCES, SEASON_SLOTS, HEALTH_TREND_SEASONS, SCORE_TYPES, scoreTypeLabel, formatScore };
+displayTeam, canonTeam, TEAM_ALIASES, GITHUB_RESPONSE_KEYS, MAX_SOURCES, SEASON_SLOTS, HEALTH_TREND_SEASONS, SCORE_TYPES, scoreTypeLabel, formatScore };
 })(window);

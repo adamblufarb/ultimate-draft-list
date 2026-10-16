@@ -103,8 +103,7 @@
 
   // "Avg: 49.0 (#12)" with "Tot: 3234 (#8)" on the line below — the ranks are against every other
   // player in the same season's file (by that figure, highest first).
-  // Computed fresh each time, never cached, so Fake Mode's in-place stat
-  // scrambling is always reflected. Null if nothing to show.
+  // Computed fresh each time. Null if nothing to show.
   function fantasyLine(slot, playerEntry) {
     const f = fantasyFor(slot.columns, playerEntry.values);
     if (!f) return null;

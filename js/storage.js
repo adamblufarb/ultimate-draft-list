@@ -77,13 +77,7 @@
     }
   }
 
-  // Fake Mode (App.enterFakeMode) flips this on so nothing it does ever
-  // reaches localStorage — a reload always comes back to the real data.
-  let readOnly = false;
-  function setReadOnly(value) { readOnly = value; }
-
   function save(state) {
-    if (readOnly) return;
     try {
       localStorage.setItem(KEY, JSON.stringify(state));
     } catch (e) {
@@ -91,5 +85,5 @@
     }
   }
 
-  global.Storage = { load, save, defaultState, normalize, setReadOnly };
+  global.Storage = { load, save, defaultState, normalize };
 })(window);

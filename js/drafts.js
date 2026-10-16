@@ -5,7 +5,7 @@
    Switching drafts stashes those fields into the draft being left
    (state.drafts[i].data; ranking lists go into state.sourcesBySeason[season],
    so drafts for the same season share them) and loads the target's.
-   Shared by every draft: Data List, Season Stats, tags, player notes, notes. */
+   Ranking lists and the Data List belong to the season. Shared by every draft: Season Stats, tags, player notes, notes. */
 (function (global) {
   const DRAFT_FIELDS = ['draftedKeys', 'myTeamKeys', 'pinnedKeys', 'draftOrder', 'pickSlot', 'leagueSize', 'listLocked', 'showNextPick'];
 
@@ -19,7 +19,7 @@
     const s = st(); const d = active(); if (!d) return;
     d.data = {};
     DRAFT_FIELDS.forEach((k) => { d.data[k] = clone(s[k]); });
-    s.sourcesBySeason[d.season] = { sources: s.sources, selectedSourceIds: s.selectedSourceIds };
+    s.sourcesBySeason[d.season] = { sources: s.sources, selectedSourceIds: s.selectedSourceIds, dataList: s.dataList };
   }
 
   function load(d) {
@@ -30,6 +30,7 @@
     const ss = s.sourcesBySeason[d.season];
     s.sources = ss ? ss.sources : [];
     s.selectedSourceIds = ss ? ss.selectedSourceIds : [];
+    s.dataList = ss && ss.dataList ? ss.dataList : { rawText: '', players: [] };
     s.activeDraftId = d.id;
   }
 
@@ -65,6 +66,21 @@
     } else {
       d.name = name; d.season = season; d.data = d.data || {};
       d.data.pickSlot = pickSlot; d.data.leagueSize = leagueSize;
+    }
+    reload();
+  }
+
+  function remove(id) {
+    const s = st();
+    if (s.drafts.length < 2) return;
+    Backups.add(s, 'before-delete-draft');
+    if (id === s.activeDraftId) {
+      stash();
+      const next = s.drafts.find((x) => x.id !== id);
+      s.drafts = s.drafts.filter((x) => x.id !== id);
+      load(next);
+    } else {
+      s.drafts = s.drafts.filter((x) => x.id !== id);
     }
     reload();
   }
@@ -120,12 +136,11 @@
     const s = st();
     const sheet = sheetWithHeader('Settings', hide);
     sheet.appendChild(el('div', 'smart-search-label', 'Drafts'));
-    const grid = el('div', 'detail-stats smart-search-saved-grid');
+    const grid = el('div', 'detail-stats smart-search-saved-grid draft-grid');
     s.drafts.forEach((d) => {
       const isActive = d.id === s.activeDraftId;
       const tile = el('div', 'stat-card smart-search-saved-tile' + (isActive ? ' draft-active' : ''));
       tile.appendChild(el('div', 'smart-search-saved-title', d.name));
-      tile.appendChild(el('div', 'draft-tile-sub', d.season + (isActive ? ' · Active' : '')));
       tile.addEventListener('click', () => { if (!isActive) { switchTo(d.id); } showList(); });
       const pencil = el('button', 'smart-search-saved-edit', '✏️');
       pencil.setAttribute('aria-label', 'Edit ' + d.name);
@@ -133,7 +148,7 @@
       tile.appendChild(pencil);
       grid.appendChild(tile);
     });
-    const add = el('div', 'stat-card smart-search-add-tile', '+ New Draft');
+    const add = el('div', 'stat-card smart-search-add-tile draft-new-tile', '+ New Draft');
     add.addEventListener('click', () => showForm(null));
     grid.appendChild(add);
     sheet.appendChild(grid);
@@ -173,7 +188,7 @@
 
     const err = el('div', 'draft-tile-sub');
     sheet.appendChild(err);
-    const save = el('button', 'btn-primary smart-search-submit', d ? 'Save' : 'Create Draft');
+    const save = el('button', 'btn btn-primary smart-search-submit', d ? 'Save' : 'Create Draft');
     save.addEventListener('click', () => {
       const n = name.value.trim(); const p = parseInt(pick.inp.value, 10); const t = parseInt(teams.inp.value, 10);
       if (!n) { err.textContent = 'Give the draft a name.'; return; }
@@ -182,6 +197,15 @@
       showList();
     });
     sheet.appendChild(save);
+    if (d && st().drafts.length > 1) {
+      const del = el('button', 'btn btn-danger smart-search-delete-btn', 'Delete Draft');
+      del.addEventListener('click', () => {
+        if (!confirm('Delete “' + d.name + '”? Its drafted players and My Team will be gone for good.')) return;
+        remove(d.id);
+        showList();
+      });
+      sheet.appendChild(del);
+    }
     show(sheet);
     if (!d) setTimeout(() => name.focus(), 50);
   }

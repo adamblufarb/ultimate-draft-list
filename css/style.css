@@ -52,20 +52,6 @@ body {
   background: var(--surface);
 }
 
-.fake-banner {
-  flex-shrink: 0;
-  background: var(--warn);
-  color: #1a1200;
-  font-size: 12px;
-  font-weight: 700;
-  text-align: center;
-  padding: 5px 12px;
-}
-
-.fake-banner[hidden] {
-  display: none;
-}
-
 .app-header h1 {
   font-size: 17px;
   font-weight: 600;
@@ -1428,3 +1414,8 @@ input, textarea, select, .note-text, .detail-notes {
 .settings-btn { background: none; border: 0; font-size: 22px; padding: 6px; color: inherit; cursor: pointer; }
 .draft-tile-sub { font-size: 12px; color: var(--text-dim); text-align: center; }
 .stat-card.draft-active { border-color: var(--accent, #4a90e2); box-shadow: 0 0 0 1px var(--accent, #4a90e2); }
+
+.draft-grid .stat-card { min-height: 84px; display: flex; align-items: center; justify-content: center; }
+.draft-new-tile { text-align: center; }
+.draft-grid .smart-search-saved-title { text-align: center; }
+.btn-add-source { margin-bottom: 20px; }

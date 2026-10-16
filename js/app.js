@@ -22,7 +22,6 @@
   }
 
   function persist() {
-    if (fakeSnapshot) return; // Fake Mode is a sandbox — nothing saves or syncs
     Storage.save(state);
     GithubSync.scheduleSync();
   }
@@ -269,8 +268,7 @@
   // of the Draft List (every search keystroke) recomputed them for every row.
   // Results are remembered per player and thrown away whenever the season
   // data is replaced (a new upload is a new players array, tracked by
-  // signature) or edited in place (Fake Mode scrambles the stats, so entering
-  // and leaving it clears the memo).
+  // signature) or edited in place.
   const arrayIds = new WeakMap();
   let nextArrayId = 1;
   const emojiMemo = { sig: '', health: new Map(), up: new Map(), down: new Map() };
@@ -298,7 +296,6 @@
   const getHealthEmoji = memoized('health', computeHealthEmoji);
   const getImprovementEmoji = memoized('up', computeImprovementEmoji);
   const getDeclineEmoji = memoized('down', computeDeclineEmoji);
-  function clearEmojiMemo() { emojiMemo.sig = ''; }
 
   // Free-text note per player, set only from Player Detail's notes box.
   function getPlayerNote(key) {
@@ -417,128 +414,6 @@
     emit('remote-state-loaded');
   }
 
-  // Fake Mode: a throwaway sandbox for practicing against scrambled data.
-  // Entering takes a deep snapshot of the real state, then scrambles the
-  // live state in place (so every tab's existing `App.state.x` reads just
-  // work):
-  //  - each player gets one big random shift of 20-100 (random sign) that
-  //    hits their number on every list they appear on, plus a smaller
-  //    independent wobble of up to 15 either way per list. Each list is
-  //    then re-ranked by those shifted values and the list's own original
-  //    numbers dealt back out in the new order — so a list is still a clean
-  //    ranking (no ties, no negatives, ADP lists keep their real-looking
-  //    decimal scores) but the players in it have moved around a lot, and
-  //    because a player's shift lands on all their lists together it
-  //    survives the averaging instead of cancelling out;
-  //  - on top of that, every player's combined rank gets its own random
-  //    5-15 either way (Ranking.setCombinedOffsets);
-  //  - last seasons' numeric stats get a random +1.5 or -1.5 (never below
-  //    0; percentages, text like team/awards, and games past 82 are left
-  //    alone);
-  //  - every Breakout/Sleeper/Target/Do Not Draft tag is cleared.
-  // The Draft List order is re-seeded from the scrambled combined average
-  // so it agrees with the numbers shown. While active, persist() is a
-  // no-op and Storage is read-only, so nothing reaches localStorage or
-  // GitHub; exiting restores the snapshot, and a reload does the same for
-  // free (the real data was never overwritten). The mode itself is never
-  // persisted.
-  let fakeSnapshot = null;
-
-  function isFakeMode() {
-    return fakeSnapshot !== null;
-  }
-
-  function randomSign() {
-    return Math.random() < 0.5 ? -1 : 1;
-  }
-
-  const NUMERIC_TEXT = /^-?\d*\.?\d+$/;
-
-  function scrambleSeasonStats() {
-    state.seasonStats.forEach((slot) => {
-      slot.players.forEach((player) => {
-        slot.columns.forEach((col) => {
-          if (/_pct$/.test(col.id)) return;
-          const raw = player.values[col.id];
-          if (typeof raw !== 'string' || !NUMERIC_TEXT.test(raw)) return;
-          const decimals = (raw.split('.')[1] || '').length;
-          let next = parseFloat(raw) + randomSign() * 1.5;
-          next = Math.max(0, next);
-          if (col.id === 'games' || col.id === 'games_started') next = Math.min(82, next);
-          player.values[col.id] = next.toFixed(decimals);
-        });
-      });
-    });
-  }
-
-  function scrambleLists() {
-    const appearances = new Map(); // normalized name -> [{ source, player }]
-    state.sources.forEach((source) => {
-      source.players.forEach((player) => {
-        const key = NameMatch.normalize(player.name);
-        if (!appearances.has(key)) appearances.set(key, []);
-        appearances.get(key).push(player);
-      });
-    });
-
-    const shiftedValue = new Map(); // player object -> shifted number
-    appearances.forEach((players) => {
-      const shift = randomSign() * (20 + Math.random() * 80);
-      players.forEach((player) => {
-        const wobble = (Math.random() * 2 - 1) * 15;
-        shiftedValue.set(player, player.rank + shift + wobble);
-      });
-    });
-
-    state.sources.forEach((source) => {
-      const originals = source.players.map((p) => p.rank).sort((a, b) => a - b);
-      const valueOf = (p) => (shiftedValue.has(p) ? shiftedValue.get(p) : p.rank);
-      source.players.slice()
-        .sort((a, b) => (valueOf(a) - valueOf(b)) || (a.rank - b.rank))
-        .forEach((p, i) => { p.rank = originals[i]; });
-    });
-  }
-
-  function enterFakeMode() {
-    clearEmojiMemo();
-    if (fakeSnapshot) return;
-    fakeSnapshot = JSON.parse(JSON.stringify(state));
-    // Anything still waiting out the sync debounce is the real data — get it
-    // out before the live object turns fake.
-    GithubSync.flushPending();
-    Storage.setReadOnly(true);
-
-    scrambleLists();
-    state.targetKeys = [];
-    state.breakoutLevels = {};
-    state.sleeperLevels = {};
-    state.doNotDraftKeys = [];
-    scrambleSeasonStats();
-
-    Ranking.invalidateIndexCache();
-    const offsets = new Map();
-    Ranking.buildIndex(state.sources).forEach((entry, key) => offsets.set(key, randomSign() * (5 + Math.random() * 10)));
-    Ranking.setCombinedOffsets(offsets);
-    state.draftOrder = Ranking.computeCombined(state.sources, SourceWeights.defaultWeights(state.sources))
-      .map((row) => ({ key: row.key, name: row.displayName }));
-
-    emit('fake-mode-changed', { on: true });
-    emit('remote-state-loaded');
-  }
-
-  function exitFakeMode() {
-    clearEmojiMemo();
-    if (!fakeSnapshot) return;
-    const real = fakeSnapshot;
-    fakeSnapshot = null;
-    Storage.setReadOnly(false);
-    Ranking.setCombinedOffsets(null);
-    Object.keys(state).forEach((k) => { delete state[k]; });
-    Object.assign(state, real);
-    emit('fake-mode-changed', { on: false });
-    emit('remote-state-loaded');
-  }
-
   global.App = {
     state, on, emit, persist, genId,
     isDrafted, setDrafted, isMyPickOnTheClock,
@@ -551,7 +426,6 @@
     getHealthEmoji, getImprovementEmoji, getDeclineEmoji,
     getPlayerNote, setPlayerNote,
     upsertSavedSearch, deleteSavedSearch,
-    upsertNote, deleteNote, reorderNotes, reorderDrafted, restoreDraftData,
-    isFakeMode, enterFakeMode, exitFakeMode
+    upsertNote, deleteNote, reorderNotes, reorderDrafted, restoreDraftData
   };
 })(window);

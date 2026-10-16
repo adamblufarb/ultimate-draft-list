@@ -516,10 +516,10 @@
   // Cheap check (one tiny request) used when you switch back to the app and
   // every so often while it's open: has anyone saved to GitHub since this
   // device last looked? If so, pull it in (merging if this device has unsaved
-  // changes). Does nothing while a save is in flight or pending, in Fake Mode,
+  // changes). Does nothing while a save is in flight or pending,
   // or before the first load has finished.
   async function refreshIfChanged() {
-    if (!isConnected() || !adapter || !ready || pushing || hasPending || adapter.isFake()) return false;
+    if (!isConnected() || !adapter || !ready || pushing || hasPending) return false;
     try {
       const res = await ghFetch(`${apiUrl()}?ref=${BRANCH}`, { headers: authHeaders() });
       if (!res.ok) return false;
@@ -555,7 +555,6 @@
 
       let repairedOnce = false;
       for (let attempt = 0; attempt < MAX_PUSH_ATTEMPTS; attempt++) {
-        if (adapter.isFake()) { setStatus('idle'); return; } // Fake Mode data never leaves the device
 
         const state = stripJunk(adapter.getState());
         if (lastRemoteState && wouldWipe(lastRemoteState, state)) {
@@ -646,8 +645,6 @@
   }
 
   // Sends whatever's waiting out the debounce right now instead of later.
-  // Fake Mode calls this before it swaps in scrambled data (and doPush also
-  // refuses to send while Fake Mode is on).
   function flushPending() {
     if (!hasPending) return;
     clearTimeout(debounceTimer);

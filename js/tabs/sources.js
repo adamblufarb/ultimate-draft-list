@@ -67,7 +67,6 @@
     container.appendChild(dataListEditing ? renderDataListEditCard() : renderDataListViewCard());
     container.appendChild(renderSeasonStatsSection());
     container.appendChild(renderRecoveryCard());
-    container.appendChild(renderFakeModeCard());
   }
 
   function onAddSource() {
@@ -684,7 +683,7 @@
           tdName.textContent = e.name;
           const tdAge = document.createElement('td');
           tdAge.className = 'preview-secondary';
-          tdAge.textContent = Constants.currentAge(e.age);
+          tdAge.textContent = e.age;
           const tdTeam = document.createElement('td');
           tdTeam.className = 'preview-secondary';
           tdTeam.textContent = e.team || '—';
@@ -852,40 +851,6 @@
     }
 
     card.appendChild(actions);
-    return card;
-  }
-
-  // Fake Mode toggle — lives at the very bottom of the page. All the
-  // actual work (and the explanation of what it scrambles) is in
-  // App.enterFakeMode; this is just the switch. Entering/exiting re-renders
-  // every tab, this one included, so put the scroll position back after.
-  function renderFakeModeCard() {
-    const card = document.createElement('div');
-    card.className = 'source-card source-card-view fake-mode-card';
-
-    const title = document.createElement('div');
-    title.className = 'source-view-name';
-    title.textContent = 'Fake Mode';
-    card.appendChild(title);
-
-    const desc = document.createElement('p');
-    desc.className = 'source-view-meta';
-    desc.textContent = 'Practice with heavily scrambled data: every player gets a big random shift (20-100, up or down) across ' +
-      'their lists plus a little per-list wobble, then a further 5-15 either way on their combined rank; ' +
-      'last seasons\' stats shift by ±1.5, and Breakout/Sleeper/Target/Do Not Draft tags are cleared. ' +
-      'Nothing is saved or synced — exit (or just reload) and your real data is exactly as you left it.';
-    card.appendChild(desc);
-
-    const on = App.isFakeMode();
-    const btn = document.createElement('button');
-    btn.className = on ? 'btn btn-danger' : 'btn btn-secondary';
-    btn.textContent = on ? 'Exit Fake Mode' : 'Enter Fake Mode';
-    btn.addEventListener('click', () => {
-      const scrollTop = container.scrollTop;
-      if (on) App.exitFakeMode(); else App.enterFakeMode();
-      container.scrollTop = scrollTop;
-    });
-    card.appendChild(btn);
     return card;
   }
 

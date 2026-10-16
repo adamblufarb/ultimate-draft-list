@@ -253,7 +253,7 @@
 
     const ageEl = document.createElement('div');
     ageEl.className = 'detail-age';
-    let ageText = dataEntry ? String(Constants.currentAge(dataEntry.age)) : null;
+    let ageText = dataEntry ? String(dataEntry.age) : null;
     if (dataEntry && dataEntry.team) ageText += ' · ' + dataEntry.team;
     if (dataEntry && teamChange) ageText += ' (' + Constants.displayTeam(teamChange.lastTeam) + ')';
     ageEl.textContent = ageText || 'Age unknown';
