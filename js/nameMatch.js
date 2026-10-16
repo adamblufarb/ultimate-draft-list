@@ -22,8 +22,19 @@
   // matched; squashed they are both "rjbarrett". Used where two lists are
   // joined by name (the Data List's team/age) — saved player keys are left alone.
   function squash(name) {
-    return normalize(name).replace(/ /g, '');
+    const n = normalize(name);
+    return (NICKNAMES[n] || n).replace(/ /g, '');
   }
+
+  // Same player, different first name between lists (a rankings list says
+  // "Nic Claxton", the Data List "Nicolas Claxton"). Only listed pairs are
+  // treated as the same person — guessing from partial names could join two
+  // different players. Add a line here whenever another one turns up.
+  const NICKNAMES = {
+    'nic claxton': 'nicolas claxton',
+    'herbert jones': 'herb jones',
+    'ronald holland': 'ron holland'
+  };
 
   global.NameMatch = { normalize, squash };
 })(window);
