@@ -586,7 +586,7 @@
     chip.type = 'button';
     chip.className = 'toggle-label team-filter-chip' + (selectedTeams.length > 0 ? ' is-active' : '');
     const label = document.createElement('span');
-    label.textContent = selectedTeams.length > 0 ? 'Teams: ' + selectedTeams.join(', ') : 'Team';
+    label.textContent = selectedTeams.length > 0 ? 'Teams: ' + selectedTeams.join(', ') : 'Teams';
     chip.appendChild(label);
     chip.addEventListener('click', openTeamFilter);
     wrap.appendChild(chip);
