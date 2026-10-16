@@ -117,9 +117,14 @@
     const { status, message } = GithubSync.getStatus();
     const statusEl = document.createElement('div');
     statusEl.className = 'sync-status sync-status-' + status;
-    statusEl.textContent = status === 'error' && message
-      ? `${SYNC_STATUS_LABELS.error}: ${message}`
-      : SYNC_STATUS_LABELS[status] || status;
+    // GitHub answers an expired/revoked/mistyped token with "Bad credentials":
+    // say what that means and what to do (nothing on this device is lost).
+    const tokenRejected = status === 'error' && /bad credentials|requires authentication|401/i.test(message || '');
+    statusEl.textContent = tokenRejected
+      ? "GitHub rejected this device's token (it expired, was revoked, or was mistyped), so changes are NOT being saved to GitHub. Tap Disconnect, then connect with a new token — your data stays on this device and is merged in when you reconnect."
+      : (status === 'error' && message
+        ? `${SYNC_STATUS_LABELS.error}: ${message}`
+        : SYNC_STATUS_LABELS[status] || status);
     card.appendChild(statusEl);
 
     if (GithubSync.isConnected()) {
