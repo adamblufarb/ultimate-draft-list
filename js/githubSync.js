@@ -355,6 +355,13 @@
     return stripJunk(merged);
   }
 
+  // True if anything in `state` differs from the last-synced base (or there
+  // is no base to compare with, which counts as "can't tell, so yes").
+  function changedSinceBase(state, base) {
+    if (!base) return true;
+    return Object.keys(state).some((k) => !(k in base.hashes) || fieldHash(state[k], k) !== base.hashes[k]);
+  }
+
   function countDraft(state) {
     return ((state && state.draftedKeys) || []).length + ((state && state.myTeamKeys) || []).length;
   }
@@ -451,11 +458,16 @@
     }
 
     const local = adapter.getState();
-    // If this device clearly holds more draft data than GitHub does, GitHub
-    // is the one that's been wiped — don't adopt it, merge (which keeps this
-    // device's data) and push the repaired result.
-    const remoteLooksWiped = countDraft(local) >= 5 && countDraft(remote.state) < countDraft(local) / 2;
-    if (!isDirty() && !remoteLooksWiped) {
+    const base = loadBase();
+    // A device may adopt GitHub's copy wholesale only when it is certain it
+    // has nothing GitHub lacks. It is NOT certain when: the "unsynced changes"
+    // flag is set; anything in its data differs from what it last synced; it
+    // has no record of a last sync; or it holds MORE picks than GitHub does
+    // (a phone that finished a draft GitHub never received must never be
+    // overwritten by GitHub's older copy). In all those cases it merges —
+    // keeping everything on both sides — and pushes the result.
+    const unsynced = isDirty() || changedSinceBase(local, base) || countDraft(local) > countDraft(remote.state);
+    if (!unsynced) {
       snapshotBackup('before-pull');
       adapter.replaceState(remote.state);
       saveBase(remote.state, remote.sha);
@@ -463,7 +475,6 @@
       return true;
     }
 
-    const base = loadBase();
     snapshotBackup('before-merge');
     if (!base) {
       try { localStorage.setItem(PRIOR_LOCAL_KEY, JSON.stringify(local)); } catch (e) { /* too big — skip */ }
@@ -472,7 +483,8 @@
     adapter.replaceState(merged);
     saveBase(remote.state, remote.sha);
     ready = true;
-    await pushNow();
+    if (JSON.stringify(merged) !== JSON.stringify(remote.state)) await pushNow();   // only if GitHub is actually missing something
+    else clearDirty();
     return true;
   }
 
