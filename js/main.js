@@ -14,6 +14,7 @@
     const fakeBanner = document.getElementById('fake-banner');
     App.on('fake-mode-changed', ({ on }) => { fakeBanner.hidden = !on; });
 
+    document.getElementById('settings-btn').addEventListener('click', () => Drafts.open());
     DraftTab.init(panels.draft);
     MyTeamTab.init(panels.myteam);
     DraftedPlayersTab.init(panels.drafted);

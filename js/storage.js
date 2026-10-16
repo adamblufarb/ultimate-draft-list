@@ -27,6 +27,9 @@
       showNextPick: false,   // Draft List's "Next Pick" toggle
       pickSlot: 3,           // your slot in the first round (1 = picks first)
       leagueSize: 10,        // teams in the league (snake draft)
+      drafts: [],            // [{ id, name, season, createdAt, data }] — see js/drafts.js
+      activeDraftId: null,   // which draft the top-level fields belong to
+      sourcesBySeason: {},   // season -> { sources, selectedSourceIds } for seasons not active
       notes: [],        // [{ id, text, updatedAt }] — free-standing notes from the Notes tab, newest first
       savedSearches: [] // [{ id, title, fieldA, direction, fieldB, threshold }] — Smart Search's saved presets
     };
@@ -38,6 +41,15 @@
   // state pulled from or merged with GitHub.
   function normalize(state) {
     Constants.GITHUB_RESPONSE_KEYS.forEach((k) => { delete state[k]; });
+    // Before multi-draft there was one draft: it becomes "Good Boy 2026".
+    if (!Array.isArray(state.drafts)) state.drafts = [];
+    if (!state.sourcesBySeason || typeof state.sourcesBySeason !== 'object') state.sourcesBySeason = {};
+    if (state.drafts.length === 0) {
+      state.drafts.push({ id: 'draft_1', name: 'Good Boy 2026', season: '2026-2027', createdAt: 0, data: {} });
+      state.activeDraftId = 'draft_1';
+    } else if (!state.drafts.some((d) => d.id === state.activeDraftId)) {
+      state.activeDraftId = state.drafts[0].id;
+    }
     if (!Array.isArray(state.seasonStats)) state.seasonStats = [];
     while (state.seasonStats.length < Constants.SEASON_SLOTS) {
       const label = state.seasonStats.length === 3 ? '22-23' : '';

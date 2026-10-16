@@ -74,7 +74,7 @@
   // entry-by-entry merge.
   const LIST_FIELDS = ['draftedKeys', 'myTeamKeys', 'targetKeys', 'doNotDraftKeys', 'pinnedKeys']; // arrays of keys
   const MAP_FIELDS = ['breakoutLevels', 'sleeperLevels', 'playerNotes'];             // key -> value
-  const ITEM_FIELDS = ['notes', 'savedSearches'];                                     // arrays of { id, ... }
+  const ITEM_FIELDS = ['notes', 'savedSearches', 'drafts'];                                     // arrays of { id, ... }
   const PRECIOUS_FIELDS = LIST_FIELDS.concat(MAP_FIELDS, ITEM_FIELDS);
 
   const listeners = {};
@@ -380,6 +380,9 @@
 
   // The last-resort guard (rule 3).
   function wouldWipe(remote, state) {
+    // Switching to another draft legitimately swaps these out (the old draft
+    // is kept inside state.drafts / sourcesBySeason).
+    if (remote && remote.activeDraftId && state && state.activeDraftId !== remote.activeDraftId) return false;
     const had = countDraft(remote);
     if (had >= 5 && countDraft(state) < had / 2) return true;
     const n = (obj, k) => ((obj && obj[k]) || []).length;

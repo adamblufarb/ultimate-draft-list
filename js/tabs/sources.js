@@ -684,7 +684,7 @@
           tdName.textContent = e.name;
           const tdAge = document.createElement('td');
           tdAge.className = 'preview-secondary';
-          tdAge.textContent = e.age;
+          tdAge.textContent = Constants.currentAge(e.age);
           const tdTeam = document.createElement('td');
           tdTeam.className = 'preview-secondary';
           tdTeam.textContent = e.team || '—';
