@@ -40,7 +40,7 @@ The whole app state is one file, so a device with stale data could once overwrit
 
 ## How it works
 
-**Combined ranks follow the Draft List's filters everywhere** — Draft Board and My Team (and the Player Detail opened from them) use the same source chips / 1.5x / iso settings you have on the Draft List. **Phones:** the page can't zoom when you tap a field (viewport locked, fields are 16px), and long-pressing a row no longer highlights its text. **Team spellings:** the Data List writes BKN / PHX / CHA where the stats files write BRK / PHO / CHO — they're treated as the same team, so those players no longer show the 🔁 team-change flag (27 false flags removed); real moves still do.
+**Combined ranks follow the Draft List's filters everywhere** — Draft Board and My Team (and the Player Detail opened from them) use the same source chips / 1.5x / iso settings you have on the Draft List. **Phones:** the page can't zoom when you tap a field (viewport locked, fields are 16px), and long-pressing a row no longer highlights its text. **Team spellings:** the Data List writes BKN / PHX / CHA where the stats files write BRK / PHO / CHO — they're treated as the same team, so those players no longer show the 🔁 team-change flag (27 false flags removed); real moves still do. Everywhere a team is shown it uses the Data List's spelling (BKN / PHX / CHA), and the Data List is matched to players by name with spaces ignored, so "R.J. Barrett" (Data List) and "RJ Barrett" (stats / rankings) are the same player for team and age (6 players had been showing no age or team because of this).
 
 The bottom tab bar runs Draft List · Draft Board · **My Team (center)** · Notes · Sources.
 

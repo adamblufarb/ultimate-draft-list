@@ -293,7 +293,7 @@
       // Drafted players are hidden from the list, except that a search finds
       // them (marked "Drafted") so you can look anyone up.
       if (App.isDrafted(item.key) && !query) return false;
-      if (teamOf && !selectedTeams.includes(teamOf.get(item.key))) return false;
+      if (teamOf && !selectedTeams.includes(teamOf.get(item.key.replace(/ /g, '')))) return false;
       if (smartMatches) {
         if (!smartMatches.has(item.key)) return false;
       } else if (selectedPositions.length > 0 && !matchesPositionFilter(item.key, index)) {
@@ -555,16 +555,17 @@
     const map = new Map();
     App.state.dataList.players.forEach((p) => {
       const team = (p.team || '').trim().toUpperCase();
-      if (team) map.set(NameMatch.normalize(p.name), team);
+      if (team) map.set(NameMatch.squash(p.name), team);   // squashed: matches "R.J." and "RJ" alike
     });
     return map;
   }
 
   function openTeamFilter() {
     const info = new Map();
-    teamByKey().forEach((team, key) => {
+    const draftedSquashed = new Set((App.state.draftedKeys || []).map((k) => k.replace(/ /g, '')));
+    teamByKey().forEach((team, squashedKey) => {
       if (!info.has(team)) info.set(team, { team, drafted: 0 });
-      if (App.isDrafted(key)) info.get(team).drafted += 1;
+      if (draftedSquashed.has(squashedKey)) info.get(team).drafted += 1;
     });
     const teams = Array.from(info.values()).sort((a, b) => a.team.localeCompare(b.team));
     const stillExists = (t) => info.has(t);

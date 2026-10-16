@@ -186,7 +186,7 @@
       const valueEl = document.createElement('span');
       valueEl.className = 'season-stat-value';
       const rawValue = playerEntry.values[col.id];
-      valueEl.textContent = rawValue || '—';
+      valueEl.textContent = (col.id === TEAM_COLUMN_ID ? Constants.displayTeam(rawValue) : rawValue) || '—';
 
       if (MAIN_CATEGORY_SET.has(col.id) && olderEntry) {
         const thisValue = parseFloat(rawValue);

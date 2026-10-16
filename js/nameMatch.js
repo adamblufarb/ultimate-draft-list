@@ -17,5 +17,13 @@
     return words.join(' ');
   }
 
-  global.NameMatch = { normalize };
+  // The same name with all spaces removed. "R.J. Barrett" normalizes to
+  // "r j barrett" but "RJ Barrett" to "rj barrett", so the two lists never
+  // matched; squashed they are both "rjbarrett". Used where two lists are
+  // joined by name (the Data List's team/age) — saved player keys are left alone.
+  function squash(name) {
+    return normalize(name).replace(/ /g, '');
+  }
+
+  global.NameMatch = { normalize, squash };
 })(window);

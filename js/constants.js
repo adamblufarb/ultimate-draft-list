@@ -14,6 +14,14 @@
     return TEAM_ALIASES[t] || t;
   }
 
+  // One spelling to *show* everywhere: the Data List's (BKN, PHX, CHA), so a
+  // team never appears as BKN in one place and BRK in another.
+  const DISPLAY_TEAM = { BRK: 'BKN', PHO: 'PHX', CHO: 'CHA' };
+  function displayTeam(code) {
+    const t = String(code || '').trim().toUpperCase();
+    return DISPLAY_TEAM[t] || t;
+  }
+
   const MAX_SOURCES = 12;
   // Season Stats upload slots (most recent season first). Health/trend emoji
   // only ever look at the first HEALTH_TREND_SEASONS of them; older slots are
@@ -46,5 +54,5 @@
     return Number.isInteger(score) ? String(score) : score.toFixed(1);
   }
 
-  global.Constants = { canonTeam, TEAM_ALIASES, GITHUB_RESPONSE_KEYS, MAX_SOURCES, SEASON_SLOTS, HEALTH_TREND_SEASONS, SCORE_TYPES, scoreTypeLabel, formatScore };
+  global.Constants = { displayTeam, canonTeam, TEAM_ALIASES, GITHUB_RESPONSE_KEYS, MAX_SOURCES, SEASON_SLOTS, HEALTH_TREND_SEASONS, SCORE_TYPES, scoreTypeLabel, formatScore };
 })(window);

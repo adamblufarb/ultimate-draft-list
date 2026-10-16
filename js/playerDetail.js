@@ -56,7 +56,8 @@
   // else. The Data List is never part of App.state.sources and has no
   // bearing on any ranking, so this is its own small lookup.
   function getDataListEntry(key) {
-    return App.state.dataList.players.find((p) => NameMatch.normalize(p.name) === key) || null;
+    const want = key.replace(/ /g, '');   // tolerant of "R.J." vs "RJ" (see NameMatch.squash)
+    return App.state.dataList.players.find((p) => NameMatch.squash(p.name) === want) || null;
   }
 
   // 🔁 fires when either: the most recent Season Stats season itself shows
@@ -254,7 +255,7 @@
     ageEl.className = 'detail-age';
     let ageText = dataEntry ? String(dataEntry.age) : null;
     if (dataEntry && dataEntry.team) ageText += ' · ' + dataEntry.team;
-    if (dataEntry && teamChange) ageText += ' (' + teamChange.lastTeam + ')';
+    if (dataEntry && teamChange) ageText += ' (' + Constants.displayTeam(teamChange.lastTeam) + ')';
     ageEl.textContent = ageText || 'Age unknown';
     titleWrap.appendChild(ageEl);
 
