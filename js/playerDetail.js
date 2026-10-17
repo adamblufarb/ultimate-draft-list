@@ -391,8 +391,8 @@
     const drafted = App.isDrafted(key);
     const myPick = !drafted && App.isMyPickOnTheClock();
     const draftBtn = document.createElement('button');
-    draftBtn.className = 'btn-draft detail-draft-btn' + (drafted ? ' is-drafted' : '') + (myPick ? ' is-my-pick' : '');
-    draftBtn.textContent = drafted ? 'Undraft' : (myPick ? 'Drafted By Me' : 'Mark Drafted');
+    draftBtn.className = 'btn-draft detail-draft-btn' + (drafted ? ' is-drafted' : '') + (drafted && App.isOnMyTeam(key) ? ' is-on-my-team' : '') + (myPick ? ' is-my-pick' : '');
+    draftBtn.textContent = drafted ? 'Undraft (' + (App.state.draftedKeys.indexOf(key) + 1) + ')' : (myPick ? 'Drafted By Me' : 'Mark Drafted');
     draftBtn.addEventListener('click', () => {
       if (myPick) App.draftedByMe(key);
       else App.setDrafted(key, !drafted);

@@ -529,6 +529,11 @@ body {
 
 .btn-draft.is-drafted {
   background: transparent;
+  color: #fff;
+  border-color: #fff;
+}
+
+.btn-draft.is-drafted.is-on-my-team {
   color: var(--accent);
   border-color: var(--accent);
 }
@@ -1428,3 +1433,6 @@ input, textarea, select, .note-text, .detail-notes {
 .structure-remove { min-height: 36px; padding: 6px 14px; }
 .structure-add { display: flex; gap: 8px; align-items: center; }
 .structure-add .smart-search-select { flex: 1; }
+
+.scoring-name { flex: 1; text-align: left; }
+.structure-row .smart-search-threshold-input { width: 76px; padding: 8px; }

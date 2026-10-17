@@ -123,3 +123,5 @@ Tapping a player opens a detail view. Up top, their name (with a position badge 
 - The header now respects the iPhone notch/status bar (safe-area insets).
 - Edit Draft has a **Delete Draft** button (asks first; the last remaining draft can't be deleted). Draft tiles show just the name; the active one is outlined.
 - **Team Structure** (button in New Draft / Edit Draft): choose your starting slots (PG, SG, SF, PF, C, G, F, PF/C, UTIL — add or remove any, repeats allowed) and the number of bench spots. It's saved per draft and drives My Team's lineup; the default is PG, SG, SF, PF, C, C, G, F, UTIL + 7 bench.
+- **Scoring System** (Settings, below the drafts): view/edit the league's points per stat (defaults from the league's ESPN settings: FGM 2, FGA -1, FTM 1, FTA -0.5, 3PM 0.5, OREB 0.5, REB 1, AST 2, STL 4, BLK 4, TO -2, TD 3, PTS 1). It drives every Avg/Tot fantasy-points figure and rank in Player Detail (`js/scoring.js`). Shared by all drafts. Triple doubles aren't in the per-game files so they aren't counted.
+- Player Detail's draft button on a drafted player reads **Undraft (pick #)** — white outline, blue when the player is on My Team.

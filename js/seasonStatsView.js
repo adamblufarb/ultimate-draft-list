@@ -44,39 +44,10 @@
   // than wherever the file's own order left it.
   const COMPANION_COLUMN_IDS = { ft_per_g: 'fta_per_g' };
 
-  // The league's fantasy-points scoring (per-game stat column id -> points
-  // per unit). Applied to a season's per-game averages, it gives the
-  // average fantasy points per game. Categories the league scores at 0 are
-  // left out; triple doubles (+3) aren't in Basketball-Reference's per-game
-  // export, so they can't be counted.
-  const FP_WEIGHTS = {
-    fg_per_g: 2,
-    fga_per_g: -1,
-    ft_per_g: 1,
-    fta_per_g: -0.5,
-    fg3_per_g: 0.5,
-    orb_per_g: 0.5,
-    trb_per_g: 1,
-    ast_per_g: 2,
-    stl_per_g: 4,
-    blk_per_g: 4,
-    tov_per_g: -2,
-    pts_per_g: 1
-  };
-
-  // Average fantasy points per game for one season row, or null when the
-  // file doesn't have every scored column (the number would be wrong, so
-  // show nothing rather than a misleading figure). A blank cell in a column
-  // the file does have counts as 0.
+  // Average fantasy points per game under the league scoring in
+  // state.scoring (Settings → Scoring System); see js/scoring.js.
   function averageFantasyPoints(columns, values) {
-    const ids = new Set(columns.map((c) => c.id));
-    let total = 0;
-    for (const id of Object.keys(FP_WEIGHTS)) {
-      if (!ids.has(id)) return null;
-      const n = parseFloat(values[id]);
-      if (!Number.isNaN(n)) total += n * FP_WEIGHTS[id];
-    }
-    return total;
+    return Scoring.average(App.state.scoring, columns, values);
   }
 
   // Fantasy points for one season row: { avg, tot } — avg per game, tot =

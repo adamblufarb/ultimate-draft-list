@@ -152,6 +152,47 @@
     add.addEventListener('click', () => showForm(null));
     grid.appendChild(add);
     sheet.appendChild(grid);
+    const sc = el('button', 'btn btn-secondary smart-search-submit', 'Scoring System');
+    sc.addEventListener('click', showScoring);
+    sheet.appendChild(sc);
+    show(sheet);
+  }
+
+  function showScoring() {
+    const sheet = sheetWithHeader('Scoring System', showList);
+    sheet.appendChild(el('div', 'draft-tile-sub', 'Points per stat. Used for the Avg and Tot fantasy points in Player Detail. Triple/double doubles aren’t in the per-game stats files, so they can’t be counted.'));
+    const list = el('div', 'structure-list');
+    const inputs = {};
+    const weights = Scoring.normalize(st().scoring);
+    Scoring.CATEGORIES.forEach((c) => {
+      const row = el('div', 'structure-row');
+      const label = el('span', 'structure-label', c.id);
+      const name = el('span', 'draft-tile-sub scoring-name', c.name + (c.cols ? '' : ' (not counted)'));
+      const inp = el('input', 'smart-search-threshold-input');
+      inp.type = 'text'; inp.inputMode = 'decimal'; inp.value = String(weights[c.id]);
+      inputs[c.id] = inp;
+      row.appendChild(label); row.appendChild(name); row.appendChild(inp);
+      list.appendChild(row);
+    });
+    sheet.appendChild(list);
+    const err = el('div', 'draft-tile-sub');
+    sheet.appendChild(err);
+    const save = el('button', 'btn btn-primary smart-search-submit', 'Save');
+    save.addEventListener('click', () => {
+      const next = {};
+      for (const c of Scoring.CATEGORIES) {
+        const n = Number(inputs[c.id].value.trim().replace(',', '.'));
+        if (inputs[c.id].value.trim() === '' || !isFinite(n)) { err.textContent = c.id + ' needs a number (0 for none).'; return; }
+        next[c.id] = n;
+      }
+      st().scoring = next;
+      App.persist();
+      showList();
+    });
+    sheet.appendChild(save);
+    const reset = el('button', 'btn btn-secondary smart-search-submit', 'Reset to League Default');
+    reset.addEventListener('click', () => { const d = Scoring.defaults(); Object.keys(inputs).forEach((k) => { inputs[k].value = String(d[k]); }); });
+    sheet.appendChild(reset);
     show(sheet);
   }
 

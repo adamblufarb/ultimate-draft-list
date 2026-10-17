@@ -28,6 +28,7 @@
       pickSlot: 3,           // your slot in the first round (1 = picks first)
       leagueSize: 10,        // teams in the league (snake draft)
       teamStructure: { slots: ['PG', 'SG', 'SF', 'PF', 'C', 'C', 'G', 'F', 'UTIL'], bench: 7 }, // this draft's roster: starter slot types + bench size
+      scoring: Scoring.defaults(), // league fantasy scoring, points per category (Settings → Scoring System)
       drafts: [],            // [{ id, name, season, createdAt, data }] — see js/drafts.js
       activeDraftId: null,   // which draft the top-level fields belong to
       sourcesBySeason: {},   // season -> { sources, selectedSourceIds } for seasons not active
@@ -51,6 +52,7 @@
     } else if (!state.drafts.some((d) => d.id === state.activeDraftId)) {
       state.activeDraftId = state.drafts[0].id;
     }
+    state.scoring = Scoring.normalize(state.scoring);
     state.teamStructure = Lineup.normalizeStructure(state.teamStructure);
     if (!Array.isArray(state.seasonStats)) state.seasonStats = [];
     while (state.seasonStats.length < Constants.SEASON_SLOTS) {
