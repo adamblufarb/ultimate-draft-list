@@ -1481,3 +1481,6 @@ input, textarea, select, .note-text, .detail-notes {
 /* Season Stats cards: every title (season label, "Add a Season", the season dropdown) is left-aligned and 16px. */
 .season-stats-card .source-view-name { text-align: left; font-size: 16px; }
 .season-stats-card .smart-search-select { text-align: left; text-align-last: left; font-size: 16px; padding-left: 12px; }
+
+/* Smart Search → Teams: same 10px as between the filter lines. */
+.source-toggles.smart-search-row { margin-bottom: 10px; }

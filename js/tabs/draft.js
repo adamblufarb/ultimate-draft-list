@@ -554,7 +554,7 @@
 
   function renderSmartSearchRow() {
     const wrap = document.createElement('div');
-    wrap.className = 'source-toggles draft-actions-row';
+    wrap.className = 'source-toggles draft-actions-row smart-search-row';
 
     if (!smartSearchCriteria) {
       wrap.appendChild(renderToggleChip('Smart Search', false, openSmartSearch));
