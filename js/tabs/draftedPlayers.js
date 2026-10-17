@@ -28,6 +28,7 @@
       else render();
     });
     App.on('remote-state-loaded', render);
+    App.on('team-names-changed', render);
     render();
   }
 
@@ -119,7 +120,7 @@
     ghost.style.padding = '0';
     ghost.textContent = '0.0';
     const text = document.createElement('span');
-    text.textContent = 'On the clock';
+    text.textContent = App.teamName(App.teamOnTheClock()) + ' on the clock';
     card.appendChild(ghost);
     card.appendChild(text);
     entry.appendChild(num);
