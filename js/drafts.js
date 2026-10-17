@@ -7,7 +7,7 @@
    so drafts for the same season share them) and loads the target's.
    Ranking lists and the Data List belong to the season. Shared by every draft: Season Stats, tags, player notes, notes. */
 (function (global) {
-  const DRAFT_FIELDS = ['draftedKeys', 'myTeamKeys', 'pinnedKeys', 'draftOrder', 'pickSlot', 'leagueSize', 'listLocked', 'sortLocked', 'teamStructure', 'notes', 'playerNotes', 'breakoutLevels', 'sleeperLevels', 'targetKeys', 'doNotDraftKeys'];
+  const DRAFT_FIELDS = ['draftedKeys', 'myTeamKeys', 'pinnedKeys', 'draftOrder', 'pickSlot', 'leagueSize', 'listLocked', 'sortLocked', 'reversedRounds', 'teamStructure', 'notes', 'playerNotes', 'breakoutLevels', 'sleeperLevels', 'targetKeys', 'doNotDraftKeys'];
 
   function st() { return App.state; }
   function active() { return st().drafts.find((d) => d.id === st().activeDraftId); }
@@ -45,27 +45,27 @@
     reload();
   }
 
-  function create(name, season, pickSlot, leagueSize, structure) {
+  function create(name, season, pickSlot, leagueSize, structure, reversed) {
     const s = st();
     Backups.add(s, 'before-new-draft');
     stash();
-    const d = { id: 'draft_' + Date.now().toString(36), name, season, createdAt: Date.now(), data: { pickSlot, leagueSize, teamStructure: Lineup.normalizeStructure(structure) } };
+    const d = { id: 'draft_' + Date.now().toString(36), name, season, createdAt: Date.now(), data: { pickSlot, leagueSize, teamStructure: Lineup.normalizeStructure(structure), reversedRounds: (reversed || []).slice() } };
     s.drafts.push(d);
     load(d);
     reload();
   }
 
-  function edit(id, name, season, pickSlot, leagueSize, structure) {
+  function edit(id, name, season, pickSlot, leagueSize, structure, reversed) {
     const s = st(); const d = s.drafts.find((x) => x.id === id); if (!d) return;
     const isActive = id === s.activeDraftId;
     if (isActive) {
       stash();
       d.name = name;
-      d.data.pickSlot = pickSlot; d.data.leagueSize = leagueSize; d.data.teamStructure = Lineup.normalizeStructure(structure);
-      if (season !== d.season) { d.season = season; load(d); } else { s.pickSlot = pickSlot; s.leagueSize = leagueSize; s.teamStructure = d.data.teamStructure; }
+      d.data.pickSlot = pickSlot; d.data.leagueSize = leagueSize; d.data.teamStructure = Lineup.normalizeStructure(structure); d.data.reversedRounds = (reversed || []).slice();
+      if (season !== d.season) { d.season = season; load(d); } else { s.pickSlot = pickSlot; s.leagueSize = leagueSize; s.teamStructure = d.data.teamStructure; s.reversedRounds = d.data.reversedRounds; }
     } else {
       d.name = name; d.season = season; d.data = d.data || {};
-      d.data.pickSlot = pickSlot; d.data.leagueSize = leagueSize; d.data.teamStructure = Lineup.normalizeStructure(structure);
+      d.data.pickSlot = pickSlot; d.data.leagueSize = leagueSize; d.data.teamStructure = Lineup.normalizeStructure(structure); d.data.reversedRounds = (reversed || []).slice();
     }
     reload();
   }
@@ -152,7 +152,10 @@
     add.addEventListener('click', () => showForm(null));
     grid.appendChild(add);
     sheet.appendChild(grid);
-    const sc = el('button', 'btn btn-secondary smart-search-submit', 'Scoring System');
+    const src = el('button', 'btn btn-secondary smart-search-submit settings-nav-btn', 'Sources');
+    src.addEventListener('click', () => { hide(); AppNav.openSources(); });
+    sheet.appendChild(src);
+    const sc = el('button', 'btn btn-secondary smart-search-submit settings-nav-btn', 'Scoring System');
     sc.addEventListener('click', showScoring);
     sheet.appendChild(sc);
     show(sheet);
@@ -244,6 +247,34 @@
     show(sheet);
   }
 
+  function showRounds(structure, reversed, back) {
+    const rounds = structure.slots.length + structure.bench;
+    const work = new Set(reversed);
+    const sheet = sheetWithHeader('Reverse Rounds', () => back(Array.from(work)));
+    sheet.appendChild(el('div', 'draft-tile-sub', 'Arrows show which end of the draft each round starts from. Tap a round to flip it (blue) — e.g. to balance the snake.'));
+    const grid = el('div', 'detail-stats smart-search-saved-grid draft-grid');
+    for (let r = 1; r <= rounds; r++) {
+      const tile = el('div', 'stat-card smart-search-saved-tile round-tile');
+      const label = el('div', 'smart-search-saved-title', 'Round ' + r);
+      const arrow = el('div', 'round-arrow');
+      const paint = () => {
+        const flipped = work.has(r);
+        const up = (r % 2 === 0) !== flipped;
+        arrow.textContent = up ? '↑' : '↓';
+        tile.classList.toggle('is-reversed', flipped);
+      };
+      tile.appendChild(label); tile.appendChild(arrow);
+      tile.addEventListener('click', () => { if (work.has(r)) work.delete(r); else work.add(r); paint(); });
+      paint();
+      grid.appendChild(tile);
+    }
+    sheet.appendChild(grid);
+    const done = el('button', 'btn btn-primary smart-search-submit', 'Done');
+    done.addEventListener('click', () => back(Array.from(work)));
+    sheet.appendChild(done);
+    show(sheet);
+  }
+
   let formDraft = null; // unsaved form values while the Team Structure screen is open
 
   function showForm(d, keep) {
@@ -270,10 +301,17 @@
     let structure = formDraft ? formDraft.structure : Lineup.normalizeStructure(data.teamStructure);
     const stBtn = el('button', 'btn btn-secondary', 'Team Structure');
     stBtn.addEventListener('click', () => {
-      formDraft = { name: name.value, season: sel.value, pick: pick.inp.value, teams: teams.inp.value, structure };
+      formDraft = { name: name.value, season: sel.value, pick: pick.inp.value, teams: teams.inp.value, structure, reversed };
       showStructure(structure, (next) => { formDraft.structure = next; showForm(d, true); });
     });
     fields.appendChild(stBtn);
+    let reversed = formDraft ? formDraft.reversed : (data.reversedRounds || []).slice();
+    const rrBtn = el('button', 'btn btn-secondary', 'Reverse Rounds');
+    rrBtn.addEventListener('click', () => {
+      formDraft = { name: name.value, season: sel.value, pick: pick.inp.value, teams: teams.inp.value, structure, reversed };
+      showRounds(structure, reversed, (next) => { formDraft.reversed = next; showForm(d, true); });
+    });
+    fields.appendChild(rrBtn);
     sheet.appendChild(fields);
 
     const err = el('div', 'draft-tile-sub');
@@ -283,7 +321,7 @@
       const n = name.value.trim(); const p = parseInt(pick.inp.value, 10); const t = parseInt(teams.inp.value, 10);
       if (!n) { err.textContent = 'Give the draft a name.'; return; }
       if (!(t >= 2 && t <= 30) || !(p >= 1 && p <= t)) { err.textContent = 'Pick number must be between 1 and the number of teams.'; return; }
-      if (d) edit(d.id, n, sel.value, p, t, structure); else create(n, sel.value, p, t, structure);
+      if (d) edit(d.id, n, sel.value, p, t, structure, reversed); else create(n, sel.value, p, t, structure, reversed);
       formDraft = null;
       showList();
     });
@@ -303,5 +341,5 @@
 
   function open() { showList(); }
 
-  global.Drafts = { open, switchTo, create, edit, seasonFor, DRAFT_FIELDS };
+  global.Drafts = { open, hide, switchTo, create, edit, seasonFor, DRAFT_FIELDS };
 })(window);

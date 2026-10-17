@@ -54,6 +54,25 @@
     return Number.isInteger(score) ? String(score) : score.toFixed(1);
   }
 
+  // Season labels look like "25-26". canonSeason accepts "2025-26" / "2025-2026" too.
+  function canonSeason(label) {
+    const m = /^\s*(?:20)?(\d{2})\s*[-–]\s*(?:20)?(\d{2})\s*$/.exec(String(label || ''));
+    return m ? m[1] + '-' + m[2] : null;
+  }
+  function seasonStart(label) {
+    const c = canonSeason(label);
+    return c ? 2000 + parseInt(c.slice(0, 2), 10) : -1;
+  }
+  // Seasons offered when adding stats: 8 back through the one starting this
+  // calendar year (in 2026: 18-19 … 26-27), most recent first.
+  function seasonChoices() {
+    const y = new Date().getFullYear();
+    const out = [];
+    for (let s = y; s >= y - 8; s--) out.push(String(s).slice(2) + '-' + String(s + 1).slice(2));
+    return out;
+  }
+
   global.Constants = {
+    canonSeason, seasonStart, seasonChoices,
 displayTeam, canonTeam, TEAM_ALIASES, GITHUB_RESPONSE_KEYS, MAX_SOURCES, SEASON_SLOTS, HEALTH_TREND_SEASONS, SCORE_TYPES, scoreTypeLabel, formatScore };
 })(window);

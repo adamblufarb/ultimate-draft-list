@@ -48,8 +48,15 @@
       btn.addEventListener('click', () => showTab(btn.dataset.tab));
     });
 
+    // Sources lives under Settings now (no tab button); remember where to go back to.
+    let tabBeforeSources = 'draft';
+    window.AppNav = {
+      openSources() { if (currentTab !== 'sources') tabBeforeSources = currentTab || 'draft'; showTab('sources'); },
+      backFromSources() { showTab(tabBeforeSources); Drafts.open(); }
+    };
+
     const savedTab = UiState.get('tab', 'draft');
-    showTab(panels[savedTab] ? savedTab : 'draft');
+    showTab(panels[savedTab] && savedTab !== 'sources' ? savedTab : 'draft');
 
     // Hand GithubSync a way to read and replace the live state (in place —
     // every tab holds a reference to App.state), then, if this device has a

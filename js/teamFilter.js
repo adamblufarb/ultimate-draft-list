@@ -61,7 +61,7 @@
     if (teams.length === 0) {
       const empty = document.createElement('p');
       empty.className = 'empty-hint';
-      empty.textContent = 'No teams yet — add players with a Team in the Sources tab\'s Data List.';
+      empty.textContent = 'No teams yet — add players with a Team in Settings → Sources → Data List.';
       sheet.appendChild(empty);
     } else {
       const grid = document.createElement('div');

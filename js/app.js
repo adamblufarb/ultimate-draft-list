@@ -59,13 +59,32 @@
   // Is the pick on the clock right now one of mine? The next overall pick is
   // (players drafted + 1); in a snake draft odd rounds run slot 1..N and even
   // rounds run N..1, and pickSlot is my slot in round 1.
+  // Rounds normally snake: odd rounds run slot 1..N, even rounds N..1; a round
+  // listed in state.reversedRounds runs the other way instead.
+  function roundRunsBackwards(round) {
+    return (round % 2 === 0) !== (state.reversedRounds || []).includes(round);
+  }
+
+  function myPositionInRound(round) {
+    return roundRunsBackwards(round) ? state.leagueSize - state.pickSlot + 1 : state.pickSlot;
+  }
+
+  // Every team fills the roster (starters + bench), so that many rounds.
+  function totalRounds() {
+    const st = Lineup.normalizeStructure(state.teamStructure);
+    return st.slots.length + st.bench;
+  }
+
+  function isDraftOver() {
+    return state.draftedKeys.length >= state.leagueSize * totalRounds();
+  }
+
   function isMyPickOnTheClock() {
+    if (isDraftOver()) return false;
     const size = state.leagueSize;
     const pick = state.draftedKeys.length + 1;
     const round = Math.floor((pick - 1) / size) + 1;
-    const position = pick - (round - 1) * size;
-    const mine = round % 2 === 1 ? state.pickSlot : size - state.pickSlot + 1;
-    return position === mine;
+    return pick - (round - 1) * size === myPositionInRound(round);
   }
 
   function draftedByMe(key) {
@@ -416,7 +435,7 @@
 
   global.App = {
     state, on, emit, persist, genId,
-    isDrafted, setDrafted, isMyPickOnTheClock,
+    isDrafted, setDrafted, isMyPickOnTheClock, isDraftOver, totalRounds, myPositionInRound, roundRunsBackwards,
     isOnMyTeam, draftedByMe, removeFromMyTeam,
     getBreakoutLevel, cycleBreakoutLevel,
     getSleeperLevel, cycleSleeperLevel,

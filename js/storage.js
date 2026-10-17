@@ -20,10 +20,11 @@
       // [{ id, label }] in the file's own order; players: [{ key, displayName,
       // values: { [colId]: text } }]. Never part of any ranking — shown only
       // at the bottom of Player Detail.
-      seasonStats: Array.from({ length: Constants.SEASON_SLOTS }, () => ({ label: '', fileName: '', columns: [], players: [] })),
+      seasonStats: [], // one entry per uploaded season, most recent first (label like "25-26")
       playerNotes: {}, // key -> free-text note, set from Player Detail
       pinnedKeys: [],        // players pinned in place on Draft List (long press); only unpinned by long-pressing again or drafting
       listLocked: false,     // Draft List's "Lock List" toggle — keeps the order fixed while filters change
+      reversedRounds: [],    // round numbers whose pick direction is flipped from the normal snake
       sortLocked: false,     // Draft List's "Sort Locked" toggle — locked (pinned) players re-sort by the active filters among themselves
       pickSlot: 3,           // your slot in the first round (1 = picks first)
       leagueSize: 10,        // teams in the league (snake draft)
@@ -55,10 +56,14 @@
     state.scoring = Scoring.normalize(state.scoring);
     state.teamStructure = Lineup.normalizeStructure(state.teamStructure);
     if (!Array.isArray(state.seasonStats)) state.seasonStats = [];
-    while (state.seasonStats.length < Constants.SEASON_SLOTS) {
-      const label = state.seasonStats.length === 3 ? '22-23' : '';
-      state.seasonStats.push({ label, fileName: '', columns: [], players: [] });
-    }
+    // Seasons: canonical label, only ones with a file, one per season, newest first.
+    const seen = new Set();
+    state.seasonStats = state.seasonStats
+      .filter((s) => s && s.players && s.players.length > 0)
+      .map((s) => Object.assign(s, { label: Constants.canonSeason(s.label) || s.label }))
+      .filter((s) => (seen.has(s.label) ? false : (seen.add(s.label), true)))
+      .sort((a, b) => Constants.seasonStart(b.label) - Constants.seasonStart(a.label));
+    if (!Array.isArray(state.reversedRounds)) state.reversedRounds = [];
     return state;
   }
 

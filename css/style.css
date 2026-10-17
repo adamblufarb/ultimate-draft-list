@@ -535,8 +535,13 @@ body {
 
 .btn-draft.is-drafted {
   background: transparent;
-  color: #fff;
-  border-color: #fff;
+  color: var(--text);
+  border-color: #5d6470;
+}
+
+.btn-draft:disabled {
+  opacity: 0.4;
+  cursor: default;
 }
 
 .btn-draft.is-drafted.is-on-my-team {
@@ -1442,3 +1447,9 @@ input, textarea, select, .note-text, .detail-notes {
 
 .scoring-name { flex: 1; text-align: left; }
 .structure-row .smart-search-threshold-input { width: 76px; padding: 8px; }
+
+.round-tile { flex-direction: row; gap: 10px; cursor: pointer; }
+.round-arrow { font-size: 22px; font-weight: 700; }
+.stat-card.round-tile.is-reversed { background: var(--accent); border-color: var(--accent); color: #fff; }
+.settings-nav-btn { margin-top: 14px; }
+.sources-back { margin-bottom: 14px; align-self: flex-start; }

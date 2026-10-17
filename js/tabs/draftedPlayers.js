@@ -54,7 +54,7 @@
       return;
     }
     const list = renderList(draftedKeys, avgByKey, index);
-    list.appendChild(renderOnTheClock(draftedKeys.length + 1)); // inside the list, so it gets the same gap as the other picks
+    if (!App.isDraftOver()) list.appendChild(renderOnTheClock(draftedKeys.length + 1)); // inside the list, so it gets the same gap as the other picks
     container.appendChild(list);
     const editBtn = document.createElement('button');
     editBtn.type = 'button';

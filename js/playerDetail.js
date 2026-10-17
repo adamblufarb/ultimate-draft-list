@@ -393,7 +393,9 @@
     const draftBtn = document.createElement('button');
     draftBtn.className = 'btn-draft detail-draft-btn' + (drafted ? ' is-drafted' : '') + (drafted && App.isOnMyTeam(key) ? ' is-on-my-team' : '') + (myPick ? ' is-my-pick' : '');
     draftBtn.textContent = drafted ? 'Undraft (' + (App.state.draftedKeys.indexOf(key) + 1) + ')' : (myPick ? 'Drafted By Me' : 'Mark Drafted');
+    if (!drafted && App.isDraftOver()) draftBtn.disabled = true; // the draft is complete
     draftBtn.addEventListener('click', () => {
+      if (drafted && !confirm('Undraft ' + entry.displayName + '?')) return;
       if (myPick) App.draftedByMe(key);
       else App.setDrafted(key, !drafted);
       closeHandler();

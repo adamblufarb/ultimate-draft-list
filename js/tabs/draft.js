@@ -399,7 +399,7 @@
     const taken = (App.state.draftedKeys || []).length;
     const picks = [];
     for (let round = 1; ; round++) {
-      const pos = round % 2 === 1 ? slot : size - slot + 1;
+      const pos = App.myPositionInRound(round);
       const pick = (round - 1) * size + pos;
       if (pick > limit) return picks;
       if (pick > taken) picks.push(pick);

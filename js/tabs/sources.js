@@ -32,6 +32,11 @@
 
   function render() {
     container.innerHTML = '';
+    const back = document.createElement('button');
+    back.className = 'btn btn-secondary sources-back';
+    back.textContent = '‹ Settings';
+    back.addEventListener('click', () => AppNav.backFromSources());
+    container.appendChild(back);
     container.appendChild(renderSyncCard());
 
     const list = document.createElement('div');
@@ -747,11 +752,10 @@
     return card;
   }
 
-  // Season Stats: Constants.SEASON_SLOTS fixed upload slots (unlike Sources, count is fixed and
-  // there's no add/reorder), most-recent season first. Each slot is always
-  // shown editable in place — there's no separate view/edit toggle, since
-  // there's no large paste text to hide; the file input plus a compact
-  // status line ("482 players parsed from 25-26.xls") is the whole card.
+  // Season Stats: any number of seasons, one per-game stats file each, kept
+  // most-recent first. "Add Season" picks the season from a dropdown (8 back
+  // through the one starting this year; seasons already added aren't offered)
+  // and takes the file.
   function renderSeasonStatsSection() {
     const wrap = document.createElement('div');
     wrap.className = 'season-stats-section';
@@ -763,37 +767,52 @@
 
     const desc = document.createElement('p');
     desc.className = 'source-view-meta';
-    desc.textContent = 'Upload the last ' + Constants.SEASON_SLOTS + ' seasons of per-game stats (.xls export from Basketball-Reference) ' +
-      'to show at the bottom of Player Detail. Never used in any ranking.';
+    desc.textContent = 'Upload per-game stats (.xls export from Basketball-Reference), one file per season, to show at the ' +
+      'bottom of Player Detail. Never used in any ranking.';
     wrap.appendChild(desc);
 
-    App.state.seasonStats.forEach((slot, i) => {
-      wrap.appendChild(renderSeasonStatsCard(slot, i));
+    App.state.seasonStats.forEach((slot) => {
+      wrap.appendChild(renderSeasonStatsCard(slot));
     });
-
+    wrap.appendChild(renderAddSeasonCard());
     return wrap;
   }
 
-  function renderSeasonStatsCard(slot, i) {
+  function parseInto(file, warningsWrap, label, done) {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const { columns, players, warnings } = Parser.parseSeasonStatsHtml(String(reader.result));
+      warningsWrap.innerHTML = '';
+      warnings.forEach((w) => {
+        const p = document.createElement('p');
+        p.className = 'warning';
+        p.textContent = w;
+        warningsWrap.appendChild(p);
+      });
+      if (players.length === 0) return;
+      const entry = { label, fileName: file.name, columns, players };
+      const rest = App.state.seasonStats.filter((s) => s.label !== label);
+      App.state.seasonStats = rest.concat(entry)
+        .sort((a, b) => Constants.seasonStart(b.label) - Constants.seasonStart(a.label));
+      App.persist();
+      render();
+      done && done();
+    };
+    reader.readAsText(file);
+  }
+
+  function renderSeasonStatsCard(slot) {
     const card = document.createElement('div');
     card.className = 'source-card source-card-view season-stats-card';
 
-    const labelInput = document.createElement('input');
-    labelInput.type = 'text';
-    labelInput.className = 'input-name';
-    labelInput.placeholder = 'e.g. 2025-26';
-    labelInput.value = slot.label || '';
-    labelInput.addEventListener('change', () => {
-      App.state.seasonStats[i].label = labelInput.value.trim();
-      App.persist();
-    });
-    card.appendChild(labelInput);
+    const title = document.createElement('div');
+    title.className = 'source-view-name';
+    title.textContent = slot.label;
+    card.appendChild(title);
 
     const statusLine = document.createElement('div');
     statusLine.className = 'source-view-meta';
-    statusLine.textContent = slot.players.length > 0
-      ? `${slot.players.length} player${slot.players.length === 1 ? '' : 's'} parsed from ${slot.fileName}`
-      : 'No file uploaded yet.';
+    statusLine.textContent = `${slot.players.length} player${slot.players.length === 1 ? '' : 's'} parsed from ${slot.fileName}`;
     card.appendChild(statusLine);
 
     const warningsWrap = document.createElement('div');
@@ -802,55 +821,67 @@
 
     const actions = document.createElement('div');
     actions.className = 'source-actions';
+    const fileInput = document.createElement('input');
+    fileInput.type = 'file';
+    fileInput.accept = '.xls,.xlsx,.htm,.html';
+    fileInput.className = 'season-stats-file-input';
+    fileInput.addEventListener('change', () => {
+      if (fileInput.files[0]) parseInto(fileInput.files[0], warningsWrap, slot.label);
+    });
+    actions.appendChild(fileInput);
+
+    const clearBtn = document.createElement('button');
+    clearBtn.className = 'btn btn-danger';
+    clearBtn.textContent = 'Clear';
+    clearBtn.addEventListener('click', () => {
+      if (!confirm(`Remove the ${slot.label} stats?`)) return;
+      App.state.seasonStats = App.state.seasonStats.filter((s) => s.label !== slot.label);
+      App.persist();
+      render();
+    });
+    actions.appendChild(clearBtn);
+    card.appendChild(actions);
+    return card;
+  }
+
+  function renderAddSeasonCard() {
+    const card = document.createElement('div');
+    card.className = 'source-card source-card-view season-stats-card';
+    const have = new Set(App.state.seasonStats.map((s) => s.label));
+    const choices = Constants.seasonChoices().filter((c) => !have.has(c));
+    if (choices.length === 0) {
+      const none = document.createElement('div');
+      none.className = 'source-view-meta';
+      none.textContent = 'Every season in range already has a file.';
+      card.appendChild(none);
+      return card;
+    }
+    const title = document.createElement('div');
+    title.className = 'source-view-name';
+    title.textContent = 'Add a Season';
+    card.appendChild(title);
+
+    const select = document.createElement('select');
+    select.className = 'smart-search-select';
+    choices.forEach((c) => {
+      const o = document.createElement('option');
+      o.value = c; o.textContent = c;
+      select.appendChild(o);
+    });
+    card.appendChild(select);
+
+    const warningsWrap = document.createElement('div');
+    warningsWrap.className = 'preview-warnings';
+    card.appendChild(warningsWrap);
 
     const fileInput = document.createElement('input');
     fileInput.type = 'file';
     fileInput.accept = '.xls,.xlsx,.htm,.html';
     fileInput.className = 'season-stats-file-input';
     fileInput.addEventListener('change', () => {
-      const file = fileInput.files[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = () => {
-        const { columns, players, warnings } = Parser.parseSeasonStatsHtml(String(reader.result));
-        warningsWrap.innerHTML = '';
-        warnings.forEach((w) => {
-          const p = document.createElement('p');
-          p.className = 'warning';
-          p.textContent = w;
-          warningsWrap.appendChild(p);
-        });
-        if (players.length === 0) return;
-        if (!labelInput.value.trim()) {
-          labelInput.value = file.name.replace(/\.[^/.]+$/, '');
-        }
-        App.state.seasonStats[i] = {
-          label: labelInput.value.trim(),
-          fileName: file.name,
-          columns,
-          players
-        };
-        App.persist();
-        render();
-      };
-      reader.readAsText(file);
+      if (fileInput.files[0]) parseInto(fileInput.files[0], warningsWrap, select.value);
     });
-    actions.appendChild(fileInput);
-
-    if (slot.players.length > 0) {
-      const clearBtn = document.createElement('button');
-      clearBtn.className = 'btn btn-danger';
-      clearBtn.textContent = 'Clear';
-      clearBtn.addEventListener('click', () => {
-        if (!confirm(`Clear uploaded data for "${slot.label || 'this season'}"?`)) return;
-        App.state.seasonStats[i] = { label: slot.label, fileName: '', columns: [], players: [] };
-        App.persist();
-        render();
-      });
-      actions.appendChild(clearBtn);
-    }
-
-    card.appendChild(actions);
+    card.appendChild(fileInput);
     return card;
   }
 

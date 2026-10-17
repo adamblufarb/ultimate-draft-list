@@ -199,14 +199,16 @@
     if (!hasAnyData) {
       const empty = document.createElement('p');
       empty.className = 'empty-hint';
-      empty.textContent = 'No season stats uploaded yet — add them under Season Stats in the Sources tab.';
+      empty.textContent = 'No season stats uploaded yet — add them under Settings → Sources → Season Stats.';
       wrap.appendChild(empty);
       return wrap;
     }
     allSlots.forEach((slot, i) => {
       if (!slot.players || slot.players.length === 0) return;
       const playerEntry = slot.players.find((p) => p.key === key) || null;
-      const olderSlot = allSlots[i + 1] || null;
+      // Only compare with the next-older file when it is exactly one season back.
+      const next = allSlots[i + 1] || null;
+      const olderSlot = next && Constants.seasonStart(next.label) === Constants.seasonStart(slot.label) - 1 ? next : null;
       const olderEntry = olderSlot ? (olderSlot.players.find((p) => p.key === key) || null) : null;
       wrap.appendChild(seasonBlock(slot, playerEntry, olderEntry));
     });
