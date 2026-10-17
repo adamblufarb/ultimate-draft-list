@@ -5,7 +5,7 @@
    (starters + bench, see js/lineup.js) that fill as you draft. */
 (function (global) {
   const POSITIONS = ['PG', 'SG', 'SF', 'PF', 'C'];
-  function makeTab(getKeys, listen) {
+  function makeTab(getKeys, listen, editableTitle) {
   let container;
   // Position counters double as filters; several can be on at once. Cleared
   // whenever you leave the tab (resetFilters, called from main.js).
@@ -16,6 +16,7 @@
     if (listen) {
       App.on('my-team-changed', render);
       App.on('drafted-changed', render);
+      App.on('team-names-changed', render);
       App.on('sources-changed', render);
       App.on('filters-changed', render);   // combined ranks follow the Draft List's filters
       App.on('remote-state-loaded', render);
@@ -55,6 +56,18 @@
 
   function render() {
     container.innerHTML = '';
+    if (editableTitle) {
+      // Your team's name, in blue; clearing it goes back to "My Team".
+      const slot = App.state.pickSlot;
+      const title = document.createElement('input');
+      title.type = 'text';
+      title.className = 'smart-search-title-input league-title is-mine';
+      title.value = App.teamName(slot);
+      title.placeholder = 'My Team';
+      title.setAttribute('aria-label', 'Team name');
+      title.addEventListener('change', () => { App.setTeamName(slot, title.value); });
+      container.appendChild(title);
+    }
 
     const index = Ranking.buildIndex(App.state.sources);
     const counts = countPositions(index);
@@ -204,6 +217,6 @@
   return { init, render, resetFilters };
   }
 
-  const main = makeTab(() => App.state.myTeamKeys, true);
+  const main = makeTab(() => App.state.myTeamKeys, true, true);
   global.MyTeamTab = { init: main.init, render: main.render, resetFilters: main.resetFilters, create: (getKeys) => makeTab(getKeys, false) };
 })(window);

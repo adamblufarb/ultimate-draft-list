@@ -120,7 +120,7 @@
     ghost.style.padding = '0';
     ghost.textContent = '0.0';
     const text = document.createElement('span');
-    text.textContent = App.teamName(App.teamOnTheClock()) + ' on the clock';
+    text.textContent = App.teamName(App.teamOnTheClock()) + ' is on the clock';
     card.appendChild(ghost);
     card.appendChild(text);
     entry.appendChild(num);

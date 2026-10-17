@@ -140,4 +140,5 @@ Tapping a player opens a detail view. Up top, their name (with a position badge 
 - The **Reverse Rounds** button shows a blue dot while any round is reversed.
 - Draft Board flags a reversed round in blue with its real direction, e.g. "— Round 15 ↑ reversed —".
 - **Team names:** open a team in League to rename it (saved per draft; clear it to go back to "Team N"). The name shows across the app — Player Detail's draft button reads "Draft for <team on the clock>" ("Draft for My Team" in blue on your turn; "Draft Complete" once the draft is over).
-- Draft Board's dotted row reads "<team> on the clock" (e.g. "Team 1 on the clock", "Ofer on the clock").
+- Draft Board's dotted row reads "<team> is on the clock" (e.g. "Team 1 is on the clock").
+- The My Team tab opens with your team name in a blue box — edit it there (clear it to get "My Team" back). The Draft Board row reads "<team> is on the clock".
