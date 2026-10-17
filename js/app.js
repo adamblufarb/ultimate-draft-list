@@ -95,6 +95,22 @@
     return state.draftedKeys.filter((k, i) => pickOwner(i) === slot);
   }
 
+  // Display name of the team in `slot`: its custom name (League tab) or
+  // "My Team" / "Team N".
+  function teamName(slot) {
+    const custom = state.teamNames && state.teamNames[slot];
+    if (custom) return custom;
+    return slot === state.pickSlot ? 'My Team' : 'Team ' + slot;
+  }
+
+  function setTeamName(slot, name) {
+    const clean = String(name || '').trim();
+    state.teamNames = Object.assign({}, state.teamNames);
+    if (clean) state.teamNames[slot] = clean; else delete state.teamNames[slot];
+    persist();
+    emit('team-names-changed', { slot });
+  }
+
   // The team on the clock (slot), or null once the draft is over.
   function teamOnTheClock() {
     return isDraftOver() ? null : pickOwner(state.draftedKeys.length);
@@ -465,7 +481,7 @@
 
   global.App = {
     state, on, emit, persist, genId,
-    isDrafted, setDrafted, isMyPickOnTheClock, isDraftOver, pickOwner, teamKeys, teamOnTheClock, syncMyTeam, totalRounds, myPositionInRound, roundRunsBackwards,
+    isDrafted, setDrafted, isMyPickOnTheClock, isDraftOver, pickOwner, teamName, setTeamName, teamKeys, teamOnTheClock, syncMyTeam, totalRounds, myPositionInRound, roundRunsBackwards,
     isOnMyTeam, draftedByMe, removeFromMyTeam,
     getBreakoutLevel, cycleBreakoutLevel,
     getSleeperLevel, cycleSleeperLevel,

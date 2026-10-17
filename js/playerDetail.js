@@ -392,7 +392,9 @@
     const myPick = !drafted && App.isMyPickOnTheClock();
     const draftBtn = document.createElement('button');
     draftBtn.className = 'btn-draft detail-draft-btn' + (drafted ? ' is-drafted' : '') + (drafted && App.isOnMyTeam(key) ? ' is-on-my-team' : '') + (myPick ? ' is-my-pick' : '');
-    draftBtn.textContent = drafted ? 'Undraft (' + (App.state.draftedKeys.indexOf(key) + 1) + ')' : (myPick ? 'Drafted By Me' : 'Mark Drafted');
+    const clockTeam = App.teamOnTheClock();
+    draftBtn.textContent = drafted ? 'Undraft (' + (App.state.draftedKeys.indexOf(key) + 1) + ')'
+      : (clockTeam === null ? 'Draft Complete' : 'Draft for ' + App.teamName(clockTeam));
     if (!drafted && App.isDraftOver()) draftBtn.disabled = true; // the draft is complete
     draftBtn.addEventListener('click', () => {
       if (drafted && !confirm('Undraft ' + entry.displayName + '?')) return;

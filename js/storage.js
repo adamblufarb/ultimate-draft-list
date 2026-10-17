@@ -24,6 +24,7 @@
       playerNotes: {}, // key -> free-text note, set from Player Detail
       pinnedKeys: [],        // players pinned in place on Draft List (long press); only unpinned by long-pressing again or drafting
       listLocked: false,     // Draft List's "Lock List" toggle — keeps the order fixed while filters change
+      teamNames: {},         // slot -> custom team name (League tab); unnamed teams are "Team N" / "My Team"
       reversedRounds: [],    // round numbers whose pick direction is flipped from the normal snake
       sortLocked: false,     // Draft List's "Sort Locked" toggle — locked (pinned) players re-sort by the active filters among themselves
       pickSlot: 3,           // your slot in the first round (1 = picks first)
@@ -63,6 +64,7 @@
       .map((s) => Object.assign(s, { label: Constants.canonSeason(s.label) || s.label }))
       .filter((s) => (seen.has(s.label) ? false : (seen.add(s.label), true)))
       .sort((a, b) => Constants.seasonStart(b.label) - Constants.seasonStart(a.label));
+    if (!state.teamNames || typeof state.teamNames !== 'object') state.teamNames = {};
     if (!Array.isArray(state.reversedRounds)) state.reversedRounds = [];
     return state;
   }

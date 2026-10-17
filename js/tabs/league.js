@@ -11,13 +11,11 @@
   let openSlot = null;      // team whose roster is showing, or null for the grid
   let teamView = null;      // MyTeamTab instance for that roster
 
-  function teamName(slot) {
-    return slot === App.state.pickSlot ? 'My Team' : 'Team ' + slot;
-  }
+  const teamName = (slot) => App.teamName(slot);
 
   function init(rootEl) {
     container = rootEl;
-    ['drafted-changed', 'my-team-changed', 'sources-changed', 'filters-changed', 'remote-state-loaded', 'tags-changed']
+    ['drafted-changed', 'my-team-changed', 'sources-changed', 'filters-changed', 'remote-state-loaded', 'tags-changed', 'team-names-changed']
       .forEach((ev) => App.on(ev, render));
     render();
   }
@@ -91,9 +89,17 @@
     back.textContent = '‹ League';
     back.addEventListener('click', () => { openSlot = null; render(); });
     container.appendChild(back);
-    const title = document.createElement('h2');
-    title.className = 'league-title';
-    title.textContent = teamName(slot);
+    const title = document.createElement('input');
+    title.type = 'text';
+    title.className = 'smart-search-title-input league-title';
+    title.value = teamName(slot);
+    title.placeholder = 'Team ' + slot;
+    title.setAttribute('aria-label', 'Team name');
+    // Saved when you finish typing; clearing it goes back to "Team N".
+    title.addEventListener('change', () => {
+      App.setTeamName(slot, title.value);
+      title.value = teamName(slot);
+    });
     container.appendChild(title);
     const holder = document.createElement('div');
     container.appendChild(holder);
