@@ -1,13 +1,13 @@
 /* Multiple drafts + the Settings screen.
    The top-level state fields (draftedKeys, myTeamKeys, pinnedKeys, draftOrder,
-   pickSlot, leagueSize, listLocked, showNextPick, sources, selectedSourceIds)
+   pickSlot, leagueSize, listLocked, sortLocked, sources, selectedSourceIds)
    always belong to the ACTIVE draft, so the rest of the app is unchanged.
    Switching drafts stashes those fields into the draft being left
    (state.drafts[i].data; ranking lists go into state.sourcesBySeason[season],
    so drafts for the same season share them) and loads the target's.
    Ranking lists and the Data List belong to the season. Shared by every draft: Season Stats, tags, player notes, notes. */
 (function (global) {
-  const DRAFT_FIELDS = ['draftedKeys', 'myTeamKeys', 'pinnedKeys', 'draftOrder', 'pickSlot', 'leagueSize', 'listLocked', 'showNextPick', 'teamStructure', 'notes', 'playerNotes', 'breakoutLevels', 'sleeperLevels', 'targetKeys', 'doNotDraftKeys'];
+  const DRAFT_FIELDS = ['draftedKeys', 'myTeamKeys', 'pinnedKeys', 'draftOrder', 'pickSlot', 'leagueSize', 'listLocked', 'sortLocked', 'teamStructure', 'notes', 'playerNotes', 'breakoutLevels', 'sleeperLevels', 'targetKeys', 'doNotDraftKeys'];
 
   function st() { return App.state; }
   function active() { return st().drafts.find((d) => d.id === st().activeDraftId); }
@@ -264,8 +264,8 @@
     if (d) fields.appendChild(el('div', 'draft-tile-sub', 'Changing the season switches this draft to that season’s ranking lists.'));
 
     const data = d ? (d.id === st().activeDraftId ? st() : (d.data || {})) : {};
-    const pick = numberRow('I pick number', formDraft ? formDraft.pick : data.pickSlot || 1);
-    const teams = numberRow('Teams in the draft', formDraft ? formDraft.teams : data.leagueSize || 10);
+    const pick = numberRow('Your Pick Number', formDraft ? formDraft.pick : data.pickSlot || 1);
+    const teams = numberRow('Teams In the Draft', formDraft ? formDraft.teams : data.leagueSize || 10);
     fields.appendChild(pick.row); fields.appendChild(teams.row);
     let structure = formDraft ? formDraft.structure : Lineup.normalizeStructure(data.teamStructure);
     const stBtn = el('button', 'btn btn-secondary', 'Team Structure');

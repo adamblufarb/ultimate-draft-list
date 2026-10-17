@@ -19,6 +19,12 @@
 * { box-sizing: border-box; }
 
 html, body {
+  /* The page itself never scrolls (only the panels inside do), so the header
+     can't slide away or get covered by the phone's status bar. */
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  overscroll-behavior: none;
   margin: 0;
   padding: 0;
   height: 100%;
@@ -42,7 +48,7 @@ body {
   box-sizing: content-box;
   height: var(--header-height);
   min-height: var(--header-height);
-  padding-top: env(safe-area-inset-top);
+  padding-top: calc(env(safe-area-inset-top) + 8px);
   display: flex;
   align-items: center;
   justify-content: space-between;

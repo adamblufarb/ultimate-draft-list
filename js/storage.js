@@ -24,7 +24,7 @@
       playerNotes: {}, // key -> free-text note, set from Player Detail
       pinnedKeys: [],        // players pinned in place on Draft List (long press); only unpinned by long-pressing again or drafting
       listLocked: false,     // Draft List's "Lock List" toggle — keeps the order fixed while filters change
-      showNextPick: false,   // Draft List's "Next Pick" toggle
+      sortLocked: false,     // Draft List's "Sort Locked" toggle — locked (pinned) players re-sort by the active filters among themselves
       pickSlot: 3,           // your slot in the first round (1 = picks first)
       leagueSize: 10,        // teams in the league (snake draft)
       teamStructure: { slots: ['PG', 'SG', 'SF', 'PF', 'C', 'C', 'G', 'F', 'UTIL'], bench: 7 }, // this draft's roster: starter slot types + bench size

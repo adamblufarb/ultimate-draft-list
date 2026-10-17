@@ -163,10 +163,19 @@
   // combined average — unless the list is locked, in which case the order
   // stays put (the combined ranks shown on each row still update).
   function resyncOrder() {
-    if (App.state.listLocked) return;
+    const fresh = buildResetOrder(sourceWeights);
+    // Sort Locked: the locked (pinned) players re-sort among themselves by
+    // the current combined ranking, still above everyone else — even when
+    // Lock List holds the rest of the order still.
+    if (App.state.sortLocked && (App.state.pinnedKeys || []).length > 1) {
+      const pos = new Map(fresh.map((item, i) => [item.key, i]));
+      const at = (k) => (pos.has(k) ? pos.get(k) : Infinity);
+      App.state.pinnedKeys = App.state.pinnedKeys.slice().sort((a, b) => at(a) - at(b));
+    }
+    if (App.state.listLocked) { App.state.draftOrder = withPinsFirst(App.state.draftOrder || fresh); return; }
     // Pinned players stay at the very top (in pin order); everyone else is
     // re-sorted below them.
-    App.state.draftOrder = withPinsFirst(buildResetOrder(sourceWeights));
+    App.state.draftOrder = withPinsFirst(fresh);
   }
 
   // Pinned players always sit at the top of the list, in the order of
@@ -389,7 +398,6 @@
   // same row (only possible with filters) share one label: "Pick 18 · 23".
   function nextPickMarkers(fullOrder, visibleItems) {
     const markers = new Map();
-    if (!App.state.showNextPick) return markers;
     const taken = (App.state.draftedKeys || []).length;
     const picks = upcomingPicks(taken + fullOrder.length + 1);
     let cutoff = 0;     // number of fullOrder entries before the marker
@@ -681,14 +689,13 @@
       App.persist();
       render();
     }));
-    const nextPickOn = !!App.state.showNextPick;
-    const nextPickChip = renderToggleChip('Next Pick', nextPickOn, () => {
-      App.state.showNextPick = !nextPickOn;
+    const sortLocked = !!App.state.sortLocked;
+    wrap.appendChild(renderToggleChip('Sort Locked', sortLocked, () => {
+      App.state.sortLocked = !sortLocked;
+      if (App.state.sortLocked) resyncOrder();
       App.persist();
       render();
-    });
-    nextPickChip.classList.add('toggle-next-pick');
-    wrap.appendChild(nextPickChip);
+    }));
     return wrap;
   }
 
