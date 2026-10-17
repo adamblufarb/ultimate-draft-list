@@ -1459,11 +1459,11 @@ input, textarea, select, .note-text, .detail-notes {
 
 /* League tab */
 .league-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-.league-tile { aspect-ratio: 1; display: flex; flex-direction: column; justify-content: space-between; padding: 12px; border-radius: var(--radius); border: 1px solid var(--border); background: var(--surface); color: var(--text); font: inherit; text-align: left; cursor: pointer; }
+.league-tile { display: flex; flex-direction: column; gap: 10px; padding: 14px; border-radius: var(--radius); border: 1px solid var(--border); background: var(--surface); color: var(--text); font: inherit; text-align: left; cursor: pointer; }
 .league-tile.is-mine { background: var(--accent-dim); border-color: var(--accent); }
 .league-tile.is-on-clock { box-shadow: 0 0 0 2px var(--warn); }
 .league-team-name { font-size: 17px; font-weight: 700; }
-.league-clock { min-height: 16px; font-size: 12px; font-weight: 700; color: var(--warn); }
+.league-clock { min-height: 16px; margin-top: -4px; font-size: 12px; font-weight: 700; color: var(--warn); }
 .league-tile.is-mine .league-clock { color: #fff; }
 .league-positions { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; }
 .league-pos { display: flex; flex-direction: column; align-items: center; gap: 2px; }
