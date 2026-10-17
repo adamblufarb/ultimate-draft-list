@@ -143,3 +143,7 @@ Tapping a player opens a detail view. Up top, their name (with a position badge 
 - Draft Board's dotted row reads "<team> is on the clock" (e.g. "Team 1 is on the clock").
 - The My Team tab opens with your team name in a blue box — edit it there (clear it to get "My Team" back). The Draft Board row reads "<team> is on the clock".
 - **Settings → GitHub** (below Scoring System) holds the GitHub Sync card (token, Last synced, Sync Now) and Recover Draft Data; they no longer live on the Sources page.
+
+## Estimated triple doubles
+
+The per-game stats files have no triple doubles, so Player Detail's Avg/Tot are TD-free by themselves. A TD estimate fixes that: last season, (list average from the *Last year – Avg/Game* source − TD-free average from the stats file) is the bonus points per game, ÷ 3 = TDs per game. Older seasons scale that TD rate by the change in the TD-free average (half the average → half the TDs). Avg = TD-free avg + TDs-per-game × the TD value in Scoring System; Tot = Avg × games. Each season block has a **TD** row right after PF showing `~N`; players with no list average or no most-recent-season row show `—` and keep their plain numbers. DD can't be separated from TD with one difference, so it isn't estimated.

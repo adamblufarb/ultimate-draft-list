@@ -44,39 +44,75 @@
   // than wherever the file's own order left it.
   const COMPANION_COLUMN_IDS = { ft_per_g: 'fta_per_g' };
 
-  // Average fantasy points per game under the league scoring in
-  // state.scoring (Settings → Scoring System); see js/scoring.js.
-  function averageFantasyPoints(columns, values) {
-    return Scoring.average(App.state.scoring, columns, values);
-  }
+  // Triple doubles aren't in the per-game files, so the plain average above
+  // leaves out their bonus. It is estimated per player from the gap between
+  // last season's list average (the "Last year – Avg/Game" source, which
+  // includes it) and the TD-free average from the stats file: that gap is the
+  // bonus points per game, / 3 = TDs per game. Older seasons scale that TD
+  // rate by how the player's TD-free average changed (half the average → half
+  // the TDs). Avg = TD-free avg + TD points per game; Tot = Avg x games.
+  // Players without a list average or a most-recent-season row get no estimate.
+  const ESPN_TD_VALUE = 3;
 
-  // Fantasy points for one season row: { avg, tot } — avg per game, tot =
-  // avg x games played — or null if avg can't be computed or games is
-  // missing/unreadable.
-  function fantasyFor(columns, values) {
-    const avg = averageFantasyPoints(columns, values);
-    if (avg === null) return null;
-    const games = parseFloat(values.games);
-    if (Number.isNaN(games)) return null;
-    return { avg, tot: avg * games };
+  // Map(slot -> Map(key -> { avg, tot, td })) for every player in every
+  // season; td is null when nothing could be estimated. Rebuilt per render.
+  function buildFantasy() {
+    const slots = App.state.seasonStats;
+    const out = new Map();
+    const w = Scoring.normalize(App.state.scoring).TD;
+    const base = (slot, p) => {
+      const avg = Scoring.average(App.state.scoring, slot.columns, p.values);
+      const games = parseFloat(p.values.games);
+      return avg === null || Number.isNaN(games) ? null : { avg, games };
+    };
+    const recent = new Map();   // key -> TD-free avg last season
+    const rate0 = new Map();    // key -> TDs per game last season
+    if (slots[0]) {
+      const index = Ranking.buildIndex(App.state.sources);
+      const listSrc = App.state.sources.find((src) => src.scoreType === 'ly_avg');
+      slots[0].players.forEach((p) => {
+        const b = base(slots[0], p);
+        if (!b || !(b.avg > 0)) return;
+        recent.set(p.key, b.avg);
+        const entry = listSrc && index.get(p.key);
+        const listAvg = entry && entry.bySource[listSrc.id] ? entry.bySource[listSrc.id].score : null;
+        if (typeof listAvg === 'number') rate0.set(p.key, Math.max(0, listAvg - b.avg) / ESPN_TD_VALUE);
+      });
+    }
+    slots.forEach((slot) => {
+      const m = new Map();
+      slot.players.forEach((p) => {
+        const b = base(slot, p);
+        if (!b) return;
+        let rate = null;
+        if (rate0.has(p.key)) rate = rate0.get(p.key) * (b.avg / recent.get(p.key));
+        const avg = b.avg + (rate === null ? 0 : w * rate);
+        m.set(p.key, { avg, tot: avg * b.games, td: rate === null ? null : rate * b.games });
+      });
+      out.set(slot, m);
+    });
+    return out;
+  }
+  let fantasy = new Map();
+
+  function fantasyFor(slot, key) {
+    const m = fantasy.get(slot);
+    return (m && m.get(key)) || null;
   }
 
   // 1 + how many other players beat this value that season (ties share a
   // rank), among every player in that season's file who has a figure.
   function rankIn(slot, field, value) {
     let better = 0;
-    slot.players.forEach((p) => {
-      const f = fantasyFor(slot.columns, p.values);
-      if (f && f[field] > value) better += 1;
-    });
+    (fantasy.get(slot) || new Map()).forEach((f) => { if (f[field] > value) better += 1; });
     return better + 1;
   }
 
   // "Avg: 49.0 (#12)" with "Tot: 3234 (#8)" on the line below — the ranks are against every other
   // player in the same season's file (by that figure, highest first).
-  // Computed fresh each time. Null if nothing to show.
+  // Null if nothing to show.
   function fantasyLine(slot, playerEntry) {
-    const f = fantasyFor(slot.columns, playerEntry.values);
+    const f = fantasyFor(slot, playerEntry.key);
     if (!f) return null;
     const el = document.createElement('div');
     el.className = 'season-stats-block-fp';
@@ -147,6 +183,22 @@
     const displayColumns = teamCol
       ? withoutHidden.filter((col) => col.id !== TEAM_COLUMN_ID).concat(teamCol)
       : withoutHidden;
+    const tdRow = () => {
+      // Estimated triple doubles (see buildFantasy), shown right after PF with a ~.
+      const f = fantasyFor(slot, playerEntry.key);
+      const row = document.createElement('div');
+      row.className = 'season-stat-row';
+      const labelEl = document.createElement('span');
+      labelEl.className = 'season-stat-label';
+      labelEl.textContent = 'TD';
+      const valueEl = document.createElement('span');
+      valueEl.className = 'season-stat-value';
+      valueEl.textContent = f && f.td !== null ? '~' + Math.round(f.td) : '—';
+      row.appendChild(labelEl);
+      row.appendChild(valueEl);
+      return row;
+    };
+    let tdAdded = false;
     displayColumns.forEach((col) => {
       const row = document.createElement('div');
       row.className = 'season-stat-row';
@@ -179,7 +231,9 @@
       row.appendChild(labelEl);
       row.appendChild(valueEl);
       grid.appendChild(row);
+      if (col.id === 'pf_per_g') { grid.appendChild(tdRow()); tdAdded = true; }
     });
+    if (!tdAdded) grid.appendChild(tdRow());
     block.appendChild(grid);
     return block;
   }
@@ -187,6 +241,7 @@
   // Returns a container with one block per uploaded season for this
   // player (or a hint if nothing's been uploaded at all).
   function render(key) {
+    fantasy = buildFantasy();
     const wrap = document.createElement('div');
     wrap.className = 'detail-season-stats';
 
