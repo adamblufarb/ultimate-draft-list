@@ -8,6 +8,7 @@
       myteam: document.getElementById('panel-myteam'),
       drafted: document.getElementById('panel-drafted'),
       league: document.getElementById('panel-league'),
+      github: document.getElementById('panel-github'),
       notes: document.getElementById('panel-notes'),
       sources: document.getElementById('panel-sources')
     };
@@ -19,7 +20,7 @@
     DraftedPlayersTab.init(panels.drafted);
     LeagueTab.init(panels.league);
     NotesTab.init(panels.notes);
-    SourcesTab.init(panels.sources);
+    SourcesTab.init(panels.sources, panels.github);
 
     // My Team, Draft Board, and Sources already stay in sync reactively
     // (each listens for the relevant state-change events; Sources only
@@ -55,7 +56,8 @@
     let tabBeforeSources = 'draft';
     window.AppNav = {
       showTab,
-      openSources() { if (currentTab !== 'sources') tabBeforeSources = currentTab || 'draft'; showTab('sources'); },
+      openSources() { this.openPage('sources'); },
+      openPage(name) { if (currentTab !== 'sources' && currentTab !== 'github') tabBeforeSources = currentTab || 'draft'; showTab(name); },
       backFromSources() { showTab(tabBeforeSources); Drafts.open(); }
     };
 

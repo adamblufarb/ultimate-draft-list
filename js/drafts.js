@@ -158,6 +158,9 @@
     const sc = el('button', 'btn btn-secondary smart-search-submit settings-nav-btn', 'Scoring System');
     sc.addEventListener('click', showScoring);
     sheet.appendChild(sc);
+    const gh = el('button', 'btn btn-secondary smart-search-submit settings-nav-btn', 'GitHub');
+    gh.addEventListener('click', () => { hide(); AppNav.openPage('github'); });
+    sheet.appendChild(gh);
     show(sheet);
   }
 

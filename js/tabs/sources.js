@@ -15,18 +15,20 @@
 (function (global) {
   const MAX_SOURCES = Constants.MAX_SOURCES;
   let container;
+  let githubContainer;   // the Settings → GitHub page (sync token + Recover Draft Data)
   const editingIds = new Set();
   let dataListEditing = false;
 
-  function init(rootEl) {
+  function init(rootEl, githubEl) {
     container = rootEl;
+    githubContainer = githubEl;
     GithubSync.on('status-changed', updateSyncCard);
     App.on('remote-state-loaded', render);
     render();
   }
 
   function updateSyncCard() {
-    const existing = container.querySelector('.sync-card');
+    const existing = githubContainer.querySelector('.sync-card');
     if (existing) existing.replaceWith(renderSyncCard());
   }
 
@@ -37,7 +39,6 @@
     back.textContent = '‹ Settings';
     back.addEventListener('click', () => AppNav.backFromSources());
     container.appendChild(back);
-    container.appendChild(renderSyncCard());
 
     const list = document.createElement('div');
     list.className = 'source-list';
@@ -71,7 +72,20 @@
 
     container.appendChild(dataListEditing ? renderDataListEditCard() : renderDataListViewCard());
     container.appendChild(renderSeasonStatsSection());
-    container.appendChild(renderRecoveryCard());
+    renderGithubPage();
+  }
+
+  function renderGithubPage() {
+    githubContainer.innerHTML = '';
+    const back = document.createElement('button');
+    back.className = 'btn btn-secondary sources-back';
+    back.textContent = '‹ Settings';
+    back.addEventListener('click', () => AppNav.backFromSources());
+    githubContainer.appendChild(back);
+    githubContainer.appendChild(renderSyncCard());
+    const rec = renderRecoveryCard();
+    rec.style.marginTop = '14px';
+    githubContainer.appendChild(rec);
   }
 
   function onAddSource() {
