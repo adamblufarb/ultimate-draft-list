@@ -52,7 +52,9 @@
   // seasons scale that TD count by how the player's TD-free average changed
   // (half the average → half the TDs). Avg = TD-free avg + TD points / games;
   // Tot = Avg x games.
-  // Players without a list average or a most-recent-season row get no estimate.
+  // Last season's Avg / Tot are taken straight from the Last year – Avg/Game and
+  // Last year – Total lists when the player is on them (the lists are the source
+  // of truth). Players without a list average or a most-recent-season row get no estimate.
   const ESPN_TD_VALUE = 3;
 
   // Map(slot -> Map(key -> { avg, tot, td })) for every player in every
@@ -68,16 +70,28 @@
     };
     const recent = new Map();   // key -> TD-free avg last season
     const td0 = new Map();      // key -> TDs last season
+    const listAvg0 = new Map(); // key -> last season's Avg straight from the list (the source of truth)
+    const listTot0 = new Map(); // key -> last season's Total straight from the list
     if (slots[0]) {
       const index = Ranking.buildIndex(App.state.sources);
       const listSrc = App.state.sources.find((src) => src.scoreType === 'ly_avg');
+      const totSrc = App.state.sources.find((src) => src.scoreType === 'ly_total');
+      const fromList = (src, key) => {
+        const e = src && index.get(key);
+        const v = e && e.bySource[src.id] ? e.bySource[src.id].score : null;
+        return typeof v === 'number' ? v : null;
+      };
       slots[0].players.forEach((p) => {
         const b = base(slots[0], p);
         if (!b || !(b.avg > 0)) return;
         recent.set(p.key, b.avg);
-        const entry = listSrc && index.get(p.key);
-        const listAvg = entry && entry.bySource[listSrc.id] ? entry.bySource[listSrc.id].score : null;
-        if (typeof listAvg === 'number') td0.set(p.key, Math.max(0, listAvg - b.avg) / ESPN_TD_VALUE * b.games);
+        const listAvg = fromList(listSrc, p.key);
+        if (listAvg !== null) {
+          listAvg0.set(p.key, listAvg);
+          td0.set(p.key, Math.max(0, listAvg - b.avg) / ESPN_TD_VALUE * b.games);
+        }
+        const listTot = fromList(totSrc, p.key);
+        if (listTot !== null) listTot0.set(p.key, listTot);
       });
     }
     slots.forEach((slot) => {
@@ -87,8 +101,14 @@
         if (!b) return;
         // TD count follows the TD-free average: half the average, half the TDs.
         const td = td0.has(p.key) ? td0.get(p.key) * (b.avg / recent.get(p.key)) : null;
-        const avg = b.avg + (td === null ? 0 : w * td / b.games);
-        m.set(p.key, { avg, tot: avg * b.games, td });
+        let avg = b.avg + (td === null ? 0 : w * td / b.games);
+        let tot = avg * b.games;
+        // Last season is exactly what the lists say (they're the source of truth).
+        if (slot === slots[0]) {
+          if (listAvg0.has(p.key)) { avg = listAvg0.get(p.key); tot = avg * b.games; }
+          if (listTot0.has(p.key)) tot = listTot0.get(p.key);
+        }
+        m.set(p.key, { avg, tot, td });
       });
       out.set(slot, m);
     });
