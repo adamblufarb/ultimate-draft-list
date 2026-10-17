@@ -252,7 +252,24 @@
     render();
   }
 
+  // Every redraw empties the page, and the list only regains its height after
+  // its layout pass — so the browser would clamp the scroll position to the
+  // top (a jump on a phone whenever a filter, position chip or lock button is
+  // tapped). A temporary spacer holds the position until the list is back.
   function render() {
+    const scroll = container.scrollTop;
+    renderPage();
+    if (scroll <= 0) return;
+    const spacer = document.createElement('div');
+    spacer.style.height = (scroll + container.clientHeight) + 'px';
+    container.appendChild(spacer);
+    container.scrollTop = scroll;
+    const settle = () => { spacer.remove(); container.scrollTop = scroll; };
+    requestAnimationFrame(() => requestAnimationFrame(settle));
+    setTimeout(() => { if (spacer.parentNode) settle(); }, 400);
+  }
+
+  function renderPage() {
     clearTimeout(searchDebounceTimer);
     saveFilters();
     container.innerHTML = '';
