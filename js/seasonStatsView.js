@@ -48,9 +48,10 @@
   // leaves out their bonus. It is estimated per player from the gap between
   // last season's list average (the "Last year – Avg/Game" source, which
   // includes it) and the TD-free average from the stats file: that gap is the
-  // bonus points per game, / 3 = TDs per game. Older seasons scale that TD
-  // rate by how the player's TD-free average changed (half the average → half
-  // the TDs). Avg = TD-free avg + TD points per game; Tot = Avg x games.
+  // bonus points per game; x games / 3 = last season's TD count. Older
+  // seasons scale that TD count by how the player's TD-free average changed
+  // (half the average → half the TDs). Avg = TD-free avg + TD points / games;
+  // Tot = Avg x games.
   // Players without a list average or a most-recent-season row get no estimate.
   const ESPN_TD_VALUE = 3;
 
@@ -66,7 +67,7 @@
       return avg === null || Number.isNaN(games) ? null : { avg, games };
     };
     const recent = new Map();   // key -> TD-free avg last season
-    const rate0 = new Map();    // key -> TDs per game last season
+    const td0 = new Map();      // key -> TDs last season
     if (slots[0]) {
       const index = Ranking.buildIndex(App.state.sources);
       const listSrc = App.state.sources.find((src) => src.scoreType === 'ly_avg');
@@ -76,7 +77,7 @@
         recent.set(p.key, b.avg);
         const entry = listSrc && index.get(p.key);
         const listAvg = entry && entry.bySource[listSrc.id] ? entry.bySource[listSrc.id].score : null;
-        if (typeof listAvg === 'number') rate0.set(p.key, Math.max(0, listAvg - b.avg) / ESPN_TD_VALUE);
+        if (typeof listAvg === 'number') td0.set(p.key, Math.max(0, listAvg - b.avg) / ESPN_TD_VALUE * b.games);
       });
     }
     slots.forEach((slot) => {
@@ -84,10 +85,10 @@
       slot.players.forEach((p) => {
         const b = base(slot, p);
         if (!b) return;
-        let rate = null;
-        if (rate0.has(p.key)) rate = rate0.get(p.key) * (b.avg / recent.get(p.key));
-        const avg = b.avg + (rate === null ? 0 : w * rate);
-        m.set(p.key, { avg, tot: avg * b.games, td: rate === null ? null : rate * b.games });
+        // TD count follows the TD-free average: half the average, half the TDs.
+        const td = td0.has(p.key) ? td0.get(p.key) * (b.avg / recent.get(p.key)) : null;
+        const avg = b.avg + (td === null ? 0 : w * td / b.games);
+        m.set(p.key, { avg, tot: avg * b.games, td });
       });
       out.set(slot, m);
     });

@@ -26,7 +26,7 @@
     { id: 'TO', name: 'Turnovers', ...col('tov_per_g'), def: -2 },
     { id: 'PF', name: 'Personal Fouls', ...col('pf_per_g'), def: 0 },
     { id: 'PTS', name: 'Points', ...col('pts_per_g'), def: 1 },
-    { id: 'TD', name: 'Triple Doubles', cols: null, def: 3 },
+    { id: 'TD', name: 'Triple Doubles', cols: null, estimated: true, def: 3 },
     { id: 'DD', name: 'Double Doubles', cols: null, def: 0 }
   ];
 

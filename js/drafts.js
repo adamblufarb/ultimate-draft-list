@@ -166,14 +166,14 @@
 
   function showScoring() {
     const sheet = sheetWithHeader('Scoring System', showList);
-    sheet.appendChild(el('div', 'draft-tile-sub', 'Points per stat. Used for the Avg and Tot fantasy points in Player Detail. Triple/double doubles aren’t in the per-game stats files, so they can’t be counted.'));
+    sheet.appendChild(el('div', 'draft-tile-sub', 'Points per stat. Used for the Avg and Tot fantasy points in Player Detail. Triple doubles are estimated (see README); double doubles aren’t counted.'));
     const list = el('div', 'structure-list');
     const inputs = {};
     const weights = Scoring.normalize(st().scoring);
     Scoring.CATEGORIES.forEach((c) => {
       const row = el('div', 'structure-row');
       const label = el('span', 'structure-label', c.id);
-      const name = el('span', 'draft-tile-sub scoring-name', c.name + (c.cols ? '' : ' (not counted)'));
+      const name = el('span', 'draft-tile-sub scoring-name', c.name + (c.cols || c.estimated ? '' : ' (not counted)'));
       const inp = el('input', 'smart-search-threshold-input');
       inp.type = 'text'; inp.inputMode = 'decimal'; inp.value = String(weights[c.id]);
       inputs[c.id] = inp;
