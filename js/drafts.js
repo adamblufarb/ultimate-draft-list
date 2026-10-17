@@ -307,6 +307,7 @@
     fields.appendChild(stBtn);
     let reversed = formDraft ? formDraft.reversed : (data.reversedRounds || []).slice();
     const rrBtn = el('button', 'btn btn-secondary', 'Reverse Rounds');
+    if (reversed.length) rrBtn.appendChild(el('span', 'round-dot'));
     rrBtn.addEventListener('click', () => {
       formDraft = { name: name.value, season: sel.value, pick: pick.inp.value, teams: teams.inp.value, structure, reversed };
       showRounds(structure, reversed, (next) => { formDraft.reversed = next; showForm(d, true); });

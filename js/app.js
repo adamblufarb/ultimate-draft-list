@@ -22,8 +22,10 @@
   }
 
   function persist() {
+    const teamChanged = syncMyTeam();
     Storage.save(state);
     GithubSync.scheduleSync();
+    if (teamChanged) emit('my-team-changed', {});
   }
 
   function genId() {
@@ -77,6 +79,34 @@
 
   function isDraftOver() {
     return state.draftedKeys.length >= state.leagueSize * totalRounds();
+  }
+
+  // Which team (its slot in round 1, 1..N) makes overall pick number i
+  // (0-based) — follows the draft's snake and any reversed rounds.
+  function pickOwner(i) {
+    const size = state.leagueSize;
+    const round = Math.floor(i / size) + 1;
+    const position = (i % size) + 1;
+    return roundRunsBackwards(round) ? size - position + 1 : position;
+  }
+
+  // Players drafted by the team in `slot`, in pick order.
+  function teamKeys(slot) {
+    return state.draftedKeys.filter((k, i) => pickOwner(i) === slot);
+  }
+
+  // The team on the clock (slot), or null once the draft is over.
+  function teamOnTheClock() {
+    return isDraftOver() ? null : pickOwner(state.draftedKeys.length);
+  }
+
+  // My Team is whoever the draft position says I picked, so changing the
+  // reversed rounds / pick number / team count re-assigns every pick.
+  function syncMyTeam() {
+    const next = teamKeys(state.pickSlot);
+    const same = next.length === state.myTeamKeys.length && next.every((k, i) => k === state.myTeamKeys[i]);
+    if (!same) state.myTeamKeys = next;
+    return !same;
   }
 
   function isMyPickOnTheClock() {
@@ -435,7 +465,7 @@
 
   global.App = {
     state, on, emit, persist, genId,
-    isDrafted, setDrafted, isMyPickOnTheClock, isDraftOver, totalRounds, myPositionInRound, roundRunsBackwards,
+    isDrafted, setDrafted, isMyPickOnTheClock, isDraftOver, pickOwner, teamKeys, teamOnTheClock, syncMyTeam, totalRounds, myPositionInRound, roundRunsBackwards,
     isOnMyTeam, draftedByMe, removeFromMyTeam,
     getBreakoutLevel, cycleBreakoutLevel,
     getSleeperLevel, cycleSleeperLevel,

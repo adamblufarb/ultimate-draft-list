@@ -132,3 +132,9 @@ Tapping a player opens a detail view. Up top, their name (with a position badge 
 - **Reverse Rounds** (Edit/New Draft, below Team Structure): every round shown with an arrow (round 1 ↓, round 2 ↑ …). Tap a round to flip it (blue) when its direction should start from the other end. It drives *everything* pick-related: Next Pick markers, "On the clock", "Drafted By Me" (`App.myPositionInRound`, `roundRunsBackwards`). Saved per draft.
 - **Sources moved into Settings** (above Scoring System); the page has a "‹ Settings" button back. The bottom bar now has 4 tabs.
 - **Season Stats:** any number of seasons, one file per season. "Add a Season" has a season dropdown (this year's season and 8 back, e.g. 26-27 … 18-19, updating each year; seasons already added are hidden). Seasons are always kept most-recent-first; existing 25-26/24-25/23-24/22-23 were assigned automatically. Year-over-year arrows only compare seasons exactly one year apart.
+
+## League tab & retroactive reversed rounds
+
+- **League** (⛹🏻, between My Team and Notes): every team in the draft as a square — "Team 1…N" by round-1 slot, yours is **My Team** in blue. Each square counts players by position and shows which team is **On the clock** (orange ring). Tap a team to see its picks laid out like My Team; tap yours to jump to My Team.
+- Who made each pick comes from the draft order — snake plus reversed rounds (`App.pickOwner`). **My Team is derived from that**: changing Reverse Rounds, your pick number or the team count re-assigns every pick retroactively (e.g. reversing round 15 in Good Boy 2026 moves that pick from Nikola Vucevic to Julian Champagnie). Draft Board edits re-assign by position too.
+- The **Reverse Rounds** button shows a blue dot while any round is reversed.

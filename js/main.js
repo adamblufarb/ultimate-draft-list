@@ -7,6 +7,7 @@
       draft: document.getElementById('panel-draft'),
       myteam: document.getElementById('panel-myteam'),
       drafted: document.getElementById('panel-drafted'),
+      league: document.getElementById('panel-league'),
       notes: document.getElementById('panel-notes'),
       sources: document.getElementById('panel-sources')
     };
@@ -16,6 +17,7 @@
     DraftTab.init(panels.draft);
     MyTeamTab.init(panels.myteam);
     DraftedPlayersTab.init(panels.drafted);
+    LeagueTab.init(panels.league);
     NotesTab.init(panels.notes);
     SourcesTab.init(panels.sources);
 
@@ -31,6 +33,7 @@
     let currentTab = null;
     function showTab(name) {
       UiState.set('tab', name);
+      if (currentTab === 'league' && name !== 'league') LeagueTab.reset();
       if (currentTab === 'myteam' && name !== 'myteam') MyTeamTab.resetFilters();   // position filters don't survive leaving
       currentTab = name;
       Object.entries(panels).forEach(([key, el]) => {
@@ -51,6 +54,7 @@
     // Sources lives under Settings now (no tab button); remember where to go back to.
     let tabBeforeSources = 'draft';
     window.AppNav = {
+      showTab,
       openSources() { if (currentTab !== 'sources') tabBeforeSources = currentTab || 'draft'; showTab('sources'); },
       backFromSources() { showTab(tabBeforeSources); Drafts.open(); }
     };

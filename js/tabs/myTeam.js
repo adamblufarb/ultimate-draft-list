@@ -5,6 +5,7 @@
    (starters + bench, see js/lineup.js) that fill as you draft. */
 (function (global) {
   const POSITIONS = ['PG', 'SG', 'SF', 'PF', 'C'];
+  function makeTab(getKeys, listen) {
   let container;
   // Position counters double as filters; several can be on at once. Cleared
   // whenever you leave the tab (resetFilters, called from main.js).
@@ -12,17 +13,20 @@
 
   function init(rootEl) {
     container = rootEl;
-    App.on('my-team-changed', render);
-    App.on('sources-changed', render);
-    App.on('filters-changed', render);   // combined ranks follow the Draft List's filters
-    App.on('remote-state-loaded', render);
-    App.on('tags-changed', render);
+    if (listen) {
+      App.on('my-team-changed', render);
+      App.on('drafted-changed', render);
+      App.on('sources-changed', render);
+      App.on('filters-changed', render);   // combined ranks follow the Draft List's filters
+      App.on('remote-state-loaded', render);
+      App.on('tags-changed', render);
+    }
     render();
   }
 
   function countPositions(index) {
     const counts = { PG: 0, SG: 0, SF: 0, PF: 0, C: 0 };
-    App.state.myTeamKeys.forEach((key) => {
+    getKeys().forEach((key) => {
       const entry = index.get(key);
       if (!entry || !entry.positions) return;
       entry.positions.split(',').forEach((p) => {
@@ -80,7 +84,7 @@
     const weights = App.getActiveWeights();
     const avgByKey = new Map(Ranking.combineFromIndex(index, weights).map((r) => [r.key, r.avg]));
 
-    const lineup = Lineup.assign(App.state.myTeamKeys, (key) => { const e = index.get(key); return e ? e.positions : ''; }, App.state.teamStructure);
+    const lineup = Lineup.assign(getKeys(), (key) => { const e = index.get(key); return e ? e.positions : ''; }, App.state.teamStructure);
 
     const card = (key) => {
       const entry = index.get(key);
@@ -197,5 +201,9 @@
     render();
   }
 
-  global.MyTeamTab = { init, render, resetFilters };
+  return { init, render, resetFilters };
+  }
+
+  const main = makeTab(() => App.state.myTeamKeys, true);
+  global.MyTeamTab = { init: main.init, render: main.render, resetFilters: main.resetFilters, create: (getKeys) => makeTab(getKeys, false) };
 })(window);
