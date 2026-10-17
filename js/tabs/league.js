@@ -69,10 +69,6 @@
         row.appendChild(cell);
       });
       tile.appendChild(row);
-      const total = document.createElement('div');
-      total.className = 'league-total';
-      total.textContent = keys.length + ' / ' + App.totalRounds() + ' players';
-      tile.appendChild(total);
       tile.addEventListener('click', () => {
         if (mine) { AppNav.showTab('myteam'); return; }
         openSlot = slot;

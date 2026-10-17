@@ -1465,8 +1465,8 @@ input, textarea, select, .note-text, .detail-notes {
 .league-team-name { font-size: 17px; font-weight: 700; }
 .league-clock { min-height: 16px; margin-top: -4px; font-size: 12px; font-weight: 700; color: var(--warn); }
 .league-tile.is-mine .league-clock { color: #fff; }
-.league-positions { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; }
-.league-pos { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+.league-positions { display: flex; justify-content: flex-start; gap: 18px; }
+.league-pos { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; }
 .league-pos-label { font-size: 10px; color: var(--text-dim); font-weight: 700; }
 .league-tile.is-mine .league-pos-label { color: #dbe6ff; }
 .league-pos-value { font-size: 17px; font-weight: 700; }
