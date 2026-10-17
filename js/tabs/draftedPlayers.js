@@ -246,8 +246,11 @@
 
   function renderRoundDivider(round) {
     const el = document.createElement('div');
-    el.className = 'list-divider';
-    el.textContent = '— Round ' + round + ' —';
+    // A reversed round (Settings → Reverse Rounds) is flagged in blue with
+    // the direction it actually runs: ↓ slot 1 first, ↑ last slot first.
+    const reversed = (App.state.reversedRounds || []).includes(round);
+    el.className = 'list-divider' + (reversed ? ' list-divider-next-pick' : '');
+    el.textContent = '— Round ' + round + (reversed ? ' ' + (App.roundRunsBackwards(round) ? '↑' : '↓') + ' reversed' : '') + ' —';
     return el;
   }
 

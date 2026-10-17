@@ -138,3 +138,4 @@ Tapping a player opens a detail view. Up top, their name (with a position badge 
 - **League** (⛹🏻, between My Team and Notes): every team in the draft as a square — "Team 1…N" by round-1 slot, yours is **My Team** in blue. Each square counts players by position and shows which team is **On the clock** (orange ring). Tap a team to see its picks laid out like My Team; tap yours to jump to My Team.
 - Who made each pick comes from the draft order — snake plus reversed rounds (`App.pickOwner`). **My Team is derived from that**: changing Reverse Rounds, your pick number or the team count re-assigns every pick retroactively (e.g. reversing round 15 in Good Boy 2026 moves that pick from Nikola Vucevic to Julian Champagnie). Draft Board edits re-assign by position too.
 - The **Reverse Rounds** button shows a blue dot while any round is reversed.
+- Draft Board flags a reversed round in blue with its real direction, e.g. "— Round 15 ↑ reversed —".
