@@ -416,7 +416,8 @@
   function nextPickMarkers(fullOrder, visibleItems) {
     const markers = new Map();
     const taken = (App.state.draftedKeys || []).length;
-    const picks = upcomingPicks(taken + fullOrder.length + 1);
+    // Never past the end of the draft (teams x roster size picks).
+    const picks = upcomingPicks(Math.min(taken + fullOrder.length + 1, App.state.leagueSize * App.totalRounds()));
     let cutoff = 0;     // number of fullOrder entries before the marker
     let undrafted = 0;  // undrafted players among those
     let idx = 0;        // visible rows among those
