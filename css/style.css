@@ -1477,3 +1477,7 @@ input, textarea, select, .note-text, .detail-notes {
 .league-title { width: 100%; margin: 0 0 12px; font-size: 18px; }
 
 .league-title.is-mine { background: var(--accent-dim); border-color: var(--accent); color: #fff; }
+
+/* Season Stats cards: every title (season label, "Add a Season", the season dropdown) is left-aligned and 16px. */
+.season-stats-card .source-view-name { text-align: left; font-size: 16px; }
+.season-stats-card .smart-search-select { text-align: left; text-align-last: left; font-size: 16px; padding-left: 12px; }
